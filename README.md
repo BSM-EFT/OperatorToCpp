@@ -2,9 +2,9 @@
 
 OperatorToC++ is an extensible, hybrid Mathematica and C++ based tool that facilitates next steps beyond the matching of parameters between a UV model and an Effective Field Theory. It efficiently remedies the complexities within the analytical matched expressions such as those due to loop-functions and lengthy sums and products involving tensor objects. It then translates and bundles the results into C++ classes and functions which provide a convenient platform for further numerical analyses.
 
-Its two main components are 
-    1. [OperatorExport.m](./OperatorExport.m) - a Mathematica package that systematically translates Matchete output to C++ classes and functions and generates model-specific .h and .cpp files.
-    2. [OperatorImport.cpp](./lib/OperatorImport.cpp) - a suite of C++ helper functions that enable computations such as loop-function evaluation, Einstein-summation et cetera.
+Its two main components are  
+1.  [OperatorExport.m](./OperatorExport.m) - a Mathematica package that systematically translates Matchete output to C++ classes and functions and generates model-specific .h and .cpp files.  
+2.  [OperatorImport.cpp](./lib/OperatorImport.cpp) - a suite of C++ helper functions that enable computations such as loop-function evaluation, Einstein-summation et cetera.
 
 ## Sample input and output files
 
