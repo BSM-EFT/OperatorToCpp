@@ -1,7 +1,7 @@
 /**
  * @file write_to_files.cpp
  * @author Suraj Prakash
- * @date 2025-04-24
+ * @date 2025-04-25
  * @brief Code for writing (m1, mut3, WC) values to file using MSSM.h and MSSM.cpp
  */
 
@@ -29,9 +29,9 @@ int main() {
 
     MSSM sb_model;
 
-    double g1 = 0.1;
+    double g1 = 0.37;
     double gs = 1.1;
-    double mubarsq = 1.05*1.05; // We set the renormalization scale close to 1 TeV
+    double mubarsq = 1.0*1.0; // We set the renormalization scale close to 1 TeV
 
     map<string, double> param_dict;
 
