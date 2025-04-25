@@ -6,13 +6,11 @@
  */
 
 #include "MSSM.h"
-#include <ratio>
 #include <vector>
 #include <print>
 #include <string>
 #include <map>
 #include <cmath>
-#include <chrono>
 #include <format>
 #include <iostream>
 #include <fstream>
@@ -63,6 +61,7 @@ int main() {
         i += 1000;
     }
 
+    // a lambda that computes WCs for given (mut3, m1) values and creates a string containing all three
     auto compute_and_write = [&sb_model](map<string, double> p_dict, double mut3, double m1, auto func){
         p_dict.emplace("mut3", mut3); // (right-handed) stop mass (in units of TeV)
         p_dict.emplace("m1", m1); // Bino mass (in units of TeV)
@@ -74,15 +73,13 @@ int main() {
         return line;
     };
 
+    // a lambda for writing data to files corresponding to specific WC functions
     auto write_wc = [&param_dict, &compute_and_write](string func_name, auto func){
-        const auto t1 = std::chrono::high_resolution_clock::now();
-
         string f_name = format("./plots/{}.txt", func_name);
 
         ofstream file1;
         file1.open(f_name, ios::out | ios::app);
-        println("\nStarted writing values to {}.txt .....", func_name);
-
+        
         for (double mut3 = 0.2; mut3 < 2.5; mut3 += 0.1) {
             for (double m1 = 0.2; m1 < 2.5; m1 += 0.1) {
                 file1 << compute_and_write(param_dict, mut3, m1, func) << "\n";
@@ -90,20 +87,36 @@ int main() {
         }
 
         file1.close();
-
-        const auto t2 = std::chrono::high_resolution_clock::now();
-        const std::chrono::duration<double, std::ratio<1> > sec = t2 - t1;
-        println("Finished writing values to {}.txt in {}.", func_name, sec);
     };
 
+    // function calls to write data to files for 2d plots
     write_wc("cG", [&sb_model, &mubarsq](){ return sb_model.cG(mubarsq);});
     write_wc("cuG_33", [&sb_model, &mubarsq](){ return sb_model.cuG(2,2,mubarsq);});
+    write_wc("cqu1_1133", [&sb_model, &mubarsq](){ return sb_model.cqu1(0,0,2,2,mubarsq);});
+    write_wc("cuu_3333", [&sb_model, &mubarsq](){ return sb_model.cuu(2,2,2,2,mubarsq);});
+    write_wc("cqq1_3333", [&sb_model, &mubarsq](){ return sb_model.cqq1(2,2,2,2,mubarsq);});
+    write_wc("cqd1_3311", [&sb_model, &mubarsq](){ return sb_model.cqd1(2,2,0,0,mubarsq);});
     write_wc("cqu8_3311", [&sb_model, &mubarsq](){ return sb_model.cqu8(2,2,0,0,mubarsq);});
     write_wc("cqu8_1133", [&sb_model, &mubarsq](){ return sb_model.cqu8(0,0,2,2,mubarsq);});
-    write_wc("cqq1_3333", [&sb_model, &mubarsq](){ return sb_model.cqq1(2,2,2,2,mubarsq);});
-    write_wc("cuu_3333", [&sb_model, &mubarsq](){ return sb_model.cuu(2,2,2,2,mubarsq);});
-    write_wc("cqd1_3311", [&sb_model, &mubarsq](){ return sb_model.cqd1(2,2,0,0,mubarsq);});
-    write_wc("cqu1_1133", [&sb_model, &mubarsq](){ return sb_model.cqu1(0,0,2,2,mubarsq);});
+    
+
+    //  write data to a yaml file to creating bar-chart for a fixed benchmark point
+    param_dict.emplace("mut3", 1.5);
+    param_dict.emplace("m1", 1.0);
+    sb_model.updateParams(param_dict);
+
+    string fname = format("./plots/barplot-data.yaml");
+    ofstream f1;
+    f1.open(fname, ios::out | ios::app);
+    f1 << format("\"cG\": {}", sb_model.cG(mubarsq)) << "\n";
+    f1 << format("\"cuG_33\": {}", sb_model.cuG(2,2,mubarsq)) << "\n";
+    f1 << format("\"cqu1_1133\": {}", sb_model.cqu1(0,0,2,2,mubarsq)) << "\n";
+    f1 << format("\"cuu_3333\": {}", sb_model.cuu(2,2,2,2,mubarsq)) << "\n";
+    f1 << format("\"cqq1_3333\": {}", sb_model.cqq1(2,2,2,2,mubarsq)) << "\n";
+    f1 << format("\"cqd1_3311\": {}", sb_model.cqd1(2,2,0,0,mubarsq)) << "\n";
+    f1 << format("\"cqu8_3311\": {}", sb_model.cqu8(2,2,0,0,mubarsq)) << "\n";
+    f1 << format("\"cqu8_1133\": {}", sb_model.cqu8(0,0,2,2,mubarsq)) << "\n";
+    f1.close();
 
     return 0;
 }
