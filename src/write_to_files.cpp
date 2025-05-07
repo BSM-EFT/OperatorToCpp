@@ -1,7 +1,7 @@
 /**
  * @file write_to_files.cpp
  * @author Suraj Prakash
- * @date 2025-05-02
+ * @date 2025-05-07
  * @brief Code for writing (m1, mut3, WC) values to file using MSSM.h and MSSM.cpp
  */
 
@@ -106,7 +106,7 @@ int main() {
         p_dict.emplace("m1", m1); // Bino mass (in units of TeV)
         sb_model.updateParams(p_dict);
 
-        string line = format("{:.2f},{:.2f},{:.5e},{:.5e},{:.5e},{:.5e},{:.5e},{:.5e},{:.5e},{:.5e}", 
+        string line = format("{:.1f},{:.1f},{:.5e},{:.5e},{:.5e},{:.5e},{:.5e},{:.5e},{:.5e},{:.5e}", 
             mut3, m1, 
             sb_model.cG(mubarsq),
             sb_model.cuG(2,2,mubarsq),
@@ -126,8 +126,9 @@ int main() {
     f1.open(fname, ios::out | ios::app);
     string first_row = format("mut3,m1,cG,cuG_33,cqu1_1133,cuu_3333,cqq1_3333,cqd1_3311,cqu8_3311,cqu8_1133");
     f1 << first_row << "\n";
-    f1 << create_row(param_dict, 2.0, 1.0)  << "\n";    // mut3 = 2.0, m1 = 1.0
-    f1 << create_row(param_dict, 1.5, 1.45)  << "\n";    // mut3 = 1.5, m1 = 1.45
+    f1 << create_row(param_dict, 2.0, 1.5)  << "\n";    // mut3 = 2.0, m1 = 1.5
+    f1 << create_row(param_dict, 1.6, 1.5)  << "\n";    // mut3 = 1.6, m1 = 1.5
+    f1 << create_row(param_dict, 1.6, 0.5)  << "\n";    // mut3 = 1.6, m1 = 0.5
     f1.close();
 
     return 0;
