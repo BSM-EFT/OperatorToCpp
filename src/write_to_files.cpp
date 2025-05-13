@@ -1,7 +1,7 @@
 /**
  * @file write_to_files.cpp
  * @author Suraj Prakash
- * @date 2025-05-07
+ * @date 2025-05-13
  * @brief Code for writing (m1, mut3, WC) values to file using MSSM.h and MSSM.cpp
  */
 
@@ -62,42 +62,42 @@ int main() {
     }
 
     // a lambda that computes WCs for given (mut3, m1) values and creates a string containing all three
-    // auto compute_and_write = [&sb_model](map<string, double> p_dict, double mut3, double m1, auto func){
-    //     p_dict.emplace("mut3", mut3); // (right-handed) stop mass (in units of TeV)
-    //     p_dict.emplace("m1", m1); // Bino mass (in units of TeV)
-    //     sb_model.updateParams(p_dict);
+    auto compute_and_write = [&sb_model](map<string, double> p_dict, double mut3, double m1, auto func){
+        p_dict.emplace("mut3", mut3); // (right-handed) stop mass (in units of TeV)
+        p_dict.emplace("m1", m1); // Bino mass (in units of TeV)
+        sb_model.updateParams(p_dict);
 
-    //     auto val = func();
-    //     string line = format("{:.2f} {:.2f} {:.5e}", mut3, m1, val);
+        auto val = func();
+        string line = format("{:.2f} {:.2f} {:.5e}", mut3, m1, val);
 
-    //     return line;
-    // };
+        return line;
+    };
 
     // a lambda for writing data to files corresponding to specific WC functions
-    // auto write_wc = [&param_dict, &compute_and_write](string func_name, auto func){
-    //     string f_name = format("./plots/{}.txt", func_name);
+    auto write_wc = [&param_dict, &compute_and_write](string func_name, auto func){
+        string f_name = format("./plots/{}.txt", func_name);
 
-    //     ofstream file1;
-    //     file1.open(f_name, ios::out | ios::app);
+        ofstream file1;
+        file1.open(f_name, ios::out | ios::app);
         
-    //     for (double mut3 = 0.2; mut3 < 2.5; mut3 += 0.1) {
-    //         for (double m1 = 0.2; m1 < 2.5; m1 += 0.1) {
-    //             file1 << compute_and_write(param_dict, mut3, m1, func) << "\n";
-    //         }
-    //     }
+        for (double mut3 = 0.3; mut3 < 2.8; mut3 += 0.1) {
+            for (double m1 = 0.3; m1 < 2.8; m1 += 0.1) {
+                file1 << compute_and_write(param_dict, mut3, m1, func) << "\n";
+            }
+        }
 
-    //     file1.close();
-    // };
+        file1.close();
+    };
 
     // function calls to write data to files for 2d plots
-    // write_wc("cG", [&sb_model, &mubarsq](){ return sb_model.cG(mubarsq);});
-    // write_wc("cuG_33", [&sb_model, &mubarsq](){ return sb_model.cuG(2,2,mubarsq);});
-    // write_wc("cqu1_1133", [&sb_model, &mubarsq](){ return sb_model.cqu1(0,0,2,2,mubarsq);});
-    // write_wc("cuu_3333", [&sb_model, &mubarsq](){ return sb_model.cuu(2,2,2,2,mubarsq);});
-    // write_wc("cqq1_3333", [&sb_model, &mubarsq](){ return sb_model.cqq1(2,2,2,2,mubarsq);});
-    // write_wc("cqd1_3311", [&sb_model, &mubarsq](){ return sb_model.cqd1(2,2,0,0,mubarsq);});
-    // write_wc("cqu8_3311", [&sb_model, &mubarsq](){ return sb_model.cqu8(2,2,0,0,mubarsq);});
-    // write_wc("cqu8_1133", [&sb_model, &mubarsq](){ return sb_model.cqu8(0,0,2,2,mubarsq);});
+    write_wc("cG", [&sb_model, &mubarsq](){ return sb_model.cG(mubarsq);});
+    write_wc("cuG_33", [&sb_model, &mubarsq](){ return sb_model.cuG(2,2,mubarsq);});
+    write_wc("cqu1_1133", [&sb_model, &mubarsq](){ return sb_model.cqu1(0,0,2,2,mubarsq);});
+    write_wc("cuu_3333", [&sb_model, &mubarsq](){ return sb_model.cuu(2,2,2,2,mubarsq);});
+    write_wc("cqq1_3333", [&sb_model, &mubarsq](){ return sb_model.cqq1(2,2,2,2,mubarsq);});
+    write_wc("cqd1_3311", [&sb_model, &mubarsq](){ return sb_model.cqd1(2,2,0,0,mubarsq);});
+    write_wc("cqu8_3311", [&sb_model, &mubarsq](){ return sb_model.cqu8(2,2,0,0,mubarsq);});
+    write_wc("cqu8_1133", [&sb_model, &mubarsq](){ return sb_model.cqu8(0,0,2,2,mubarsq);});
     
 
     //  write data to a yaml file to creating bar-chart for multiple benchmark points
