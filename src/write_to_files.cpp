@@ -1,7 +1,7 @@
 /**
  * @file write_to_files.cpp
  * @author Suraj Prakash
- * @date 2025-05-13
+ * @date 2025-05-16
  * @brief Code for writing (m1, mut3, WC) values to file using MSSM.h and MSSM.cpp
  */
 
@@ -35,7 +35,7 @@ int main() {
 
     param_dict.emplace("g1", g1);
     param_dict.emplace("g3", gs);
-    param_dict.emplace("cbeta",0.01); // cos(\beta) should not be 0 or 1.
+    param_dict.emplace("cgamma",0.01); // cos(\gamma) should not be 0 or 1.
 
     // Higgs mass set to physical mass (units of TeV) (this does not factor into the results)
     param_dict.emplace("mHsq", 0.125*0.125);
