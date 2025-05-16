@@ -8,7 +8,7 @@
 
 class MSSM {
     private:
-        double cbeta = 0.0;
+        double cgamma = 0.0;
         double g1 = 0.0;
         double g2 = 0.0;
         double g3 = 0.0;
