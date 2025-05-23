@@ -1,7 +1,7 @@
 /**
  * @file write_to_files.cpp
  * @author Suraj Prakash
- * @date 2025-05-16
+ * @date 2025-05-23
  * @brief Code for writing (m1, mut3, WC) values to file using MSSM.h and MSSM.cpp
  */
 
@@ -10,13 +10,11 @@
 #include <print>
 #include <string>
 #include <map>
-#include <cmath>
 #include <format>
 #include <iostream>
 #include <fstream>
 
 using std::vector;
-using std::println;
 using std::map;
 using std::string;
 using std::format;
@@ -79,7 +77,7 @@ int main() {
 
         ofstream file1;
         file1.open(f_name, ios::out | ios::app);
-        
+
         for (double mut3 = 0.3; mut3 < 2.8; mut3 += 0.1) {
             for (double m1 = 0.3; m1 < 2.8; m1 += 0.1) {
                 file1 << compute_and_write(param_dict, mut3, m1, func) << "\n";
@@ -90,24 +88,25 @@ int main() {
     };
 
     // function calls to write data to files for 2d plots
-    write_wc("cG", [&sb_model, &mubarsq](){ return sb_model.cG(mubarsq);});
-    write_wc("cuG_33", [&sb_model, &mubarsq](){ return sb_model.cuG(2,2,mubarsq);});
-    write_wc("cqu1_1133", [&sb_model, &mubarsq](){ return sb_model.cqu1(0,0,2,2,mubarsq);});
-    write_wc("cuu_3333", [&sb_model, &mubarsq](){ return sb_model.cuu(2,2,2,2,mubarsq);});
-    write_wc("cqq1_3333", [&sb_model, &mubarsq](){ return sb_model.cqq1(2,2,2,2,mubarsq);});
-    write_wc("cqd1_3311", [&sb_model, &mubarsq](){ return sb_model.cqd1(2,2,0,0,mubarsq);});
-    write_wc("cqu8_3311", [&sb_model, &mubarsq](){ return sb_model.cqu8(2,2,0,0,mubarsq);});
-    write_wc("cqu8_1133", [&sb_model, &mubarsq](){ return sb_model.cqu8(0,0,2,2,mubarsq);});
-    
+    // write_wc("cG", [&sb_model, &mubarsq](){ return sb_model.cG(mubarsq);});
+    // write_wc("cuG_33", [&sb_model, &mubarsq](){ return sb_model.cuG(2,2,mubarsq);});
+    // write_wc("cqu1_1133", [&sb_model, &mubarsq](){ return sb_model.cqu1(0,0,2,2,mubarsq);});
+    // write_wc("cuu_3333", [&sb_model, &mubarsq](){ return sb_model.cuu(2,2,2,2,mubarsq);});
+    // write_wc("cqq1_3333", [&sb_model, &mubarsq](){ return sb_model.cqq1(2,2,2,2,mubarsq);});
+    // write_wc("cqd1_3311", [&sb_model, &mubarsq](){ return sb_model.cqd1(2,2,0,0,mubarsq);});
+    // write_wc("cqu8_3311", [&sb_model, &mubarsq](){ return sb_model.cqu8(2,2,0,0,mubarsq);});
+    // write_wc("cqu8_1133", [&sb_model, &mubarsq](){ return sb_model.cqu8(0,0,2,2,mubarsq);});
 
-    //  write data to a yaml file to creating bar-chart for multiple benchmark points
-    auto create_row = [&sb_model, &mubarsq](map<string, double> p_dict, double mut3, double m1){
+
+    //  write data to a csv file to creating bar-chart for multiple benchmark points
+    auto create_row_sb = [&sb_model, &mubarsq](map<string, double> p_dict, double mut3, double m1){
         p_dict.emplace("mut3", mut3); // (right-handed) stop mass (in units of TeV)
         p_dict.emplace("m1", m1); // Bino mass (in units of TeV)
         sb_model.updateParams(p_dict);
 
-        string line = format("{:.1f},{:.1f},{:.5e},{:.5e},{:.5e},{:.5e},{:.5e},{:.5e},{:.5e},{:.5e}", 
-            mut3, m1, 
+        string line = format("{:.1f},{:.1f},{:.5e},{:.5e},{:.5e},{:.5e},{:.5e},{:.5e},{:.5e},{:.5e}",
+            mut3, m1,
+            // operators relevant for top-pair production
             sb_model.cG(mubarsq),
             sb_model.cuG(2,2,mubarsq),
             sb_model.cqu1(0,0,2,2,mubarsq),
@@ -121,15 +120,45 @@ int main() {
         return line;
     };
 
-    string fname = format("./plots/barplot-data.csv");
+    string fname = format("./plots/barplot-sb.csv");
     ofstream f1;
     f1.open(fname, ios::out | ios::app);
     string first_row = format("mut3,m1,cG,cuG_33,cqu1_1133,cuu_3333,cqq1_3333,cqd1_3311,cqu8_3311,cqu8_1133");
+
     f1 << first_row << "\n";
-    f1 << create_row(param_dict, 2.0, 1.5)  << "\n";    // mut3 = 2.0, m1 = 1.5
-    f1 << create_row(param_dict, 1.6, 1.5)  << "\n";    // mut3 = 1.6, m1 = 1.5
-    f1 << create_row(param_dict, 1.6, 0.5)  << "\n";    // mut3 = 1.6, m1 = 0.5
+    f1 << create_row_sb(param_dict, 2.0, 1.5)  << "\n";    // mut3 = 2.0, m1 = 1.5
+    f1 << create_row_sb(param_dict, 1.6, 1.5)  << "\n";    // mut3 = 1.6, m1 = 1.5
+    f1 << create_row_sb(param_dict, 1.6, 0.5)  << "\n";    // mut3 = 1.6, m1 = 0.5
     f1.close();
+
+    auto create_row_h = [&sb_model, &mubarsq](map<string, double> p_dict, double mut3, double m1){
+        p_dict.emplace("mut3", mut3); // (right-handed) stop mass (in units of TeV)
+        p_dict.emplace("m1", m1); // Bino mass (in units of TeV)
+        sb_model.updateParams(p_dict);
+
+        string line = format("{:.1f},{:.1f},{:.5e},{:.5e},{:.5e},{:.5e},{:.5e}",
+            mut3, m1,
+            // purely bosonic operators
+            sb_model.cHBox(mubarsq),
+            sb_model.cHB(mubarsq),
+            sb_model.cHG(mubarsq),
+            sb_model.cuH(2,2,mubarsq),
+            sb_model.cHq1(2,2,mubarsq)
+        );
+
+        return line;
+    };
+
+    string fname2 = format("./plots/barplot-h.csv");
+    ofstream f2;
+    f2.open(fname2, ios::out | ios::app);
+    string first_row2 = format("mut3,m1,cHBox,cHB,cHG,cuH_33,cHq1_33");
+
+    f2 << first_row2 << "\n";
+    f2 << create_row_h(param_dict, 2.0, 1.5)  << "\n";    // mut3 = 2.0, m1 = 1.5
+    f2 << create_row_h(param_dict, 1.6, 1.5)  << "\n";    // mut3 = 1.6, m1 = 1.5
+    f2 << create_row_h(param_dict, 1.6, 0.5)  << "\n";    // mut3 = 1.6, m1 = 0.5
+    f2.close();
 
     return 0;
 }
