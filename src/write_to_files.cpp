@@ -1,23 +1,26 @@
 /**
  * @file write_to_files.cpp
  * @author Suraj Prakash
- * @date 2025-05-23
- * @brief Code for writing (m1, mut3, WC) values to file using MSSM.h and MSSM.cpp
+ * @date 2025-05-28
+ * @brief Code for writing WC values to file using MSSM.h and MSSM.cpp for bar and 2d plots
  */
 
 #include "MSSM.h"
+#include <ios>
 #include <vector>
 #include <print>
 #include <string>
 #include <map>
-#include <format>
+#include <sstream>
+#include <iomanip>
 #include <iostream>
 #include <fstream>
 
 using std::vector;
 using std::map;
 using std::string;
-using std::format;
+using std::ostringstream;
+using std::setprecision;
 using std::ofstream;
 using std::ios;
 
@@ -66,14 +69,19 @@ int main() {
         sb_model.updateParams(p_dict);
 
         auto val = func();
-        string line = format("{:.2f} {:.2f} {:.5e}", mut3, m1, val);
+        ostringstream linestream;
+        linestream << std::fixed << setprecision(2)
+                   << mut3 << " " << m1 << " "
+                   << std::scientific << setprecision(5)
+                   << val;
+        string line = linestream.str();
 
         return line;
     };
 
     // a lambda for writing data to files corresponding to specific WC functions
     auto write_wc = [&param_dict, &compute_and_write](string func_name, auto func){
-        string f_name = format("./plots/{}.txt", func_name);
+        string f_name = "./plots/" + func_name + ".txt";
 
         ofstream file1;
         file1.open(f_name, ios::out | ios::app);
@@ -104,26 +112,28 @@ int main() {
         p_dict.emplace("m1", m1); // Bino mass (in units of TeV)
         sb_model.updateParams(p_dict);
 
-        string line = format("{:.1f},{:.1f},{:.5e},{:.5e},{:.5e},{:.5e},{:.5e},{:.5e},{:.5e},{:.5e}",
-            mut3, m1,
-            // operators relevant for top-pair production
-            sb_model.cG(mubarsq),
-            sb_model.cuG(2,2,mubarsq),
-            sb_model.cqu1(0,0,2,2,mubarsq),
-            sb_model.cuu(2,2,2,2,mubarsq),
-            sb_model.cqq1(2,2,2,2,mubarsq),
-            sb_model.cqd1(2,2,0,0,mubarsq),
-            sb_model.cqu8(2,2,0,0,mubarsq),
-            sb_model.cqu8(0,0,2,2,mubarsq)
-        );
+        // operators relevant for top-pair production
+        ostringstream rowstream;
+        rowstream << std::fixed << setprecision(1)
+                  << mut3 << "," << m1 << ","
+                  << std::scientific << setprecision(5)
+                  << sb_model.cG(mubarsq) << ","
+                  << sb_model.cuG(2,2,mubarsq) << ","
+                  << sb_model.cqu1(0,0,2,2,mubarsq) << ","
+                  << sb_model.cuu(2,2,2,2,mubarsq) << ","
+                  << sb_model.cqq1(2,2,2,2,mubarsq) << ","
+                  << sb_model.cqd1(2,2,0,0,mubarsq) << ","
+                  << sb_model.cqu8(2,2,0,0,mubarsq) << ","
+                  << sb_model.cqu8(0,0,2,2,mubarsq);
 
-        return line;
+        string row = rowstream.str();
+        return row;
     };
 
-    string fname = format("./plots/barplot-sb.csv");
+    string fname = "./plots/barplot-sb.csv";
     ofstream f1;
     f1.open(fname, ios::out | ios::app);
-    string first_row = format("mut3,m1,cG,cuG_33,cqu1_1133,cuu_3333,cqq1_3333,cqd1_3311,cqu8_3311,cqu8_1133");
+    string first_row = "mut3,m1,cG,cuG_33,cqu1_1133,cuu_3333,cqq1_3333,cqd1_3311,cqu8_3311,cqu8_1133";
 
     f1 << first_row << "\n";
     f1 << create_row_sb(param_dict, 2.0, 1.5)  << "\n";    // mut3 = 2.0, m1 = 1.5
@@ -136,23 +146,25 @@ int main() {
         p_dict.emplace("m1", m1); // Bino mass (in units of TeV)
         sb_model.updateParams(p_dict);
 
-        string line = format("{:.1f},{:.1f},{:.5e},{:.5e},{:.5e},{:.5e},{:.5e}",
-            mut3, m1,
-            // purely bosonic operators
-            sb_model.cHBox(mubarsq),
-            sb_model.cHB(mubarsq),
-            sb_model.cHG(mubarsq),
-            sb_model.cuH(2,2,mubarsq),
-            sb_model.cHq1(2,2,mubarsq)
-        );
+        // purely bosonic operators
+        ostringstream rowstream;
+        rowstream << std::fixed << setprecision(1)
+                  << mut3 << "," << m1 << ","
+                  << std::scientific << setprecision(5)
+                  << sb_model.cHBox(mubarsq) << ","
+                  << sb_model.cHB(mubarsq) << ","
+                  << sb_model.cHG(mubarsq) << ","
+                  << sb_model.cuH(2,2,mubarsq) << ","
+                  << sb_model.cHq1(2,2,mubarsq);
 
-        return line;
+        string row = rowstream.str();
+        return row;
     };
 
-    string fname2 = format("./plots/barplot-h.csv");
+    string fname2 = "./plots/barplot-h.csv";
     ofstream f2;
     f2.open(fname2, ios::out | ios::app);
-    string first_row2 = format("mut3,m1,cHBox,cHB,cHG,cuH_33,cHq1_33");
+    string first_row2 = "mut3,m1,cHBox,cHB,cHG,cuH_33,cHq1_33";
 
     f2 << first_row2 << "\n";
     f2 << create_row_h(param_dict, 2.0, 1.5)  << "\n";    // mut3 = 2.0, m1 = 1.5

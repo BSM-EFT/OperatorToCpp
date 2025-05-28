@@ -18,7 +18,7 @@ One can then use the [makefile](./makefile) to compile the short C++ program [wr
 
 OperatorToC++ is useful beyond producing numerical results based on the matching between the MSSM and the SMEFT. In principle, one can clone this repository and suitably integrate [OperatorExport.m](./OperatorExport.m), [OperatorImport.cpp](./lib/OperatorImport.cpp), and [OperatorImport.h](./include/OperatorImport.h) within their wokflow. However, the *recommended option* is to download and use a suitable release version (_once they become available in the near future_).
 
-OperatorToC++, in its present iteration, is fully self-contained and does not rely on third-party libraries, either on the Mathematica end or on the C++ end. However, we use several modern C++ features and *the code requires a compiler that abides by the C++23 standard*.
+OperatorToC++, in its present iteration, is fully self-contained and does not rely on third-party libraries, either on the Mathematica end or on the C++ end. However, we use several modern C++ features and *the code requires a compiler that abides by the C++17 standard*.
 
 In order to use OperatorToC++ for transpiling the matching conditions relating an arbitrary UV model with SMEFT coefficients, 
  - One requires the Matchete output stored (as a key-value pair with Warsaw basis Wilson coefficients as keys) in a .m file which can be read from a notebook such as OpExp_MSSM.nb (after incorporating model-specific changes to the notebook). 
