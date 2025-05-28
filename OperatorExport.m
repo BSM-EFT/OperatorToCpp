@@ -17,7 +17,7 @@ NotebookDirectory[]
 (*-- Function definitions --*)
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Clean up and simplification of results *)
 
 
@@ -64,7 +64,7 @@ SimplifyOutput[output_]:=Module[{dict,newDict},
 ]
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Extraction of parameters *)
 
 
@@ -130,7 +130,7 @@ SegregateParams[matchingDict_,ComplexPars_]:=Module[{extractedList},
 ]
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Rewrite the matched expression in a C++ friendly form*)
 
 
@@ -347,7 +347,7 @@ HeaderPreprocessorDirectives[line_] := Module[{},
 	WriteLine[line, ""];
 	WriteLine[line, "#include <vector>"];
 	WriteLine[line, "#include <string>"];
-	WriteLine[line, "#include <map>"];
+	WriteLine[line, "#include <unordered_map>"];
 	WriteLine[line, "#include <functional>"];
 	WriteLine[line, "#define hbar 0.006332574"]
 ];
@@ -382,11 +382,11 @@ HeaderModelClass[className_,paramList_,line_] := Module[{args},
 	WriteLine[line, ""];
 	
 	(* declaration for the overloaded constructor*)
-	WriteLine[line, StringJoin["        ", className, "(std::map<std::string, double> params);"]];
+	WriteLine[line, StringJoin["        ", className, "(std::unordered_map<std::string, double> params);"]];
 	WriteLine[line, ""];
 
 	(* declaration for the updater method *)
-	WriteLine[line, StringJoin["        void updateParams", "(std::map<std::string, double> params);"]];
+	WriteLine[line, StringJoin["        void updateParams", "(std::unordered_map<std::string, double> params);"]];
 	WriteLine[line, ""];
 	
 	(* declaration for a method that prints the names of all parameters *)
@@ -402,14 +402,33 @@ HeaderModelClass[className_,paramList_,line_] := Module[{args},
 	
 	WriteLine[line, ""];
 	
-	(* declaration and definition of std::function lambdas that bind to the Yukawa member functions of the model class *)
-	(*If[Length[paramList[[4]]]!=0,
-		Do[WriteLine[line, "        "<>"std::function<double(int, int, double)> "<>ToString[paramList[[4]][[i]]]<>"_ = [this](int i, int j, double m){ return this->"<>ToString[paramList[[4]][[i]]]<>"(i, j, m); };"],
-		{i,1,Length[paramList[[4]]]}];
-	];*)
+	(* define and initialize maps storing (name,lambda) pairs for Wilson Coefficients separated based on number of fermions *)
+	(* 0-fermion operators *)
+	WriteLine[line, "    std::unordered_map<std::string, std::function<double(double)>> fname_map_0f = {"];
+	Do[WriteLine[line, "        {\"" <> WCList[[1]][[i]] <> "\", [this](double msq){ return this ->"<>WCList[[1]][[i]]<>"(msq); } },"], {i,1,Length[WCList[[1]]]-1}];
+	WriteLine[line, "        {\"" <> WCList[[1]][[-1]] <> "\", [this](double msq){ return this ->"<>WCList[[1]][[-1]]<>"(msq); } }"];
+	WriteLine[line, "    };"];
+	WriteLine[line, ""];
+	
+	(* 2-fermion operators *)
+	WriteLine[line, "    std::unordered_map<std::string, std::function<double(int,int,double)>> fname_map_2f = {"];
+	Do[WriteLine[line, "        {\"" <> WCList[[2]][[i]] <> "\", [this](int k, int l, double msq){ return this ->"<>WCList[[2]][[i]]<>"(k, l, msq); } },"], {i,1,Length[WCList[[2]]]-1}];
+	WriteLine[line, "        {\"" <> WCList[[2]][[-1]] <> "\", [this](int k, int l, double msq){ return this ->"<>WCList[[2]][[-1]]<>"(k, l, msq); } }"];
+	WriteLine[line, "    };"];
+	WriteLine[line, ""];
+	
+	(* 4-fermion operators *)
+	WriteLine[line, "    std::unordered_map<std::string, std::function<double(int,int,int,int,double)>> fname_map_4f = {"];
+	Do[WriteLine[line, "        {\"" <> WCList[[3]][[i]] <> "\", [this](int i, int j, int k, int l, double msq){ return this ->"<>WCList[[3]][[i]]<>"(i, j, k, l, msq); } },"], {i,1,Length[WCList[[3]]]-1}];
+	WriteLine[line, "        {\"" <> WCList[[3]][[-1]] <> "\", [this](int i, int j, int k, int l, double msq){ return this ->"<>WCList[[3]][[-1]]<>"(i, j, k, l, msq); } }"];
+	WriteLine[line, "    };"];
 	WriteLine[line, ""];
 	
 	WriteLine[line, "};"];
+	WriteLine[line, ""];
+	
+	(* declaration for a function that evaluates a Wilson Coefficient given only its name *)
+	WriteLine[line, "double eval_wc("<>className<>" model, std::string s, double mubarsq);"];
 ];
 
 
@@ -442,40 +461,40 @@ BuildPreprocessorDirectives[modelName_,line_] := Module[{},
 	WriteLine[line, "#include <cmath>"];
 	WriteLine[line, "#include <vector>"];
 	WriteLine[line, "#include <string>"];
-	WriteLine[line, "#include <map>"];
-	WriteLine[line, "#include <tuple>"];
+	WriteLine[line, "#include <unordered_map>"];
+	WriteLine[line, "#include <utility>"];
 	WriteLine[line, "#include \"OperatorImport.h\""];
 	WriteLine[line, "#include \""<>modelName<>".h\""];
 ];
 
 BuildConstructor[className_, paramList_, line_]:=Module[{args},
 	WriteLine[line, ""];
-	WriteLine[line, StringJoin[className, "::", className, "(std::map<std::string, double> params) {"]];
+	WriteLine[line, StringJoin[className, "::", className, "(std::unordered_map<std::string, double> params) {"]];
 	
 	If[Length[paramList[[1]]]!=0,
-		Do[WriteLine[line, "    if (params.contains(\""<>ToString[paramList[[1]][[i]]]<>"\")) this->"<>ToString[paramList[[1]][[i]]]<>" = params[\""<>ToString[paramList[[1]][[i]]]<>"\"];"], 
+		Do[WriteLine[line, "    if (params.find(\""<>ToString[paramList[[1]][[i]]]<>"\") != params.end()) this->"<>ToString[paramList[[1]][[i]]]<>" = params[\""<>ToString[paramList[[1]][[i]]]<>"\"];"], 
 			{i,1,Length[paramList[[1]]]}]	
 	];
 	
 	If[Length[paramList[[2]]]!=0,
 		Do[
-			WriteLine[line, "    if (params.contains(\""<>ToString[paramList[[2]][[i]]]<>"1\")) this->"<>ToString[paramList[[2]][[i]]]<>"[0] = params[\""<>ToString[paramList[[2]][[i]]]<>"1\"];"];
-			WriteLine[line, "    if (params.contains(\""<>ToString[paramList[[2]][[i]]]<>"2\")) this->"<>ToString[paramList[[2]][[i]]]<>"[1] = params[\""<>ToString[paramList[[2]][[i]]]<>"2\"];"];
-			WriteLine[line, "    if (params.contains(\""<>ToString[paramList[[2]][[i]]]<>"3\")) this->"<>ToString[paramList[[2]][[i]]]<>"[2] = params[\""<>ToString[paramList[[2]][[i]]]<>"3\"];"], 
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>"1\") != params.end()) this->"<>ToString[paramList[[2]][[i]]]<>"[0] = params[\""<>ToString[paramList[[2]][[i]]]<>"1\"];"];
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>"2\") != params.end()) this->"<>ToString[paramList[[2]][[i]]]<>"[1] = params[\""<>ToString[paramList[[2]][[i]]]<>"2\"];"];
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>"3\") != params.end()) this->"<>ToString[paramList[[2]][[i]]]<>"[2] = params[\""<>ToString[paramList[[2]][[i]]]<>"3\"];"], 
 		{i,1,Length[paramList[[2]]]}]	
 	];
 	
 	If[Length[paramList[[3]]]!=0,
 		Do[
-			WriteLine[line, "    if (params.contains(\""<>ToString[paramList[[3]][[i]]]<>"11\")) this->"<>ToString[paramList[[3]][[i]]]<>"[0][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"11\"];"];
-			WriteLine[line, "    if (params.contains(\""<>ToString[paramList[[3]][[i]]]<>"12\")) this->"<>ToString[paramList[[3]][[i]]]<>"[0][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"12\"];"];
-			WriteLine[line, "    if (params.contains(\""<>ToString[paramList[[3]][[i]]]<>"13\")) this->"<>ToString[paramList[[3]][[i]]]<>"[0][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"13\"];"];
-			WriteLine[line, "    if (params.contains(\""<>ToString[paramList[[3]][[i]]]<>"21\")) this->"<>ToString[paramList[[3]][[i]]]<>"[1][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"21\"];"];
-			WriteLine[line, "    if (params.contains(\""<>ToString[paramList[[3]][[i]]]<>"22\")) this->"<>ToString[paramList[[3]][[i]]]<>"[1][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"22\"];"];
-			WriteLine[line, "    if (params.contains(\""<>ToString[paramList[[3]][[i]]]<>"23\")) this->"<>ToString[paramList[[3]][[i]]]<>"[1][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"23\"];"];
-			WriteLine[line, "    if (params.contains(\""<>ToString[paramList[[3]][[i]]]<>"31\")) this->"<>ToString[paramList[[3]][[i]]]<>"[2][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"31\"];"];
-			WriteLine[line, "    if (params.contains(\""<>ToString[paramList[[3]][[i]]]<>"32\")) this->"<>ToString[paramList[[3]][[i]]]<>"[2][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"32\"];"];
-			WriteLine[line, "    if (params.contains(\""<>ToString[paramList[[3]][[i]]]<>"33\")) this->"<>ToString[paramList[[3]][[i]]]<>"[2][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"33\"];"], 
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"11\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[0][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"11\"];"];
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"12\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[0][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"12\"];"];
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"13\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[0][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"13\"];"];
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"21\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[1][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"21\"];"];
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"22\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[1][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"22\"];"];
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"23\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[1][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"23\"];"];
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"31\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[2][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"31\"];"];
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"32\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[2][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"32\"];"];
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"33\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[2][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"33\"];"], 
 		{i,1,Length[paramList[[3]]]}]	
 	];
 	
@@ -484,32 +503,32 @@ BuildConstructor[className_, paramList_, line_]:=Module[{args},
 
 BuildUpdater[className_, paramList_, line_]:=Module[{},
 	WriteLine[line, ""];
-	WriteLine[line, StringJoin["void ", className, "::updateParams", "(std::map<std::string, double> params) {"]];
+	WriteLine[line, StringJoin["void ", className, "::updateParams", "(std::unordered_map<std::string, double> params) {"]];
 	
 	If[Length[paramList[[1]]]!=0,
-		Do[WriteLine[line, "    if (params.contains(\""<>ToString[paramList[[1]][[i]]]<>"\")) this->"<>ToString[paramList[[1]][[i]]]<>" = params[\""<>ToString[paramList[[1]][[i]]]<>"\"];"], 
+		Do[WriteLine[line, "    if (params.find(\""<>ToString[paramList[[1]][[i]]]<>"\") != params.end()) this->"<>ToString[paramList[[1]][[i]]]<>" = params[\""<>ToString[paramList[[1]][[i]]]<>"\"];"], 
 		{i,1,Length[paramList[[1]]]}]	
 	];
 	
 	If[Length[paramList[[2]]]!=0,
 		Do[
-			WriteLine[line, "    if (params.contains(\""<>ToString[paramList[[2]][[i]]]<>"1\")) this->"<>ToString[paramList[[2]][[i]]]<>"[0] = params[\""<>ToString[paramList[[2]][[i]]]<>"1\"];"];
-			WriteLine[line, "    if (params.contains(\""<>ToString[paramList[[2]][[i]]]<>"2\")) this->"<>ToString[paramList[[2]][[i]]]<>"[1] = params[\""<>ToString[paramList[[2]][[i]]]<>"2\"];"];
-			WriteLine[line, "    if (params.contains(\""<>ToString[paramList[[2]][[i]]]<>"3\")) this->"<>ToString[paramList[[2]][[i]]]<>"[2] = params[\""<>ToString[paramList[[2]][[i]]]<>"3\"];"], 
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>"1\") != params.end()) this->"<>ToString[paramList[[2]][[i]]]<>"[0] = params[\""<>ToString[paramList[[2]][[i]]]<>"1\"];"];
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>"2\") != params.end()) this->"<>ToString[paramList[[2]][[i]]]<>"[1] = params[\""<>ToString[paramList[[2]][[i]]]<>"2\"];"];
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>"3\") != params.end()) this->"<>ToString[paramList[[2]][[i]]]<>"[2] = params[\""<>ToString[paramList[[2]][[i]]]<>"3\"];"], 
 		{i,1,Length[paramList[[2]]]}]	
 	];
 	
 	If[Length[paramList[[3]]]!=0,
 		Do[
-			WriteLine[line, "    if (params.contains(\""<>ToString[paramList[[3]][[i]]]<>"11\")) this->"<>ToString[paramList[[3]][[i]]]<>"[0][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"11\"];"];
-			WriteLine[line, "    if (params.contains(\""<>ToString[paramList[[3]][[i]]]<>"12\")) this->"<>ToString[paramList[[3]][[i]]]<>"[0][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"12\"];"];
-			WriteLine[line, "    if (params.contains(\""<>ToString[paramList[[3]][[i]]]<>"13\")) this->"<>ToString[paramList[[3]][[i]]]<>"[0][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"13\"];"];
-			WriteLine[line, "    if (params.contains(\""<>ToString[paramList[[3]][[i]]]<>"21\")) this->"<>ToString[paramList[[3]][[i]]]<>"[1][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"21\"];"];
-			WriteLine[line, "    if (params.contains(\""<>ToString[paramList[[3]][[i]]]<>"22\")) this->"<>ToString[paramList[[3]][[i]]]<>"[1][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"22\"];"];
-			WriteLine[line, "    if (params.contains(\""<>ToString[paramList[[3]][[i]]]<>"23\")) this->"<>ToString[paramList[[3]][[i]]]<>"[1][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"23\"];"];
-			WriteLine[line, "    if (params.contains(\""<>ToString[paramList[[3]][[i]]]<>"31\")) this->"<>ToString[paramList[[3]][[i]]]<>"[2][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"31\"];"];
-			WriteLine[line, "    if (params.contains(\""<>ToString[paramList[[3]][[i]]]<>"32\")) this->"<>ToString[paramList[[3]][[i]]]<>"[2][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"32\"];"];
-			WriteLine[line, "    if (params.contains(\""<>ToString[paramList[[3]][[i]]]<>"33\")) this->"<>ToString[paramList[[3]][[i]]]<>"[2][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"33\"];"], 
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"11\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[0][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"11\"];"];
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"12\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[0][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"12\"];"];
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"13\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[0][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"13\"];"];
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"21\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[1][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"21\"];"];
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"22\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[1][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"22\"];"];
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"23\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[1][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"23\"];"];
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"31\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[2][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"31\"];"];
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"32\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[2][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"32\"];"];
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"33\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[2][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"33\"];"], 
 		{i,1,Length[paramList[[3]]]}]	
 	];
 	
@@ -612,16 +631,32 @@ BuildFunctionWarsaw[modelName_,WCname_,expr_,ComplexPars_,(*YFReplRule_,*)line_]
 
 
 (* ::Subsubsection:: *)
-(*Builder for a single SMEFiT WC function*)
+(*Builder for eval_wc function*)
 
 
-BuildFunctionSMEFiT[modelName_,WCname_,expr_,line_]:=Module[{},
-	WriteLine[line," "];
-	WriteLine[line, "double "<>modelName<>"::"<>WCname<> "(double mubarsq) {"];			
-	WriteLine[line, "    return "<>expr<>";"];
+BuildEval[className_,line_]:=Module[{},
+	WriteLine[line,""];
+	WriteLine[line, "double eval_wc("<>className<>" model, std::string s, double mubarsq) {"];
+	WriteLine[line, "    double res = 0.0;"];
+	WriteLine[line, "    "];
+	WriteLine[line, "    std::pair<std::string,std::vector<int>> name_idx = split_name_idx(s);"];
+	WriteLine[line, "    std::string name = std::get<0>(name_idx);"];
+	WriteLine[line, "    std::vector<int> idx = std::get<1>(name_idx);"];
+	WriteLine[line, "    "];
+	WriteLine[line, "    switch (idx.size()) {"];
+	WriteLine[line, "        case 0:"];
+	WriteLine[line, "            res = model.fname_map_0f[name](mubarsq);"];
+	WriteLine[line, "            break;"];
+	WriteLine[line, "        case 2:"];
+	WriteLine[line, "            res = model.fname_map_2f[name](idx[0]-1, idx[1]-1, mubarsq);"];
+	WriteLine[line, "            break;"];
+	WriteLine[line, "        case 4:"];
+	WriteLine[line, "            res = model.fname_map_4f[name](idx[0]-1, idx[1]-1, idx[2]-1, idx[3]-1, mubarsq);"];
+	WriteLine[line, "            break;"];
+	WriteLine[line, "    }"];
+	WriteLine[line, "    return res;"];
 	WriteLine[line, "}"];
-]
-
+];
 
 
 (* ::Subsubsection:: *)
@@ -656,6 +691,8 @@ SourceFileBuilder[modelName_, paramList_, ComplexPars_, matchingOutput_]:=Module
 	Do[
 		BuildFunctionWarsaw[modelName,WarsawAll[keyList[[k]]],exprList[[k]],ComplexPars(*,YFReplRule*),line1],
 	{k,1,Length[matchingOutput]}];
+	
+	BuildEval[modelName,line1];
 	
 	Close[line1];
 ]
@@ -770,6 +807,19 @@ WarsawAll = Association[
 	"cqqq" -> "cqqq(int i1, int i2, int i3, int i4, double mubarsq)",
 	"cduu" -> "cduu(int i1, int i2, int i3, int i4, double mubarsq)"
 ];
+
+
+(* ::Subsection:: *)
+(*List of Wilson Coefficients segregated based on the number of fermions*)
+
+
+WCList = { 
+	{"cG","cW","cGt","cWt","cH","cHBox","cHD","cHG","cHW","cHB","cHWB","cHGt","cHWt","cHBt","cHWtB"},
+	{"cllHH","ceH","cuH","cdH","ceW","ceB","cuG","cuW","cuB","cdG","cdW","cdB","cHl1","cHl3","cHe","cHq1","cHq3","cHu","cHd","cHud"},
+	{"cll","cqq1","cqq3","clq1","clq3","cee","cuu","cdd","ceu","ced","cud1","cud8",
+	 "cle","clu","cld","cqe","cqu1","cqu8","cqd1","cqd8","cledq","cquqd1","cquqd8",
+	 "clequ1","clequ3","cduq","cqqu","cqqq","cduu"}
+};
 
 
 (* ::Chapter:: *)

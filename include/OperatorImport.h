@@ -1,13 +1,15 @@
 /**
  * @file OperatorImport.h
  * @author Suraj Prakash
- * @date 2025-03-18
+ * @date 2025-05-29
  * @brief header file correspondig to OperatorImport.cpp
  */
 
 #include <vector>
+#include <string>
 #include <variant>
 #include <tuple>
+#include <utility>
 #include <functional>
 
 typedef std::tuple<std::function<double(int, int, double)>, double> YF_tuple;
@@ -65,3 +67,5 @@ std::vector<std::vector<int> > cartesianProduct(int num_flavours, int num_idx);
 double EinsSum(std::vector<std::variant<LoopFunc, MassPow, std::vector<std::vector<double> >, YF_tuple> > tensor_objs, std::vector<std::vector<int> > index_order, std::vector<int> free_indices);
 
 int KronDelta(int a, int b);
+
+std::pair<std::string,std::vector<int>> split_name_idx(std::string full_name);
