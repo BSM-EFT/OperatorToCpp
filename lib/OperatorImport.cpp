@@ -1,7 +1,7 @@
 /**
  * @file OperatorImport.cpp
  * @author Suraj Prakash
- * @date 2025-05-29
+ * @date 2025-06-02
  * @brief Auxiliary classes and funtions to aid in the evaluation of expressions within the Wilson coefficient functions
  */
 
@@ -14,7 +14,6 @@
 #include <cassert>
 #include <stdexcept>
 #include <tuple>
-#include <utility>
 #include <functional>
 #include <string>
 
@@ -1014,25 +1013,4 @@ double EinsSum(vector<variant<LoopFunc, MassPow, vector<vector<double> >, YF_tup
 int KronDelta(int a, int b) {
   if (a==b) return 1;
   else return 0;
-}
-
-std::pair<string,vector<int>> split_name_idx(string full_name) {
-    string name, idxStr;
-    vector<int> idx;
-
-    int sep = full_name.find("_");
-    if (sep == string::npos) {
-        name = full_name;
-    } else {
-        name = full_name.substr(0,sep);
-        idxStr = full_name.substr(sep+1,full_name.length() - name.length());
-        std::reverse(idxStr.begin(), idxStr.end());
-        int num = std::stoi(idxStr);
-        for (int i = 0; i < idxStr.length(); i++) {
-            idx.emplace_back(num%10);
-            num /= 10;
-        }
-    }
-
-    return std::make_pair(name, idx);
 }

@@ -2,17 +2,17 @@
 
 OperatorToC++ is an extensible, hybrid Mathematica and C++ based tool that facilitates next steps beyond the matching of parameters between a UV model and an Effective Field Theory. It efficiently remedies the complexities within the analytical matched expressions such as those due to loop-functions and lengthy sums and products involving tensor objects. It then translates and bundles the results into C++ classes and functions which provide a convenient platform for further numerical analyses.
 
-Its two main components are  
-1.  [OperatorExport.m](./OperatorExport.m) - a Mathematica package that systematically translates Matchete output to C++ classes and functions and generates model-specific .h and .cpp files.  
+Its main components are
+1.  [OperatorExport.m](./OperatorExport.m) - a Mathematica package that systematically translates Matchete output to C++ classes and functions and generates model-specific .h and .cpp files.
 2.  [OperatorImport.cpp](./lib/OperatorImport.cpp) - a suite of C++ helper functions that enable computations such as loop-function evaluation, Einstein-summation et cetera.
 
 ## Sample input and output files
 
-The basic functionality and ease of use of OperatorToC++ can be demonstrated using the highly non-trivial case of matching the general MSSM with the dimension-6 SMEFT coefficients. 
+The basic functionality and ease of use of OperatorToC++ can be demonstrated using the highly non-trivial case of matching the general MSSM with the dimension-6 SMEFT coefficients.
 
 The notebook [OpExp_MSSM.nb](./OpExp_MSSM.nb) reads the matched expressions as input from [MSSM-matching-conditions.m](./MSSM-matching-conditions.m) and generates header [MSSM.h](./include/MSSM.h) and source [MSSM.cpp](./lib/MSSM.cpp) files. These files define an MSSM class, incorporate the gauge and Yukawa couplings and masses as member variables and the SMEFT Wilson coefficients as methods of the class.
 
-One can then use the [makefile](./makefile) to compile the short C++ program [write_to_files.cpp](./src/write_to_files.cpp) to generate .txt files containing numerical values of the Wilson coefficients for specific parameter choices. These .txt files are then read as inputs by [plots.ipynb](./plots/plots.ipynb) to generate plots of Wilson coefficient values.
+One can then use the [makefile](./makefile) to compile the short C++ program [main.cpp](./src/main.cpp), which calls functions defined in [FileIO.cpp](./lib/FileIO.cpp) to read (i) parameter names and values (fixed or min-max pairs) from [params.yaml](./params.yaml) and (ii) Wilson coefficient names from [coeffs.txt](./coeffs.txt) and then generate the file [data.csv](./data.csv) containing numerical values of the Wilson coefficients for specific parameter choices. This can then be read as input by [plots.ipynb](./plots/plots.ipynb) to generate various plots.
 
 ## Instructions for use beyond the MSSM matching
 
@@ -20,8 +20,9 @@ OperatorToC++ is useful beyond producing numerical results based on the matching
 
 OperatorToC++, in its present iteration, is fully self-contained and does not rely on third-party libraries, either on the Mathematica end or on the C++ end. However, we use several modern C++ features and *the code requires a compiler that abides by the C++17 standard*.
 
-In order to use OperatorToC++ for transpiling the matching conditions relating an arbitrary UV model with SMEFT coefficients, 
- - One requires the Matchete output stored (as a key-value pair with Warsaw basis Wilson coefficients as keys) in a .m file which can be read from a notebook such as OpExp_MSSM.nb (after incorporating model-specific changes to the notebook). 
+In order to use OperatorToC++ for transpiling the matching conditions relating an arbitrary UV model with SMEFT coefficients,
+ - One requires the Matchete output stored (as a key-value pair with Warsaw basis Wilson coefficients as keys) in a .m file which can be read from a notebook such as OpExp_MSSM.nb (after incorporating model-specific changes to the notebook).
  - One can then call the relevant functions to generate <model>.h and <model>.cpp files, which by default are placed inside the **include** and **lib** directories.
+ - One needs to modify a couple of lines at the top of [FileIO.cpp](./lib/FileIO.cpp) and [FileIO.h](./lib/FileIO.h) and replace the name "MSSM" by the model name defined in the Mathematica front-end.
  - Any additional .cpp source files can be stored in the **src** directory and one must extend the makefile to account for such files.
  - If the directory structure is updated/modified, then the makefile should be suitably modified as well.

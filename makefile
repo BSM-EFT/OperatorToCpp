@@ -9,10 +9,10 @@ OBJ_DIR = obj
 OUT_DIR = .
 
 # Object files for each executable
-OBJ_FILES_1 = $(OBJ_DIR)/OperatorImport.o $(OBJ_DIR)/MSSM.o $(OBJ_DIR)/write_to_files.o
+OBJ_FILES_1 = $(OBJ_DIR)/OperatorImport.o $(OBJ_DIR)/MSSM.o $(OBJ_DIR)/FileIO.o $(OBJ_DIR)/main.o
 
 # Executables
-TARGET1 = $(OUT_DIR)/write_to_files.out
+TARGET1 = $(OUT_DIR)/main.out
 
 # Create obj folder if it does not exist
 $(OBJ_DIR):

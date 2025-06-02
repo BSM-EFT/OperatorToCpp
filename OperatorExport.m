@@ -426,9 +426,6 @@ HeaderModelClass[className_,paramList_,line_] := Module[{args},
 	
 	WriteLine[line, "};"];
 	WriteLine[line, ""];
-	
-	(* declaration for a function that evaluates a Wilson Coefficient given only its name *)
-	WriteLine[line, "double eval_wc("<>className<>" model, std::string s, double mubarsq);"];
 ];
 
 
@@ -631,35 +628,6 @@ BuildFunctionWarsaw[modelName_,WCname_,expr_,ComplexPars_,(*YFReplRule_,*)line_]
 
 
 (* ::Subsubsection:: *)
-(*Builder for eval_wc function*)
-
-
-BuildEval[className_,line_]:=Module[{},
-	WriteLine[line,""];
-	WriteLine[line, "double eval_wc("<>className<>" model, std::string s, double mubarsq) {"];
-	WriteLine[line, "    double res = 0.0;"];
-	WriteLine[line, "    "];
-	WriteLine[line, "    std::pair<std::string,std::vector<int>> name_idx = split_name_idx(s);"];
-	WriteLine[line, "    std::string name = std::get<0>(name_idx);"];
-	WriteLine[line, "    std::vector<int> idx = std::get<1>(name_idx);"];
-	WriteLine[line, "    "];
-	WriteLine[line, "    switch (idx.size()) {"];
-	WriteLine[line, "        case 0:"];
-	WriteLine[line, "            res = model.fname_map_0f[name](mubarsq);"];
-	WriteLine[line, "            break;"];
-	WriteLine[line, "        case 2:"];
-	WriteLine[line, "            res = model.fname_map_2f[name](idx[0]-1, idx[1]-1, mubarsq);"];
-	WriteLine[line, "            break;"];
-	WriteLine[line, "        case 4:"];
-	WriteLine[line, "            res = model.fname_map_4f[name](idx[0]-1, idx[1]-1, idx[2]-1, idx[3]-1, mubarsq);"];
-	WriteLine[line, "            break;"];
-	WriteLine[line, "    }"];
-	WriteLine[line, "    return res;"];
-	WriteLine[line, "}"];
-];
-
-
-(* ::Subsubsection:: *)
 (*Master builder *)
 
 
@@ -691,8 +659,6 @@ SourceFileBuilder[modelName_, paramList_, ComplexPars_, matchingOutput_]:=Module
 	Do[
 		BuildFunctionWarsaw[modelName,WarsawAll[keyList[[k]]],exprList[[k]],ComplexPars(*,YFReplRule*),line1],
 	{k,1,Length[matchingOutput]}];
-	
-	BuildEval[modelName,line1];
 	
 	Close[line1];
 ]

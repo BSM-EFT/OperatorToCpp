@@ -183,4 +183,3 @@ class MSSM {
 
 };
 
-double eval_wc(MSSM model, std::string s, double mubarsq);

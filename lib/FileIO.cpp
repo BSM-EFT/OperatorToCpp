@@ -1,17 +1,22 @@
 /**
- * @file write_to_files.cpp
+ * @file FileIO.cpp
  * @author Suraj Prakash
  * @date 2025-06-02
- * @brief Code for writing WC values to file using MSSM.h and MSSM.cpp
+ * @brief Utility functions to aid in reading input from and writing output to files
  */
 
 #include "MSSM.h"
 #include "OperatorImport.h"
+
+using Model = MSSM;
+
 #include <ios>
 #include <vector>
 #include <string>
 #include <unordered_map>
 #include <map>
+#include <utility>
+#include <algorithm>
 #include <sstream>
 #include <iomanip>
 #include <fstream>
@@ -30,7 +35,6 @@ using std::ofstream;
 using std::ifstream;
 using std::ios;
 
-using Model = MSSM;
 
 vector<double> create_range(double start, double end, double delta) {
     vector<double> vec;
@@ -92,6 +96,48 @@ vector<string> read_wc_names(string fname) {
     return wc_names;
 }
 
+std::pair<string,vector<int>> split_name_idx(string full_name) {
+    string name, idxStr;
+    vector<int> idx;
+
+    int sep = full_name.find("_");
+    if (sep == string::npos) {
+        name = full_name;
+    } else {
+        name = full_name.substr(0,sep);
+        idxStr = full_name.substr(sep+1,full_name.length() - name.length());
+        std::reverse(idxStr.begin(), idxStr.end());
+        int num = std::stoi(idxStr);
+        for (int i = 0; i < idxStr.length(); i++) {
+            idx.emplace_back(num%10);
+            num /= 10;
+        }
+    }
+
+    return std::make_pair(name, idx);
+}
+
+double eval_wc(Model m, string s, double mubarsq) {
+    double res = 0.0;
+
+    std::pair<std::string,std::vector<int>> name_idx = split_name_idx(s);
+    std::string name = std::get<0>(name_idx);
+    std::vector<int> idx = std::get<1>(name_idx);
+
+    switch (idx.size()) {
+        case 0:
+            res = m.fname_map_0f[name](mubarsq);
+            break;
+        case 2:
+            res = m.fname_map_2f[name](idx[0]-1, idx[1]-1, mubarsq);
+            break;
+        case 4:
+            res = m.fname_map_4f[name](idx[0]-1, idx[1]-1, idx[2]-1, idx[3]-1, mubarsq);
+            break;
+    }
+    return res;
+}
+
 string create_row(Model& m, vector<string>& keys, vector<double>& vals, vector<string>& wc_names) {
     unordered_map<string, double> param_dict;
     for (int i = 0; i < keys.size(); ++i) param_dict.emplace(keys[i], vals[i]);
@@ -123,26 +169,4 @@ void write_to_csv(Model& m, map<string, vector<double> > p_range_dict, vector<st
     f1 << header.substr(0, header.length()-1) << "\n";
     for (auto p_comb: p_combs) f1 << create_row(m, keys, p_comb, wc_names) << "\n";
     f1.close();
-}
-
-int main() {
-
-    // create an instance of the model
-    Model sb_model;
-
-    // dictionaries to store fixed and variable value parameters
-    unordered_map<string, double> par_dict;
-    map<string, vector<double> > par_range_dict;
-
-    // read parameter-values and wc-names as input from files
-    read_params("params.yaml", par_dict, par_range_dict);
-    vector<string> wcs = read_wc_names("coeffs.txt");
-
-    // update the parameters of the model based on the fixed-valued inputs
-    sb_model.updateParams(par_dict);
-
-    // generate results and store them in a data.csv file
-    write_to_csv(sb_model, par_range_dict, wcs);
-
-    return 0;
 }

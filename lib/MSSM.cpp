@@ -551,24 +551,3 @@ double MSSM::cqqq(int i1, int i2, int i3, int i4, double mubarsq) {
 double MSSM::cduu(int i1, int i2, int i3, int i4, double mubarsq) {
     return (0);
 }
-
-double eval_wc(MSSM model, std::string s, double mubarsq) {
-    double res = 0.0;
-    
-    std::pair<std::string,std::vector<int>> name_idx = split_name_idx(s);
-    std::string name = std::get<0>(name_idx);
-    std::vector<int> idx = std::get<1>(name_idx);
-    
-    switch (idx.size()) {
-        case 0:
-            res = model.fname_map_0f[name](mubarsq);
-            break;
-        case 2:
-            res = model.fname_map_2f[name](idx[0]-1, idx[1]-1, mubarsq);
-            break;
-        case 4:
-            res = model.fname_map_4f[name](idx[0]-1, idx[1]-1, idx[2]-1, idx[3]-1, mubarsq);
-            break;
-    }
-    return res;
-}
