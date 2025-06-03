@@ -33,3 +33,4 @@
 test*
 .clangd
 .vscode/*
+/**/__pycache__/*
