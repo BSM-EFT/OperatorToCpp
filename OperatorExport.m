@@ -7,17 +7,76 @@
 BeginPackage["OperatorExport`", {"Global`"}];
 
 
-(*Begin["`Private`"];*)
+(* ::Subsection:: *)
+(*Description of public functions*)
 
 
-NotebookDirectory[]
+SimplifyOutput::usage = "SimplifyOutput[matchedResult] creates a dictionary containing only Wilson coefficients and the corresponding matching conditions, while unwraping the Matchete API and converting the expressions to a lighter intermediate form.";
+SegregateParams::usage = "SegregateParams[SimplifiedOutput, ComlexParams] collects all unique parameters within the simpplified matching output and segregates them based on their dimensionality. Keeps track of the complex parameters to ensure that their conjugates are not counted as distinct parameters.";
+HeaderFileBuilder::usage = "HeaderFileBuilder[ModelName,ModelParams] creates a ModelName.h file that defines a ModelName class with the model parameters as member variables and Warsaw basis Wilson coefficients as methods. Also, declares methods for initalizing, updating and printing the parameters of a ModelName object.";
+SourceFileBuilder::usage = "SourceFileBuilder[ModelName,ModelParams,ComplexParams,SimplifiedOutput] creates a ModelName.cpp file with implementations for each Wilson coefficient method corresponding to the ModelName class. The method bodies are built by further manipulating the SimplifiedOutput.";
+
+
+(* ::Subsection:: *)
+(*External symbols*)
+
+
+(* External symbols*)
+Index;
+Flavor;
+FlavorSum;
+i1; i2; i3; i4; i5; i6;
+r1; r2; r3; r4; r5; r6;
+Coupling;
+Bar;
+LF;
+hbar;
+Delta;
+LoopFunc;
+MassPow;
+EinsSum;
+
+
+(* ::Subsection:: *)
+(*Package and author information*)
+
+
+Print[
+ Style[
+  Column[{
+    Row[{
+      "OperatorExport  v0.1 \[LongDash] by ",
+      "Suraj Prakash",
+      " (", 
+      Style["suraj.prakash@ific.uv.es", "Hyperlink", FontColor -> Blue],
+      ")"
+    }],
+    Row[{
+      "Affiliation: IFIC (Universitat de Valencia - CSIC)"
+    }],
+    Row[{
+      "GitHub: ", 
+      Style["https://github.com/BSM-EFT/OperatorToCpp", "Hyperlink", FontColor -> Blue]
+    }],
+    Style["Mathematica component of the OperatorToC++ code.", FontColor->Gray]
+  }],
+  "Text"
+ ]
+];
+
+
+
+Begin["`Private`"];
+
+
+NotebookDirectory[];
 
 
 (* ::Chapter:: *)
 (*-- Function definitions --*)
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Clean up and simplification of results *)
 
 
@@ -55,7 +114,7 @@ SimplifyOutput[output_]:=Module[{dict,newDict},
 	dict = dict /. {Index[i1,Flavor]->i1,Index[i2,Flavor]->i2,Index[i3,Flavor]->i3,Index[i4,Flavor]->i4 };
 	dict = dict /. {Index[x_,__]:>ToExpression[StringJoin["r",StringPart[ToString[x],-1]]]};
 	dict = dict /. Bar[Coupling[x_,{y___},z_]] :> Coupling[ToExpression[ToString[x]<>"c"],{y},z];
-	dict = dict /. {Coupling[x_,{},__]:>x} /.{Coupling[x_,{a_},__]:>Mass[x,a]}/.{Coupling[x_,{p_,q_},__]:>TwoDim[x,p,q](*Which[StringContainsQ[ToString[x],"cY"],YukawaFn[x,p,q],True,TwoDim[x,p,q]]*)};
+	dict = dict /. {Coupling[x_,{},__]:>x} /.{Coupling[x_,{a_},__]:>Mass[x,a]}/.{Coupling[x_,{p_,q_},__]:>TwoDim[x,p,q]};
 	dict = dict /. {FlavorSum[x_]:>1};
 		
 	newDict=Association[];
@@ -64,7 +123,7 @@ SimplifyOutput[output_]:=Module[{dict,newDict},
 ]
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Extraction of parameters *)
 
 
@@ -101,12 +160,11 @@ ExtractParams[expression_,ComplexPars_] := Module[{paramList},
 	paramList = Variables[expression];
 	paramList = paramList /. LF[x__,__]:>x;
 	paramList = paramList /. TwoDim[x_,__] :> Mat[x];
-	(*paramList = paramList /. YukawaFn[x_,__] :> YF[x];*)
 	paramList = paramList /. Mass[x_,_] :> Vec[x];
 	paramList = paramList /. Log[x_] :> (ToExpression["mubarsq"]/x);
 	paramList = paramList /. y__^2 :> y;
 	paramList = paramList /. ReplaceCCVars[ComplexPars];
-	paramList = paramList /. {Delta[__] :> 1, (*cH2 -> 1, cG2 -> 1, cB2 -> 1, cW2 -> 1,*) hbar->1};
+	paramList = paramList /. {Delta[__] :> 1,hbar->1};
 	Return[DeleteCases[DeleteDuplicates[Flatten[paramList]],_Integer]];
 ]
 
@@ -125,12 +183,11 @@ SegregateParams[matchingDict_,ComplexPars_]:=Module[{extractedList},
 	Return[{
 		Select[extractedList,Head[#]===Symbol&], 
 		Select[extractedList,Head[#]===Vec&]/.Vec[x_]:>x,
-		Select[extractedList,Head[#]===Mat&]/.Mat[x_]:>x(*,
-		Select[extractedList,Head[#]===YF&]/.YF[x_]:>x*)}];
+		Select[extractedList,Head[#]===Mat&]/.Mat[x_]:>x}];
 ]
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Rewrite the matched expression in a C++ friendly form*)
 
 
@@ -159,8 +216,6 @@ ReplLoopFuncExpns = {
 {2,1,1,1,1,0}->131,{1,1,1,1,1,1,0}->132
 };
 
-(* automate the creation of this list of rules as well *)
-
 
 (* ::Subsubsection:: *)
 (*Wrapper for loop functions + extraction of flavour indices*)
@@ -187,8 +242,6 @@ WrapMassPowinTF={Mass[x_,y_]^n_:>TF[MassPow[Mass[x,y],n],{y}],Mass[x_,y_]:>TF[Ma
 (* ::Subsubsection:: *)
 (*Replace the dummy Mass[x,y] function call by simply the symbol*)
 
-
-(* it's important to be careful of the fact that this substitution happens only inside the TF wrapper and not in the rest of the expression *)
 
 ReplMassVecinTF[expr_]:=Module[{rest,rel},
 	rest=DeleteCases[expr,_?(Head[#]===TF&)];
@@ -231,11 +284,7 @@ MassPowWrapper[expr_]:=Module[{},
 
 MatProdWrapper[expr_]:=Module[{nonMat,lst,symbList,idxList,freeIdxList},
 	If[Head[expr]===Symbol,Return[expr]];
-	nonMat=DeleteCases[expr,_?((Head[#]===TwoDim || Head[#]===YukawaFn)&)];
-	(*lst=Join[
-		Select[List@@expr,Head[#]===TwoDim&]/.{TwoDim[x_,y___]:>{x,{y}}},
-		Select[List@@expr,Head[#]===YukawaFn&]/.{YukawaFn[x_,y___]:>{MakePair[x,ToExpression["mubarsq"]],{y}}}
-	];*)
+	nonMat=DeleteCases[expr,_?(Head[#]===TwoDim&)];
 	lst=Select[List@@expr,Head[#]===TwoDim&]/.{TwoDim[x_,y___]:>{x,{y}}};
 	If[Length[lst]==0,
 		Return[nonMat],
@@ -295,7 +344,7 @@ CreateString[expr_]:=Module[{nonTensor,Tensor,str},
 	If[Length[Tensor]==0,
 		Return[nonTensor],
 		str=ToString[First[Tensor]];
-		str=StringReplace[str,{"["->"(","]"->")"(*,"MakePair"->"std::make_pair"*)}];
+		str=StringReplace[str,{"["->"(","]"->")"}];
 		Return[StringJoin[{nonTensor,"*",str }]]
 	];
 ];
@@ -307,7 +356,7 @@ ConvertSingleTerm[expr_,ComplexPars_]:=Module[{str,newStr},
 				MatProdWrapper[
 					MassPowWrapper[
 						LoopFuncWrapper[expr]]]]];
-	newStr=StringReplace[str,{(*"cH2"->"cH2(mubarsq)","cG2"->"cG2(mubarsq)","cB2"->"cB2(mubarsq)","cW2"->"cW2(mubarsq)",*)"Power" -> "pow", "Log"->"log", "Sqrt"->"sqrt", "Delta("->"KronDelta(", "Pi"->"3.14159", "\""->"",".*"->"*", ". "->".0 ", ".)"->".0)" , "+ -" -> "- ",Whitespace->""}];
+	newStr=StringReplace[str,{"Power" -> "pow", "Log"->"log", "Sqrt"->"sqrt", "Delta("->"KronDelta(", "Pi"->"3.14159", "\""->"",".*"->"*", ". "->".0 ", ".)"->".0)" , "+ -" -> "- ",Whitespace->""}];
 	newStr=StringReplace[newStr,ReplaceCCString[ComplexPars]];
 	Return[newStr]
 ];
@@ -612,14 +661,8 @@ BuildPrinter[className_, paramList_, line_]:=Module[{},
 (*Builder for a single WC function (Warsaw Basis)*)
 
 
-BuildFunctionWarsaw[modelName_,WCname_,expr_,ComplexPars_,(*YFReplRule_,*)line_]:=Module[{returnExpr},
+BuildFunctionWarsaw[modelName_,WCname_,expr_,ComplexPars_,line_]:=Module[{returnExpr},
 	returnExpr = ConvertFullExpression[expr,ComplexPars];
-	(*If[
-		StringContainsQ[WCname,"cY"],
-		ConvertFullExpression[expr,ComplexPars],
-		StringReplace[ConvertFullExpression[expr,ComplexPars],YFReplRule]
-	];*)
-	
 	WriteLine[line,""];
 	WriteLine[line, "double "<>modelName<>"::"<>WCname<> " {"];		
 	WriteLine[line, "    return ("<>returnExpr<>");"];
@@ -642,7 +685,7 @@ ReplaceVarName[list_,str_] := Module[{rules},
 ];
 
 
-SourceFileBuilder[modelName_, paramList_, ComplexPars_, matchingOutput_]:=Module[{keyList, exprList, path, (*YFReplRule,*) line1},
+SourceFileBuilder[modelName_, paramList_, ComplexPars_, matchingOutput_]:=Module[{keyList, exprList, path,line1},
 	keyList=Keys[matchingOutput];
 	exprList=Values[matchingOutput];
 	
@@ -654,10 +697,8 @@ SourceFileBuilder[modelName_, paramList_, ComplexPars_, matchingOutput_]:=Module
 	BuildUpdater[modelName,paramList,line1];
 	BuildPrinter[modelName,paramList,line1];
 	
-	(*YFReplRule = ReplaceVarName[paramList[[4]],"_"];*)
-	
 	Do[
-		BuildFunctionWarsaw[modelName,WarsawAll[keyList[[k]]],exprList[[k]],ComplexPars(*,YFReplRule*),line1],
+		BuildFunctionWarsaw[modelName,WarsawAll[keyList[[k]]],exprList[[k]],ComplexPars,line1],
 	{k,1,Length[matchingOutput]}];
 	
 	Close[line1];
@@ -683,22 +724,9 @@ CreateSourceAndHeader[modelName_,paramList_,WarsawOutput_]:=Module[{line1},
 (*A dictionary containing all Warsaw basis operator names and the corresponding C++ function prototype*)
 
 
-(* In the future, the creation of such a dictionary can also be automated *)
-
 (* Here, we are treating all coefficients to be real*)
 
 WarsawAll = Association[
-	(* extra coefficients *)
-	(*"cH2" -> "cH2(double mubarsq)",
-	"cG2" -> "cG2(double mubarsq)",
-	"cW2" -> "cW2(double mubarsq)",
-	"cB2" -> "cB2(double mubarsq)",
-	
-	"cYle" -> "cYle(int i1, int i2, double mubarsq)",
-	"cYqu" -> "cYqu(int i1, int i2, double mubarsq)",
-	"cYqd" -> "cYqd(int i1, int i2, double mubarsq)",*)
-	
-	(* operator coefficients *)
 	"cllHH" -> "cllHH(int i1, int i2, double mubarsq)",
 	
 	"cG" -> "cG(double mubarsq)",
@@ -792,5 +820,5 @@ WCList = {
 (*-- Package Context --*)
 
 
-(*End[];*)
+End[];
 EndPackage[];
