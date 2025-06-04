@@ -1,7 +1,7 @@
 /**
  * @file OperatorImport.cpp
  * @author Suraj Prakash
- * @date 2025-06-02
+ * @date 2025-06-04
  * @brief Auxiliary classes and funtions to aid in the evaluation of expressions within the Wilson coefficient functions
  */
 
@@ -830,7 +830,7 @@ double LF(vector<double> masses, int code, double mubarsq) {
 
 
 MassPow::MassPow(variant<vector<double>, double> mass, int exp) {
-    this->mass = mass; // this doesn't really have to be a variant, since 0-dim masses, do not enter into the EinsSum call
+    this->mass = mass;
     this->exp = exp;
 }
 
@@ -914,7 +914,7 @@ int maxRepIdx(const vector<vector<int> >& v1) {
     else return *max_element(v2.begin(), v2.end());
 }
 
-// building a vector of vector of addresses while keeping track of the free-indices appropriately.
+// building a vector of vector of index values while keeping track of the free-indices appropriately.
 vector<vector<int> > idx_seqs(const vector<vector<int> >& index_seqs, const vector<int>& free_indices, const vector<int>& rep_idx_vals){
     vector<vector<int> > addrs;
     int free_ind_pos = 0;
@@ -933,7 +933,7 @@ vector<vector<int> > idx_seqs(const vector<vector<int> >& index_seqs, const vect
     return addrs;
 }
 
-// overloaded version of idx_seqs for the case where there are no repeated indices and hence no arr_of_ptrs
+// overloaded version of idx_seqs for the case where there are no repeated indices
 vector<vector<int> > idx_seqs(const vector<vector<int> >& index_seqs, const vector<int>& free_indices){
     vector<vector<int> > addrs;
     int free_ind_pos = 0;
@@ -951,7 +951,6 @@ vector<vector<int> > idx_seqs(const vector<vector<int> >& index_seqs, const vect
 
 // generating all possible combinations of values assumed by the repeated indices
 vector<vector<int> > cartesianProduct(int num_flavours, int num_idx) {
-    // For now we assume that all the flavourful couplings in the model have dimension (num_flavours x num_flavours)
     assert(num_idx > 0);
     int N = pow(num_flavours, num_idx);
     vector<vector<int> > allProducts;
@@ -975,8 +974,6 @@ double EinsSum(vector<variant<LoopFunc, MassPow, vector<vector<double> >, YF_tup
     int num_idx = maxRepIdx(index_order);
 
     double sum{};
-    // vector<vector<int> > segregated_seqs;
-    // vector<double> res1;
 
     if (num_idx == 0) { // if there are no repeated indices, we only need to evaluate once, no looping necessary
         vector<vector<int> > segregated_seqs = idx_seqs(index_order, free_indices);
@@ -987,16 +984,12 @@ double EinsSum(vector<variant<LoopFunc, MassPow, vector<vector<double> >, YF_tup
                 res1.emplace_back(Eval(obj, segregated_seqs[k]));
                 }, tensor_objs[k]);
         }
-
         sum = accumulate(res1.begin(), res1.end(), 1.0, std::multiplies<double>());
 
     } else {
         vector<vector<int> > cprod = cartesianProduct(num_flavours, num_idx);
 
         for (vector<int> seq : cprod) {
-            // segregated_seqs.clear();
-            // res1.clear();
-
             vector<vector<int> > segregated_seqs = idx_seqs(index_order, free_indices, seq);
             vector<double> res1;
             for (int k = 0; k < tensor_objs.size(); k++)

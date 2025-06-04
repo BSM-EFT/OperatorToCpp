@@ -1,8 +1,8 @@
 /**
  * @file FileIO.cpp
  * @author Suraj Prakash
- * @date 2025-06-02
- * @brief Utility functions to aid in reading input from and writing output to files
+ * @date 2025-06-04
+ * @brief A suite of utility functions to aid in reading input from and writing output to files
  */
 
 #include "MSSM.h"
