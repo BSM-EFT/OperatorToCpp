@@ -57,7 +57,7 @@ std::pair<std::string,std::vector<int>> split_name_idx(std::string full_name);
  *
  * @param m The physics model that defines the coefficient as one of its methods.
  * @param s String containing the full name of the coefficient.
- * @param mubarsq Mass/energy scale at which the evaluation occurs.
+ * @param mubarsq square of the Mass/energy scale at which the evaluation occurs.
  * @return Numerical value of the coefficient.
  */
 double eval_wc(Model m, std::string s, double mubarsq);
@@ -69,9 +69,10 @@ double eval_wc(Model m, std::string s, double mubarsq);
  * @param keys A vector of parameter names.
  * @param vals A particular combination of parameter values corresponding to the keys.
  * @param wc_names A vector of coefficient names to be evaluated and added to the line.
+ * @param mubarsq square of the Mass/energy scale at which the evaluation occurs.
  * @return String constituting a single line/row of parameter(s), coefficient(s) information.
  */
-std::string create_row(Model& m, std::vector<std::string>& keys, std::vector<double>& vals, std::vector<std::string>& wc_names);
+std::string create_row(Model& m, std::vector<std::string>& keys, std::vector<double>& vals, std::vector<std::string>& wc_names, double mubarsq);
 
 /**
  * Create a (.csv) file that stores a set of combinations of independent parameters and evaluated coefficients for each combination.
@@ -79,5 +80,6 @@ std::string create_row(Model& m, std::vector<std::string>& keys, std::vector<dou
  * @param m The physics model that defines the parameters as member variables and the coefficients as methods.
  * @param p_range_dict A map that stores (name, range) pairs for a set of parameters.
  * @param wc_names A vector of coefficient names to be evaluated and added to the file.
+ * @param mubarsq square of the Mass/energy scale at which the evaluation occurs.
  */
-void write_to_csv(Model& m, std::map<std::string, std::vector<double> > p_range_dict, std::vector<std::string> wc_names);
+void write_to_csv(Model& m, std::map<std::string, std::vector<double> > p_range_dict, std::vector<std::string> wc_names, double mubarsq);

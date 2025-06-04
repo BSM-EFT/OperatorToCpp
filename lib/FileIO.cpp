@@ -22,7 +22,6 @@ using Model = MSSM;
 #include <fstream>
 #include <iostream>
 
-#define mbarsq 1.0
 #define step 0.1
 
 using std::vector;
@@ -138,7 +137,7 @@ double eval_wc(Model m, string s, double mubarsq) {
     return res;
 }
 
-string create_row(Model& m, vector<string>& keys, vector<double>& vals, vector<string>& wc_names) {
+string create_row(Model& m, vector<string>& keys, vector<double>& vals, vector<string>& wc_names, double mubarsq) {
     unordered_map<string, double> param_dict;
     for (int i = 0; i < keys.size(); ++i) param_dict.emplace(keys[i], vals[i]);
     m.updateParams(param_dict);
@@ -147,13 +146,13 @@ string create_row(Model& m, vector<string>& keys, vector<double>& vals, vector<s
     rowstream << std::fixed << setprecision(2);
     for (double val: vals) rowstream << val << ",";
     rowstream << std::scientific << setprecision(5);
-    for (string wc: wc_names) rowstream << eval_wc(m, wc, mbarsq) << ",";
+    for (string wc: wc_names) rowstream << eval_wc(m, wc, mubarsq) << ",";
 
     string row = rowstream.str();
     return row.substr(0, row.length()-1);
 }
 
-void write_to_csv(Model& m, map<string, vector<double> > p_range_dict, vector<string> wc_names) {
+void write_to_csv(Model& m, map<string, vector<double> > p_range_dict, vector<string> wc_names, double mubarsq) {
     vector<string> keys;
     for(auto it = p_range_dict.begin(); it != p_range_dict.end(); ++it) keys.emplace_back(it->first);
     vector<vector<double> > p_combs = create_param_combs(p_range_dict);
@@ -167,6 +166,6 @@ void write_to_csv(Model& m, map<string, vector<double> > p_range_dict, vector<st
 
     string header = h_stream.str();
     f1 << header.substr(0, header.length()-1) << "\n";
-    for (auto p_comb: p_combs) f1 << create_row(m, keys, p_comb, wc_names) << "\n";
+    for (auto p_comb: p_combs) f1 << create_row(m, keys, p_comb, wc_names, mubarsq) << "\n";
     f1.close();
 }

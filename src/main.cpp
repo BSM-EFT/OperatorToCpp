@@ -1,7 +1,7 @@
 /**
  * @file write_to_files.cpp
  * @author Suraj Prakash
- * @date 2025-06-02
+ * @date 2025-06-04
  * @brief Interface for reading parameter values and WC names from files and
  *        writing WC values to a .csv file
  */
@@ -11,6 +11,7 @@
 #include <string>
 #include <unordered_map>
 #include <map>
+#include <cmath>
 
 using std::vector;
 using std::unordered_map;
@@ -32,9 +33,10 @@ int main() {
 
     // update the parameters of the model based on the fixed-valued inputs
     sb_model.updateParams(par_dict);
+    double mubarsq = pow(par_dict["scale"],2);
 
     // generate results and store them in a data.csv file
-    write_to_csv(sb_model, par_range_dict, wcs);
+    write_to_csv(sb_model, par_range_dict, wcs, mubarsq);
 
     return 0;
 }
