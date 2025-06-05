@@ -12,11 +12,13 @@ The basic functionality and ease of use of OperatorToC++ can be demonstrated usi
 
 The notebook [OpExp_MSSM.nb](./OpExp_MSSM.nb) reads the matched expressions as input from [MSSM-matching-conditions.m](./MSSM-matching-conditions.m) and generates header [MSSM.h](./include/MSSM.h) and source [MSSM.cpp](./lib/MSSM.cpp) files. These files define an MSSM class, incorporate the gauge and Yukawa couplings and masses as member variables and the SMEFT Wilson coefficients as methods of the class.
 
-One can then use the [makefile](./makefile) to compile the short C++ program [main.cpp](./src/main.cpp), which calls functions defined in [FileIO.cpp](./lib/FileIO.cpp) to read (i) parameter names and values (fixed or min-max pairs) from [params.yaml](./params.yaml) and (ii) Wilson coefficient names from [coeffs.txt](./coeffs.txt) and then generate the file [data.csv](./data.csv) containing numerical values of the Wilson coefficients for specific parameter choices. This can then be read as input by [plots.ipynb](./plots/plots.ipynb) to generate various plots.
+One can then use the [makefile](./makefile) to compile the short C++ program [main.cpp](./src/main.cpp), which calls functions defined in [FileIO.cpp](./lib/FileIO.cpp) to read (i) parameter names and values (fixed or min-max pairs) from [params.yaml](./params.yaml) and (ii) Wilson coefficient names from [coeffs.txt](./coeffs.txt) and then generate [data.csv](./data.csv) - a file containing numerical values of the Wilson coefficients for specific parameter choices. This can then be read as input by [plots.ipynb](./plots/plots.ipynb) to generate various plots.
+
+The plots can be tweaked by suitably modifying the helper functions defined in [utilities.py](./plots/utilities.py).
 
 ## Instructions for use beyond the MSSM matching
 
-OperatorToC++ is useful beyond producing numerical results based on the matching between the MSSM and the SMEFT. In principle, one can clone this repository and suitably integrate [OperatorExport.m](./OperatorExport.m), [OperatorImport.cpp](./lib/OperatorImport.cpp), and [OperatorImport.h](./include/OperatorImport.h) within their wokflow. However, the *recommended option* is to download and use a suitable release version (_once they become available in the near future_).
+OperatorToC++ is useful beyond producing numerical results based on the matching between the MSSM and the SMEFT. In principle, one can clone this repository and suitably integrate [OperatorExport.m](./OperatorExport.m), [OperatorImport.cpp](./lib/OperatorImport.cpp), and [OperatorImport.h](./include/OperatorImport.h) within their wokflow. However, the *recommended option* is to download and use a suitable release version.
 
 OperatorToC++, in its present iteration, is fully self-contained and does not rely on third-party libraries, either on the Mathematica end or on the C++ end. However, we use several modern C++ features and *the code requires a compiler that abides by the C++17 standard*.
 

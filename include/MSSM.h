@@ -15,7 +15,6 @@ class MSSM {
         double m1 = 0.0;
         double m2 = 0.0;
         double m3 = 0.0;
-        double mHsq = 0.0;
         double mPhi = 0.0;
         double muTilde = 0.0;
 
