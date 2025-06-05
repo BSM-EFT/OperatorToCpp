@@ -32,5 +32,5 @@
 /Matchete
 test*
 .clangd
-.vscode/*
+.vscode/
 /**/__pycache__/*
