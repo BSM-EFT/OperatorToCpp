@@ -1,5 +1,7 @@
 # OperatorToC++
 
+[![DOI](https://zenodo.org/badge/948956654.svg)](https://doi.org/10.5281/zenodo.15599937)
+
 OperatorToC++ is an extensible, hybrid Mathematica and C++ based tool that facilitates next steps beyond the matching of parameters between a UV model and an Effective Field Theory. It efficiently remedies the complexities within the analytical matched expressions such as those due to loop-functions and lengthy sums and products involving tensor objects. It then translates and bundles the results into C++ classes and functions which provide a convenient platform for further numerical analyses.
 
 Its main components are
@@ -28,3 +30,10 @@ In order to use OperatorToC++ for transpiling the matching conditions relating a
  - One needs to modify a couple of lines at the top of [FileIO.cpp](./lib/FileIO.cpp) and [FileIO.h](./lib/FileIO.h) and replace the name "MSSM" by the model name defined in the Mathematica front-end.
  - Any additional .cpp source files can be stored in the **src** directory and one must extend the makefile to account for such files.
  - If the directory structure is updated/modified, then the makefile should be suitably modified as well.
+
+## Citation
+
+If you use this code, please cite:
+
+> Suraj Prakash, *OperatorToC++*. Zenodo, 2025. DOI: [10.5281/zenodo.15599937](https://doi.org/10.5281/zenodo.15599937)
+
