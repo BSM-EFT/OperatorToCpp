@@ -23,7 +23,7 @@ OperatorToC++ is useful beyond producing numerical results based on the matching
 OperatorToC++, in its present iteration, is fully self-contained and does not rely on third-party libraries, either on the Mathematica end or on the C++ end. However, we use several modern C++ features and *the code requires a compiler that abides by the C++17 standard*.
 
 In order to use OperatorToC++ for transpiling the matching conditions relating an arbitrary UV model with SMEFT coefficients,
- - One requires the Matchete output stored (as a key-value pair with Warsaw basis Wilson coefficients as keys) in a .m file which can be read from a notebook such as OpExp_MSSM.nb (after incorporating model-specific changes to the notebook).
+ - One requires the Matchete output, stored as a key-value pair with Warsaw basis Wilson coefficients as keys (this is possible with [Matchete v0.3.0](https://gitlab.com/matchete/matchete/tree/v0.3.0) or higher) in a .m file, which can be read from a notebook such as OpExp_MSSM.nb (after incorporating model-specific changes to the notebook).
  - One can then call the relevant functions to generate <model>.h and <model>.cpp files, which by default are placed inside the **include** and **lib** directories.
  - One needs to modify a couple of lines at the top of [FileIO.cpp](./lib/FileIO.cpp) and [FileIO.h](./lib/FileIO.h) and replace the name "MSSM" by the model name defined in the Mathematica front-end.
  - Any additional .cpp source files can be stored in the **src** directory and one must extend the makefile to account for such files.
