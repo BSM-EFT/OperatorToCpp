@@ -5,7 +5,7 @@
  * @brief A suite of utility functions to aid in reading input from and writing output to files
  */
 
-#include "MSSM.h"
+#include "FileIO.h"
 #include "OperatorImport.h"
 
 using Model = MSSM;
@@ -24,6 +24,7 @@ using Model = MSSM;
 #include <filesystem>
 
 #define step 0.1
+#define hb 0.006332574
 
 using std::vector;
 using std::unordered_map;
@@ -117,8 +118,9 @@ std::pair<string,vector<int>> split_name_idx(string full_name) {
     return std::make_pair(name, idx);
 }
 
-double eval_wc(Model m, string s, double mubarsq) {
-    double res = 0.0;
+
+double eval_wc(Model m, string s, double mubarsq, double hbar) {
+    double res{};
 
     std::pair<std::string,std::vector<int>> name_idx = split_name_idx(s);
     std::string name = std::get<0>(name_idx);
@@ -126,19 +128,20 @@ double eval_wc(Model m, string s, double mubarsq) {
 
     switch (idx.size()) {
         case 0:
-            res = m.fname_map_0f[name](mubarsq);
+            res = m.fname_map_0f[name](mubarsq, hbar);
             break;
         case 2:
-            res = m.fname_map_2f[name](idx[0]-1, idx[1]-1, mubarsq);
+            res = m.fname_map_2f[name](idx[0]-1, idx[1]-1, mubarsq, hbar);
             break;
         case 4:
-            res = m.fname_map_4f[name](idx[0]-1, idx[1]-1, idx[2]-1, idx[3]-1, mubarsq);
+            res = m.fname_map_4f[name](idx[0]-1, idx[1]-1, idx[2]-1, idx[3]-1, mubarsq, hbar);
             break;
     }
+
     return res;
 }
 
-string create_row(Model& m, vector<string>& keys, vector<double>& vals, vector<string>& wc_names, double mubarsq) {
+string create_row(Model& m, vector<string>& keys, vector<double>& vals, vector<string>& wc_names, double mubarsq, ORDER ord) {
     unordered_map<string, double> param_dict;
     for (int i = 0; i < keys.size(); ++i) param_dict.emplace(keys[i], vals[i]);
     m.updateParams(param_dict);
@@ -147,13 +150,20 @@ string create_row(Model& m, vector<string>& keys, vector<double>& vals, vector<s
     rowstream << std::fixed << setprecision(2);
     for (double val: vals) rowstream << val << ",";
     rowstream << std::scientific << setprecision(5);
-    for (string wc: wc_names) rowstream << eval_wc(m, wc, mubarsq) << ",";
+
+    if (ord == ORDER::TREE) {
+        for (string wc: wc_names) rowstream << eval_wc(m, wc, mubarsq, 0.0) << ",";
+    } else if (ord == ORDER::FULL) {
+        for (string wc: wc_names) rowstream << eval_wc(m, wc, mubarsq, hb) << ",";
+    } else {
+        for (string wc: wc_names) rowstream << "[" << eval_wc(m, wc, mubarsq, 0.0) << "," << eval_wc(m, wc, mubarsq, hb) - eval_wc(m, wc, mubarsq, 0.0) << "],";
+    }
 
     string row = rowstream.str();
     return row.substr(0, row.length()-1);
 }
 
-void write_to_csv(string fname, Model& m, map<string, vector<double> > p_range_dict, vector<string> wc_names, double mubarsq) {
+void write_to_csv(string fname, Model& m, map<string, vector<double> > p_range_dict, vector<string> wc_names, double mubarsq, ORDER ord) {
     vector<string> keys;
     for(auto it = p_range_dict.begin(); it != p_range_dict.end(); ++it) keys.emplace_back(it->first);
     vector<vector<double> > p_combs = create_param_combs(p_range_dict);
@@ -172,6 +182,6 @@ void write_to_csv(string fname, Model& m, map<string, vector<double> > p_range_d
 
     string header = h_stream.str();
     f1 << header.substr(0, header.length()-1) << "\n";
-    for (auto p_comb: p_combs) f1 << create_row(m, keys, p_comb, wc_names, mubarsq) << "\n";
+    for (auto p_comb: p_combs) f1 << create_row(m, keys, p_comb, wc_names, mubarsq, ord) << "\n";
     f1.close();
 }

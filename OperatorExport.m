@@ -398,7 +398,6 @@ HeaderPreprocessorDirectives[line_] := Module[{},
 	WriteLine[line, "#include <string>"];
 	WriteLine[line, "#include <unordered_map>"];
 	WriteLine[line, "#include <functional>"];
-	WriteLine[line, "#define hbar 0.006332574"]
 ];
 
 HeaderModelClass[className_,paramList_,line_] := Module[{args},
@@ -453,23 +452,23 @@ HeaderModelClass[className_,paramList_,line_] := Module[{args},
 	
 	(* define and initialize maps storing (name,lambda) pairs for Wilson Coefficients separated based on number of fermions *)
 	(* 0-fermion operators *)
-	WriteLine[line, "    std::unordered_map<std::string, std::function<double(double)>> fname_map_0f = {"];
-	Do[WriteLine[line, "        {\"" <> WCList[[1]][[i]] <> "\", [this](double msq){ return this ->"<>WCList[[1]][[i]]<>"(msq); } },"], {i,1,Length[WCList[[1]]]-1}];
-	WriteLine[line, "        {\"" <> WCList[[1]][[-1]] <> "\", [this](double msq){ return this ->"<>WCList[[1]][[-1]]<>"(msq); } }"];
+	WriteLine[line, "    std::unordered_map<std::string, std::function<double(double,double)>> fname_map_0f = {"];
+	Do[WriteLine[line, "        {\"" <> WCList[[1]][[i]] <> "\", [this](double msq, double hbar){ return this ->"<>WCList[[1]][[i]]<>"(msq, hbar); } },"], {i,1,Length[WCList[[1]]]-1}];
+	WriteLine[line, "        {\"" <> WCList[[1]][[-1]] <> "\", [this](double msq, double hbar){ return this ->"<>WCList[[1]][[-1]]<>"(msq, hbar); } }"];
 	WriteLine[line, "    };"];
 	WriteLine[line, ""];
 	
 	(* 2-fermion operators *)
-	WriteLine[line, "    std::unordered_map<std::string, std::function<double(int,int,double)>> fname_map_2f = {"];
-	Do[WriteLine[line, "        {\"" <> WCList[[2]][[i]] <> "\", [this](int k, int l, double msq){ return this ->"<>WCList[[2]][[i]]<>"(k, l, msq); } },"], {i,1,Length[WCList[[2]]]-1}];
-	WriteLine[line, "        {\"" <> WCList[[2]][[-1]] <> "\", [this](int k, int l, double msq){ return this ->"<>WCList[[2]][[-1]]<>"(k, l, msq); } }"];
+	WriteLine[line, "    std::unordered_map<std::string, std::function<double(int,int,double,double)>> fname_map_2f = {"];
+	Do[WriteLine[line, "        {\"" <> WCList[[2]][[i]] <> "\", [this](int k, int l, double msq, double hbar){ return this ->"<>WCList[[2]][[i]]<>"(k, l, msq, hbar); } },"], {i,1,Length[WCList[[2]]]-1}];
+	WriteLine[line, "        {\"" <> WCList[[2]][[-1]] <> "\", [this](int k, int l, double msq, double hbar){ return this ->"<>WCList[[2]][[-1]]<>"(k, l, msq, hbar); } }"];
 	WriteLine[line, "    };"];
 	WriteLine[line, ""];
 	
 	(* 4-fermion operators *)
-	WriteLine[line, "    std::unordered_map<std::string, std::function<double(int,int,int,int,double)>> fname_map_4f = {"];
-	Do[WriteLine[line, "        {\"" <> WCList[[3]][[i]] <> "\", [this](int i, int j, int k, int l, double msq){ return this ->"<>WCList[[3]][[i]]<>"(i, j, k, l, msq); } },"], {i,1,Length[WCList[[3]]]-1}];
-	WriteLine[line, "        {\"" <> WCList[[3]][[-1]] <> "\", [this](int i, int j, int k, int l, double msq){ return this ->"<>WCList[[3]][[-1]]<>"(i, j, k, l, msq); } }"];
+	WriteLine[line, "    std::unordered_map<std::string, std::function<double(int,int,int,int,double,double)>> fname_map_4f = {"];
+	Do[WriteLine[line, "        {\"" <> WCList[[3]][[i]] <> "\", [this](int i, int j, int k, int l, double msq, double hbar){ return this ->"<>WCList[[3]][[i]]<>"(i, j, k, l, msq, hbar); } },"], {i,1,Length[WCList[[3]]]-1}];
+	WriteLine[line, "        {\"" <> WCList[[3]][[-1]] <> "\", [this](int i, int j, int k, int l, double msq, double hbar){ return this ->"<>WCList[[3]][[-1]]<>"(i, j, k, l, msq, hbar); } }"];
 	WriteLine[line, "    };"];
 	WriteLine[line, ""];
 	
@@ -727,79 +726,79 @@ CreateSourceAndHeader[modelName_,paramList_,WarsawOutput_]:=Module[{line1},
 (* Here, we are treating all coefficients to be real*)
 
 WarsawAll = Association[
-	"cllHH" -> "cllHH(int i1, int i2, double mubarsq)",
+	"cllHH" -> "cllHH(int i1, int i2, double mubarsq, double hbar)",
 	
-	"cG" -> "cG(double mubarsq)",
-	"cW" -> "cW(double mubarsq)",
-	"cGt" -> "cGt(double mubarsq)",
-	"cWt" -> "cWt(double mubarsq)",
+	"cG" -> "cG(double mubarsq, double hbar)",
+	"cW" -> "cW(double mubarsq, double hbar)",
+	"cGt" -> "cGt(double mubarsq, double hbar)",
+	"cWt" -> "cWt(double mubarsq, double hbar)",
 	
-	"cH" -> "cH(double mubarsq)",
-	"cHBox" -> "cHBox(double mubarsq)",
-	"cHD" -> "cHD(double mubarsq)",
+	"cH" -> "cH(double mubarsq, double hbar)",
+	"cHBox" -> "cHBox(double mubarsq, double hbar)",
+	"cHD" -> "cHD(double mubarsq, double hbar)",
 	
-	"cHG" -> "cHG(double mubarsq)",
-	"cHW" -> "cHW(double mubarsq)",
-	"cHB" -> "cHB(double mubarsq)",
-	"cHWB" -> "cHWB(double mubarsq)",
-	"cHGt" -> "cHGt(double mubarsq)",
-	"cHWt" -> "cHWt(double mubarsq)",
-	"cHBt" -> "cHBt(double mubarsq)",
-	"cHWtB" -> "cHWtB(double mubarsq)",
+	"cHG" -> "cHG(double mubarsq, double hbar)",
+	"cHW" -> "cHW(double mubarsq, double hbar)",
+	"cHB" -> "cHB(double mubarsq, double hbar)",
+	"cHWB" -> "cHWB(double mubarsq, double hbar)",
+	"cHGt" -> "cHGt(double mubarsq, double hbar)",
+	"cHWt" -> "cHWt(double mubarsq, double hbar)",
+	"cHBt" -> "cHBt(double mubarsq, double hbar)",
+	"cHWtB" -> "cHWtB(double mubarsq, double hbar)",
 	
-	"ceH" -> "ceH(int i1, int i2, double mubarsq)",
-	"cuH" -> "cuH(int i1, int i2, double mubarsq)",
-	"cdH" -> "cdH(int i1, int i2, double mubarsq)",
+	"ceH" -> "ceH(int i1, int i2, double mubarsq, double hbar)",
+	"cuH" -> "cuH(int i1, int i2, double mubarsq, double hbar)",
+	"cdH" -> "cdH(int i1, int i2, double mubarsq, double hbar)",
 	
-	"ceW" -> "ceW(int i1, int i2, double mubarsq)",
-	"ceB" -> "ceB(int i1, int i2, double mubarsq)",
-	"cuG" -> "cuG(int i1, int i2, double mubarsq)",
-	"cuW" -> "cuW(int i1, int i2, double mubarsq)",
-	"cuB" -> "cuB(int i1, int i2, double mubarsq)",
-	"cdG" -> "cdG(int i1, int i2, double mubarsq)",
-	"cdW" -> "cdW(int i1, int i2, double mubarsq)",
-	"cdB" -> "cdB(int i1, int i2, double mubarsq)",
+	"ceW" -> "ceW(int i1, int i2, double mubarsq, double hbar)",
+	"ceB" -> "ceB(int i1, int i2, double mubarsq, double hbar)",
+	"cuG" -> "cuG(int i1, int i2, double mubarsq, double hbar)",
+	"cuW" -> "cuW(int i1, int i2, double mubarsq, double hbar)",
+	"cuB" -> "cuB(int i1, int i2, double mubarsq, double hbar)",
+	"cdG" -> "cdG(int i1, int i2, double mubarsq, double hbar)",
+	"cdW" -> "cdW(int i1, int i2, double mubarsq, double hbar)",
+	"cdB" -> "cdB(int i1, int i2, double mubarsq, double hbar)",
 	
-	"cHl1" -> "cHl1(int i1, int i2, double mubarsq)",
-	"cHl3" -> "cHl3(int i1, int i2, double mubarsq)",
-	"cHe" -> "cHe(int i1, int i2, double mubarsq)",
-	"cHq1" -> "cHq1(int i1, int i2, double mubarsq)",
-	"cHq3" -> "cHq3(int i1, int i2, double mubarsq)",
-	"cHu" -> "cHu(int i1, int i2, double mubarsq)",
-	"cHd" -> "cHd(int i1, int i2, double mubarsq)",
-	"cHud" -> "cHud(int i1, int i2, double mubarsq)",
+	"cHl1" -> "cHl1(int i1, int i2, double mubarsq, double hbar)",
+	"cHl3" -> "cHl3(int i1, int i2, double mubarsq, double hbar)",
+	"cHe" -> "cHe(int i1, int i2, double mubarsq, double hbar)",
+	"cHq1" -> "cHq1(int i1, int i2, double mubarsq, double hbar)",
+	"cHq3" -> "cHq3(int i1, int i2, double mubarsq, double hbar)",
+	"cHu" -> "cHu(int i1, int i2, double mubarsq, double hbar)",
+	"cHd" -> "cHd(int i1, int i2, double mubarsq, double hbar)",
+	"cHud" -> "cHud(int i1, int i2, double mubarsq, double hbar)",
 	
-	"cll" -> "cll(int i1, int i2, int i3, int i4, double mubarsq)",
-	"cqq1" -> "cqq1(int i1, int i2, int i3, int i4, double mubarsq)",
-	"cqq3" -> "cqq3(int i1, int i2, int i3, int i4, double mubarsq)",
-	"clq1" -> "clq1(int i1, int i2, int i3, int i4, double mubarsq)",
-	"clq3" -> "clq3(int i1, int i2, int i3, int i4, double mubarsq)",
-	"cee" -> "cee(int i1, int i2, int i3, int i4, double mubarsq)",
-	"cuu" -> "cuu(int i1, int i2, int i3, int i4, double mubarsq)",
-	"cdd" -> "cdd(int i1, int i2, int i3, int i4, double mubarsq)",
-	"ceu" -> "ceu(int i1, int i2, int i3, int i4, double mubarsq)",
-	"ced" -> "ced(int i1, int i2, int i3, int i4, double mubarsq)",
-	"cud1" -> "cud1(int i1, int i2, int i3, int i4, double mubarsq)",
-	"cud8" -> "cud8(int i1, int i2, int i3, int i4, double mubarsq)",
-	"cle" -> "cle(int i1, int i2, int i3, int i4, double mubarsq)",
-	"clu" -> "clu(int i1, int i2, int i3, int i4, double mubarsq)",
-	"cld" -> "cld(int i1, int i2, int i3, int i4, double mubarsq)",
-	"cqe" -> "cqe(int i1, int i2, int i3, int i4, double mubarsq)",
-	"cqu1" -> "cqu1(int i1, int i2, int i3, int i4, double mubarsq)",
-	"cqu8" -> "cqu8(int i1, int i2, int i3, int i4, double mubarsq)",
-	"cqd1" -> "cqd1(int i1, int i2, int i3, int i4, double mubarsq)",
-	"cqd8" -> "cqd8(int i1, int i2, int i3, int i4, double mubarsq)",
+	"cll" -> "cll(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"cqq1" -> "cqq1(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"cqq3" -> "cqq3(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"clq1" -> "clq1(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"clq3" -> "clq3(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"cee" -> "cee(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"cuu" -> "cuu(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"cdd" -> "cdd(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"ceu" -> "ceu(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"ced" -> "ced(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"cud1" -> "cud1(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"cud8" -> "cud8(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"cle" -> "cle(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"clu" -> "clu(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"cld" -> "cld(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"cqe" -> "cqe(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"cqu1" -> "cqu1(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"cqu8" -> "cqu8(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"cqd1" -> "cqd1(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"cqd8" -> "cqd8(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
 	
-	"cledq" -> "cledq(int i1, int i2, int i3, int i4, double mubarsq)",
-	"cquqd1" -> "cquqd1(int i1, int i2, int i3, int i4, double mubarsq)",
-	"cquqd8" -> "cquqd8(int i1, int i2, int i3, int i4, double mubarsq)",
-	"clequ1" -> "clequ1(int i1, int i2, int i3, int i4, double mubarsq)",
-	"clequ3" -> "clequ3(int i1, int i2, int i3, int i4, double mubarsq)" ,
+	"cledq" -> "cledq(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"cquqd1" -> "cquqd1(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"cquqd8" -> "cquqd8(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"clequ1" -> "clequ1(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"clequ3" -> "clequ3(int i1, int i2, int i3, int i4, double mubarsq, double hbar)" ,
 	
-	"cduq" -> "cduq(int i1, int i2, int i3, int i4, double mubarsq)",
-	"cqqu" -> "cqqu(int i1, int i2, int i3, int i4, double mubarsq)",
-	"cqqq" -> "cqqq(int i1, int i2, int i3, int i4, double mubarsq)",
-	"cduu" -> "cduu(int i1, int i2, int i3, int i4, double mubarsq)"
+	"cduq" -> "cduq(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"cqqu" -> "cqqu(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"cqqq" -> "cqqq(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"cduu" -> "cduu(int i1, int i2, int i3, int i4, double mubarsq, double hbar)"
 ];
 
 

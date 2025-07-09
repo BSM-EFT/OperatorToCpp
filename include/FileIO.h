@@ -15,6 +15,13 @@ using Model = MSSM;
 #include <map>
 #include <utility>
 
+/// enum to indicate the nature of the output with respect to the order of loop-expansion
+enum class ORDER {
+  TREE,
+  FULL,
+  SPLIT,
+};
+
 /// create a range from start to stop with step size delta.
 std::vector<double> create_range(double start, double end, double delta);
 
@@ -81,6 +88,7 @@ std::string create_row(Model& m, std::vector<std::string>& keys, std::vector<dou
  * @param m The physics model that defines the parameters as member variables and the coefficients as methods.
  * @param p_range_dict A map that stores (name, range) pairs for a set of parameters.
  * @param wc_names A vector of coefficient names to be evaluated and added to the file.
- * @param mubarsq square of the Mass/energy scale at which the evaluation occurs.
+ * @param mubarsq Square of the Mass/energy scale at which the evaluation occurs.
+ * @param ord The order of the loop expansion, either tree, full or split (tree, loop) output is created.
  */
-void write_to_csv(std::string fname, Model& m, std::map<std::string, std::vector<double> > p_range_dict, std::vector<std::string> wc_names, double mubarsq);
+void write_to_csv(std::string fname, Model& m, std::map<std::string, std::vector<double> > p_range_dict, std::vector<std::string> wc_names, double mubarsq, ORDER ord);

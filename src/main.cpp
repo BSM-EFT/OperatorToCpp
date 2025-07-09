@@ -40,7 +40,14 @@ int main() {
     double mubarsq = pow(par_dict["scale"],2);
 
     // generate results and store them in a data.csv file
-    write_to_csv("./plots/data.csv", sb_model, par_range_dict, wcs, mubarsq);
+    write_to_csv(
+        "./plots/data.csv",
+        sb_model,
+        par_range_dict,
+        wcs,
+        mubarsq,
+        ORDER::FULL
+    );
 
     cout << "Output written to data.csv!" << "\n";
 
