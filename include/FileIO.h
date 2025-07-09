@@ -1,7 +1,7 @@
 /**
  * @file FileIO.h
  * @author Suraj Prakash
- * @date 2025-06-04
+ * @date 2025-07-09
  * @brief A suite of utility functions to aid in reading input from and writing output to files
  */
 
@@ -77,9 +77,10 @@ std::string create_row(Model& m, std::vector<std::string>& keys, std::vector<dou
 /**
  * Create a (.csv) file that stores a set of combinations of independent parameters and evaluated coefficients for each combination.
  *
+ * @param fname Name of the (.csv) file that will store the results.
  * @param m The physics model that defines the parameters as member variables and the coefficients as methods.
  * @param p_range_dict A map that stores (name, range) pairs for a set of parameters.
  * @param wc_names A vector of coefficient names to be evaluated and added to the file.
  * @param mubarsq square of the Mass/energy scale at which the evaluation occurs.
  */
-void write_to_csv(Model& m, std::map<std::string, std::vector<double> > p_range_dict, std::vector<std::string> wc_names, double mubarsq);
+void write_to_csv(std::string fname, Model& m, std::map<std::string, std::vector<double> > p_range_dict, std::vector<std::string> wc_names, double mubarsq);

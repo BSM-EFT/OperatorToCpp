@@ -1,7 +1,7 @@
 /**
  * @file FileIO.cpp
  * @author Suraj Prakash
- * @date 2025-06-04
+ * @date 2025-07-09
  * @brief A suite of utility functions to aid in reading input from and writing output to files
  */
 
@@ -21,6 +21,7 @@ using Model = MSSM;
 #include <iomanip>
 #include <fstream>
 #include <iostream>
+#include <filesystem>
 
 #define step 0.1
 
@@ -152,12 +153,17 @@ string create_row(Model& m, vector<string>& keys, vector<double>& vals, vector<s
     return row.substr(0, row.length()-1);
 }
 
-void write_to_csv(Model& m, map<string, vector<double> > p_range_dict, vector<string> wc_names, double mubarsq) {
+void write_to_csv(string fname, Model& m, map<string, vector<double> > p_range_dict, vector<string> wc_names, double mubarsq) {
     vector<string> keys;
     for(auto it = p_range_dict.begin(); it != p_range_dict.end(); ++it) keys.emplace_back(it->first);
     vector<vector<double> > p_combs = create_param_combs(p_range_dict);
 
-    string fname = "./plots/data.csv";
+    if (std::filesystem::exists(fname)) {
+        std::cout << "Found existing file at path: " << fname << "\n";
+        std::cout << "The contents of this file will be overwritten.\n";
+        std::filesystem::remove(fname);
+    }
+
     ofstream f1;
     f1.open(fname, ios::out | ios::app);
     ostringstream h_stream;
