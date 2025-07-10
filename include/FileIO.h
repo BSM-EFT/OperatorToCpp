@@ -1,7 +1,7 @@
 /**
  * @file FileIO.h
  * @author Suraj Prakash
- * @date 2025-07-09
+ * @date 2025-07-10
  * @brief A suite of utility functions to aid in reading input from and writing output to files
  */
 
@@ -21,6 +21,16 @@ enum class ORDER {
   FULL,
   SPLIT,
 };
+
+/// function to trim leading whitespaces in a string
+std::string trim_left(std::string s);
+
+/// function to trim trailing whitespaces in a string
+std::string trim_right(std::string s);
+
+/// function to trim leading as well as trailing whitespaces
+std::string trim(std::string s);
+
 
 /// create a range from start to stop with step size delta.
 std::vector<double> create_range(double start, double end, double delta);

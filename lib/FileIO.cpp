@@ -1,7 +1,7 @@
 /**
  * @file FileIO.cpp
  * @author Suraj Prakash
- * @date 2025-07-09
+ * @date 2025-07-10
  * @brief A suite of utility functions to aid in reading input from and writing output to files
  */
 
@@ -13,6 +13,7 @@ using Model = MSSM;
 #include <ios>
 #include <vector>
 #include <string>
+#include <cctype>
 #include <unordered_map>
 #include <map>
 #include <utility>
@@ -30,12 +31,30 @@ using std::vector;
 using std::unordered_map;
 using std::map;
 using std::string;
+using std::isspace;
 using std::ostringstream;
 using std::setprecision;
 using std::ofstream;
 using std::ifstream;
 using std::ios;
 
+string trim_right(string s) {
+    int i = s.length() - 1;
+    while(isspace(s[i])) i--;
+    s.erase(s.begin()+i+1,s.end());
+    return s;
+}
+
+string trim_left(string s) {
+    int i = 0;
+    while(isspace(s[i])) i++;
+    s.erase(s.begin(),s.begin()+i);
+    return s;
+}
+
+string trim(string s) {
+    return trim_left(trim_right(s));
+}
 
 vector<double> create_range(double start, double end, double delta) {
     vector<double> vec;
@@ -58,14 +77,14 @@ void read_params(string fname, unordered_map<string, double>& p_dict, map<string
         int b_open = rest.find("[");
         if (b_open == string::npos) {
             val = std::stod(rest.substr(1, rest.length()));
-            p_dict.emplace(p_name, val);
+            p_dict.emplace(trim(p_name), val);
         } else {
             int b_close = rest.find("]");
             int comma = rest.find(",");
             start = std::stod(rest.substr(b_open + 1, comma - b_open - 1));
             end = std::stod(rest.substr(comma + 2, b_close - b_open - 2));
             vector<double> val_vec = create_range(start, end, step);
-            p_range_dict.emplace(p_name, val_vec);
+            p_range_dict.emplace(trim(p_name), val_vec);
         }
     }
 }
@@ -92,7 +111,7 @@ vector<string> read_wc_names(string fname) {
     vector<string> wc_names;
 
     string line;
-    while (std::getline(wcs_file, line)) wc_names.emplace_back(line);
+    while (std::getline(wcs_file, line)) wc_names.emplace_back(trim(line)); // trim leading and trailing whitespaces in WC names
 
     return wc_names;
 }
