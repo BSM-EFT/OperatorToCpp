@@ -1,7 +1,7 @@
 /**
  * @file FileIO.cpp
  * @author Suraj Prakash
- * @date 2025-07-10
+ * @date 2025-07-11
  * @brief A suite of utility functions to aid in reading input from and writing output to files
  */
 
@@ -173,6 +173,24 @@ string create_row(Model& m, vector<string>& keys, vector<double>& vals, vector<s
     if (ord == ORDER::TREE) {
         for (string wc: wc_names) rowstream << eval_wc(m, wc, mubarsq, 0.0) << ",";
     } else if (ord == ORDER::FULL) {
+        for (string wc: wc_names) rowstream << eval_wc(m, wc, mubarsq, 0.006332574) << ",";
+    } else {
+        for (string wc: wc_names) rowstream << "[" << eval_wc(m, wc, mubarsq, 0.0) << "," << eval_wc(m, wc, mubarsq, 0.006332574) - eval_wc(m, wc, mubarsq, 0.0) << "],";
+    }
+
+    string row = rowstream.str();
+    return row.substr(0, row.length()-1);
+}
+
+string create_row(Model& m, unordered_map<string, double> param_dict, vector<string>& keys, vector<string>& wc_names, double mubarsq, ORDER ord) {
+    ostringstream rowstream;
+    rowstream << std::fixed << setprecision(2);
+    for (string key: keys) rowstream << param_dict[key] << ",";
+    rowstream << std::scientific << setprecision(5);
+
+    if (ord == ORDER::TREE) {
+        for (string wc: wc_names) rowstream << eval_wc(m, wc, mubarsq, 0.0) << ",";
+    } else if (ord == ORDER::FULL) {
         for (string wc: wc_names) rowstream << eval_wc(m, wc, mubarsq, hb) << ",";
     } else {
         for (string wc: wc_names) rowstream << "[" << eval_wc(m, wc, mubarsq, 0.0) << "," << eval_wc(m, wc, mubarsq, hb) - eval_wc(m, wc, mubarsq, 0.0) << "],";
@@ -202,5 +220,24 @@ void write_to_csv(string fname, Model& m, map<string, vector<double> > p_range_d
     string header = h_stream.str();
     f1 << header.substr(0, header.length()-1) << "\n";
     for (auto p_comb: p_combs) f1 << create_row(m, keys, p_comb, wc_names, mubarsq, ord) << "\n";
+    f1.close();
+}
+
+void write_to_csv(string fname, Model& m, unordered_map<string, double> p_dict, vector<string> keys, vector<string> wc_names, double mubarsq, ORDER ord) {
+    if (std::filesystem::exists(fname)) {
+        std::cout << "Found existing file at path: " << fname << "\n";
+        std::cout << "The contents of this file will be overwritten.\n";
+        std::filesystem::remove(fname);
+    }
+
+    ofstream f1;
+    f1.open(fname, ios::out | ios::app);
+    ostringstream h_stream;
+    for (string key: keys) h_stream << key << ",";
+    for (string wc: wc_names) h_stream << wc << ",";
+
+    string header = h_stream.str();
+    f1 << header.substr(0, header.length()-1) << "\n";
+    f1 << create_row(m, p_dict, keys, wc_names, mubarsq, ord) << "\n";
     f1.close();
 }

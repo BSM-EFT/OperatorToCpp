@@ -1,7 +1,7 @@
 /**
  * @file FileIO.h
  * @author Suraj Prakash
- * @date 2025-07-10
+ * @date 2025-07-11
  * @brief A suite of utility functions to aid in reading input from and writing output to files
  */
 
@@ -92,6 +92,20 @@ double eval_wc(Model m, std::string s, double mubarsq);
 std::string create_row(Model& m, std::vector<std::string>& keys, std::vector<double>& vals, std::vector<std::string>& wc_names, double mubarsq);
 
 /**
+ * @overload
+ *
+ * Create a line containing values of independent parameters and evaluated coefficients.
+ *
+ * @param m The physics model that defines the parameters as member variables and the coefficients as methods.
+ * @param param_dict The map containing (name, value) pairs for the model parameters.
+ * @param keys A vector of parameter names.
+ * @param wc_names A vector of coefficient names to be evaluated and added to the line.
+ * @param mubarsq square of the Mass/energy scale at which the evaluation occurs.
+ * @return String constituting a single line/row of parameter(s), coefficient(s) information.
+ */
+std::string create_row(Model& m, std::unordered_map<std::string, double> param_dict, std::vector<std::string>& keys, std::vector<std::string>& wc_names, double mubarsq, ORDER ord);
+
+/**
  * Create a (.csv) file that stores a set of combinations of independent parameters and evaluated coefficients for each combination.
  *
  * @param fname Name of the (.csv) file that will store the results.
@@ -102,3 +116,16 @@ std::string create_row(Model& m, std::vector<std::string>& keys, std::vector<dou
  * @param ord The order of the loop expansion, either tree, full or split (tree, loop) output is created.
  */
 void write_to_csv(std::string fname, Model& m, std::map<std::string, std::vector<double> > p_range_dict, std::vector<std::string> wc_names, double mubarsq, ORDER ord);
+
+/**
+ * Create a (.csv) file that stores a set of combinations of specified parameters and evaluated coefficients for a single benchmark point.
+ *
+ * @param fname Name of the (.csv) file that will store the results.
+ * @param m The physics model that defines the parameters as member variables and the coefficients as methods.
+ * @param p_dict A map that stores (name, value) pairs for all model parameters.
+ * @param keys A vector of names of the model parameters that are to be included in the output file.
+ * @param wc_names A vector of coefficient names to be evaluated and added to the file.
+ * @param mubarsq Square of the Mass/energy scale at which the evaluation occurs.
+ * @param ord The order of the loop expansion, either tree, full or split (tree, loop) output is created.
+ */
+void write_to_csv(std::string fname, Model& m, std::unordered_map<std::string, double> p_dict, std::vector<std::string> keys, std::vector<std::string> wc_names, double mubarsq, ORDER ord);
