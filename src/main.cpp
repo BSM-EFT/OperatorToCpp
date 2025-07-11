@@ -1,7 +1,7 @@
 /**
  * @file write_to_files.cpp
  * @author Suraj Prakash
- * @date 2025-07-09
+ * @date 2025-07-11
  * @brief Interface for reading parameter values and WC names from files and
  *        writing WC values to a .csv file
  */
@@ -30,8 +30,8 @@ int main() {
     map<string, vector<double> > par_range_dict;
 
     // read parameter-values and wc-names as input from files
-    read_params("./input/params.yaml", par_dict, par_range_dict);
-    vector<string> wcs = read_wc_names("./input/coeffs.txt");
+    read_params("./input/params-test.yaml", par_dict, par_range_dict);
+    vector<string> wcs = read_wc_names("./input/coeffs-test.txt");
 
     cout << "Input files read without error!" << "\n\n";
 
@@ -39,17 +39,18 @@ int main() {
     sb_model.updateParams(par_dict);
     double mubarsq = pow(par_dict["scale"],2);
 
-    // generate results and store them in a data.csv file
-    write_to_csv(
-        "./plots/data.csv",
+    // generate results and store them in a .yaml file
+    write_to_yaml(
+        "./plots/data-test.yaml",
         sb_model,
-        par_range_dict,
+        par_dict,
+        {"mPhi","muTilde"},
         wcs,
         mubarsq,
-        ORDER::FULL
+        ORDER::SPLIT
     );
 
-    cout << "Output written to data.csv!" << "\n";
+    cout << "Output written to data-test.yaml!" << "\n";
 
     return 0;
 }

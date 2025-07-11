@@ -45,6 +45,11 @@ std::vector<double> create_range(double start, double end, double delta);
 void read_params(std::string fname, std::unordered_map<std::string, double>& p_dict, std::map<std::string, std::vector<double> >& p_range_dict);
 
 /**
+ * @overload
+ */
+void read_params(std::string fname, std::unordered_map<std::string, double>& p_dict);
+
+/**
  * Create combinations of parameter values as cartesian products of parameter ranges.
  *
  * @param p_range_dict A map that stores (name, range) pairs for a set of parameters.
@@ -92,20 +97,6 @@ double eval_wc(Model m, std::string s, double mubarsq);
 std::string create_row(Model& m, std::vector<std::string>& keys, std::vector<double>& vals, std::vector<std::string>& wc_names, double mubarsq);
 
 /**
- * @overload
- *
- * Create a line containing values of independent parameters and evaluated coefficients.
- *
- * @param m The physics model that defines the parameters as member variables and the coefficients as methods.
- * @param param_dict The map containing (name, value) pairs for the model parameters.
- * @param keys A vector of parameter names.
- * @param wc_names A vector of coefficient names to be evaluated and added to the line.
- * @param mubarsq square of the Mass/energy scale at which the evaluation occurs.
- * @return String constituting a single line/row of parameter(s), coefficient(s) information.
- */
-std::string create_row(Model& m, std::unordered_map<std::string, double> param_dict, std::vector<std::string>& keys, std::vector<std::string>& wc_names, double mubarsq, ORDER ord);
-
-/**
  * Create a (.csv) file that stores a set of combinations of independent parameters and evaluated coefficients for each combination.
  *
  * @param fname Name of the (.csv) file that will store the results.
@@ -118,7 +109,13 @@ std::string create_row(Model& m, std::unordered_map<std::string, double> param_d
 void write_to_csv(std::string fname, Model& m, std::map<std::string, std::vector<double> > p_range_dict, std::vector<std::string> wc_names, double mubarsq, ORDER ord);
 
 /**
- * Create a (.csv) file that stores a set of combinations of specified parameters and evaluated coefficients for a single benchmark point.
+ * @overload
+ * For the case when combinations of parameter values are already given instead of ranges for each parameter.
+ */
+void write_to_csv(std::string fname, Model& m, std::vector<std::vector<double> > p_combs, std::vector<std::string> keys, std::vector<std::string> wc_names, double mubarsq, ORDER ord);
+
+/**
+ * Create a (.yaml) file that stores a set of combinations of specified parameters and evaluated coefficients for a single benchmark point.
  *
  * @param fname Name of the (.csv) file that will store the results.
  * @param m The physics model that defines the parameters as member variables and the coefficients as methods.
@@ -128,4 +125,11 @@ void write_to_csv(std::string fname, Model& m, std::map<std::string, std::vector
  * @param mubarsq Square of the Mass/energy scale at which the evaluation occurs.
  * @param ord The order of the loop expansion, either tree, full or split (tree, loop) output is created.
  */
-void write_to_csv(std::string fname, Model& m, std::unordered_map<std::string, double> p_dict, std::vector<std::string> keys, std::vector<std::string> wc_names, double mubarsq, ORDER ord);
+void write_to_yaml(std::string fname, Model& m, std::unordered_map<std::string, double> p_dict, std::vector<std::string> keys, std::vector<std::string> wc_names, double mubarsq, ORDER ord);
+
+/**
+ * Helper function to check if a file already exists. Prints a message to the user stating that the file will be overwritten.
+ *
+ * @param f Name of the file.
+ */
+void check_file_exists(std::string f);

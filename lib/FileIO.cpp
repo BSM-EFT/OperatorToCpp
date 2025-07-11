@@ -89,6 +89,20 @@ void read_params(string fname, unordered_map<string, double>& p_dict, map<string
     }
 }
 
+void read_params(string fname, unordered_map<string, double>& p_dict) {
+    ifstream params_file(fname);
+    string line, p_name, rest;
+    double val;
+
+    while (std::getline(params_file, line)) {
+        int sep = line.find(":");
+        p_name = line.substr(0,sep);
+        rest = line.substr(sep+1,line.length() - p_name.length());
+        val = std::stod(rest.substr(1, rest.length()));
+        p_dict.emplace(trim(p_name), val);
+    }
+}
+
 vector<vector<double> > create_param_combs(map<string, vector<double> >& p_range_dict) {
     vector<vector<double>> val_combs, param_combs;
     vector<vector<int> > idx_combs = cartesianProduct(p_range_dict.begin()->second.size(), p_range_dict.size());
@@ -182,35 +196,12 @@ string create_row(Model& m, vector<string>& keys, vector<double>& vals, vector<s
     return row.substr(0, row.length()-1);
 }
 
-string create_row(Model& m, unordered_map<string, double> param_dict, vector<string>& keys, vector<string>& wc_names, double mubarsq, ORDER ord) {
-    ostringstream rowstream;
-    rowstream << std::fixed << setprecision(2);
-    for (string key: keys) rowstream << param_dict[key] << ",";
-    rowstream << std::scientific << setprecision(5);
-
-    if (ord == ORDER::TREE) {
-        for (string wc: wc_names) rowstream << eval_wc(m, wc, mubarsq, 0.0) << ",";
-    } else if (ord == ORDER::FULL) {
-        for (string wc: wc_names) rowstream << eval_wc(m, wc, mubarsq, hb) << ",";
-    } else {
-        for (string wc: wc_names) rowstream << "[" << eval_wc(m, wc, mubarsq, 0.0) << "," << eval_wc(m, wc, mubarsq, hb) - eval_wc(m, wc, mubarsq, 0.0) << "],";
-    }
-
-    string row = rowstream.str();
-    return row.substr(0, row.length()-1);
-}
-
 void write_to_csv(string fname, Model& m, map<string, vector<double> > p_range_dict, vector<string> wc_names, double mubarsq, ORDER ord) {
     vector<string> keys;
     for(auto it = p_range_dict.begin(); it != p_range_dict.end(); ++it) keys.emplace_back(it->first);
     vector<vector<double> > p_combs = create_param_combs(p_range_dict);
 
-    if (std::filesystem::exists(fname)) {
-        std::cout << "Found existing file at path: " << fname << "\n";
-        std::cout << "The contents of this file will be overwritten.\n";
-        std::filesystem::remove(fname);
-    }
-
+    check_file_exists(fname);
     ofstream f1;
     f1.open(fname, ios::out | ios::app);
     ostringstream h_stream;
@@ -223,13 +214,8 @@ void write_to_csv(string fname, Model& m, map<string, vector<double> > p_range_d
     f1.close();
 }
 
-void write_to_csv(string fname, Model& m, unordered_map<string, double> p_dict, vector<string> keys, vector<string> wc_names, double mubarsq, ORDER ord) {
-    if (std::filesystem::exists(fname)) {
-        std::cout << "Found existing file at path: " << fname << "\n";
-        std::cout << "The contents of this file will be overwritten.\n";
-        std::filesystem::remove(fname);
-    }
-
+void write_to_csv(string fname, Model& m, vector<vector<double> > p_combs, vector<string> keys, vector<string> wc_names, double mubarsq, ORDER ord) {
+    check_file_exists(fname);
     ofstream f1;
     f1.open(fname, ios::out | ios::app);
     ostringstream h_stream;
@@ -238,6 +224,37 @@ void write_to_csv(string fname, Model& m, unordered_map<string, double> p_dict, 
 
     string header = h_stream.str();
     f1 << header.substr(0, header.length()-1) << "\n";
-    f1 << create_row(m, p_dict, keys, wc_names, mubarsq, ord) << "\n";
+    for (auto p_comb: p_combs) f1 << create_row(m, keys, p_comb, wc_names, mubarsq, ord) << "\n";
     f1.close();
+}
+
+
+void write_to_yaml(string fname, Model& m, unordered_map<string, double> p_dict, vector<string> keys, vector<string> wc_names, double mubarsq, ORDER ord) {
+    check_file_exists(fname);
+    ofstream f1;
+    f1.open(fname, ios::out | ios::app);
+
+    f1 << std::fixed << setprecision(2);
+    for (string key: keys) {
+        f1 << key << ": " << p_dict[key] << "\n";
+    }
+
+    f1 << std::scientific << setprecision(5);
+    if (ord == ORDER::TREE) {
+        for (string wc: wc_names) f1 << wc << ": " << eval_wc(m, wc, mubarsq, 0.0) << "\n";
+    } else if (ord == ORDER::FULL) {
+        for (string wc: wc_names) f1 << wc << ": "  << eval_wc(m, wc, mubarsq, 0.006332574) << "\n";
+    } else {
+        for (string wc: wc_names) f1 << wc << ": "  << "[" << eval_wc(m, wc, mubarsq, 0.0) << "," << eval_wc(m, wc, mubarsq, 0.006332574) - eval_wc(m, wc, mubarsq, 0.0) << "]\n";
+    }
+
+    f1.close();
+}
+
+void check_file_exists(string f) {
+    if (std::filesystem::exists(f)) {
+        std::cout << "Found existing file at path: " << f << "\n";
+        std::cout << "The contents of this file will be overwritten.\n";
+        std::filesystem::remove(f);
+    }
 }
