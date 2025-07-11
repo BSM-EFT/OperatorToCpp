@@ -1,5 +1,5 @@
 /**
- * @file write_to_files.cpp
+ * @file light_higgsinos.cpp
  * @author Suraj Prakash
  * @date 2025-07-11
  * @brief Interface for reading parameter values and WC names from files and
@@ -11,13 +11,11 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
-#include <map>
 #include <cmath>
 #include <iostream>
 
 using std::vector;
 using std::unordered_map;
-using std::map;
 using std::string;
 using std::cout;
 
@@ -41,7 +39,7 @@ int main() {
 
     vector<vector<double> > par_combs;
     // populate par_combs using random values
-    for (int i = 0; i < 50; i++)  {
+    for (int i = 0; i < 100; i++)  {
         vector<double> v;
         double muTilde = (1000 + rand() % 2000)/2000.0;
         int upper = (int)(10-muTilde)*2000;

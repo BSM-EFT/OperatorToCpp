@@ -1,5 +1,5 @@
 /**
- * @file write_to_files.cpp
+ * @file main.cpp
  * @author Suraj Prakash
  * @date 2025-07-11
  * @brief Interface for reading parameter values and WC names from files and
