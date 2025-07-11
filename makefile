@@ -10,17 +10,23 @@ OUT_DIR = .
 
 # Object files for each executable
 OBJ_FILES_1 = $(OBJ_DIR)/OperatorImport.o $(OBJ_DIR)/MSSM.o $(OBJ_DIR)/FileIO.o $(OBJ_DIR)/main.o
+OBJ_FILES_2 = $(OBJ_DIR)/OperatorImport.o $(OBJ_DIR)/MSSM.o $(OBJ_DIR)/FileIO.o $(OBJ_DIR)/light_higgsinos.o
 
 # Executables
 TARGET1 = $(OUT_DIR)/main.out
+TARGET2 = $(OUT_DIR)/light_higgsinos.out
 
 # Create obj folder if it does not exist
 $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
 
-# Rule to link object files for write_to_files.cpp
+# Rule to link object files for main.cpp
 $(TARGET1): $(OBJ_FILES_1) | $(OBJ_DIR)
 	$(CXX) $(OBJ_FILES_1) -o $(TARGET1)
+
+# Rule to link object files for light_higgsinos.cpp
+$(TARGET2): $(OBJ_FILES_2) | $(OBJ_DIR)
+	$(CXX) $(OBJ_FILES_2) -o $(TARGET2)
 
 # Compile .cpp files to .o files in src/ directory
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
