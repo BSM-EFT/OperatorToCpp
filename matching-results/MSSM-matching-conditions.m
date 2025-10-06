@@ -10,10 +10,12 @@
  Coupling[Yu, {Index[i1_, Flavor], Index[i2_, Flavor]}, 0] -> 
   Coupling[cHqu, {Index[i1, Flavor], Index[i2, Flavor]}, 0], 
  Coupling[\[Lambda], {}, 0] -> 
-  (Coupling[c2\[Gamma], {}, 0]^2*Coupling[cB2, {}, 0]^2)/4 - 
-   (19*hbar*Coupling[c2\[Gamma], {}, 0]^2*Coupling[cB2, {}, 0]^4)/24 + 
-   (Coupling[c2\[Gamma], {}, 0]^2*Coupling[cW2, {}, 0]^2)/4 - 
-   (7*hbar*Coupling[c2\[Gamma], {}, 0]^2*Coupling[cW2, {}, 0]^4)/24 + 
+  (Coupling[c2\[Gamma], {}, 0]^2*Coupling[cB2, {}, 0]^2)/4 + 
+   (hbar*Coupling[cB2, {}, 0]^4)/4 - (19*hbar*Coupling[c2\[Gamma], {}, 0]^2*
+     Coupling[cB2, {}, 0]^4)/24 + (Coupling[c2\[Gamma], {}, 0]^2*
+     Coupling[cW2, {}, 0]^2)/4 + (hbar*Coupling[cB2, {}, 0]^2*
+     Coupling[cW2, {}, 0]^2)/2 + (3*hbar*Coupling[cW2, {}, 0]^4)/4 - 
+   (11*hbar*Coupling[c2\[Gamma], {}, 0]^2*Coupling[cW2, {}, 0]^4)/24 + 
    (hbar*Coupling[c2\[Gamma], {}, 0]^2*Coupling[cB2, {}, 0]^4*
      Coupling[c\[Gamma], {}, 0]^2)/8 + 
    (hbar*Coupling[c2\[Gamma], {}, 0]^2*Coupling[cB2, {}, 0]^2*
@@ -8850,7 +8852,7 @@
      Coupling[cW2, {}, 0]^2*Coupling[s4\[Gamma], {}, 0]*
      Coupling[s\[Gamma], {}, 0])/(8*Coupling[c\[Gamma], {}, 0]*
      Coupling[m\[CapitalPhi], {}, 0]^2) - 
-   (7*hbar*Coupling[cHqd, {Index[i1, Flavor], Index[i2, Flavor]}, 0]*
+   (11*hbar*Coupling[cHqd, {Index[i1, Flavor], Index[i2, Flavor]}, 0]*
      Coupling[cW2, {}, 0]^4*Coupling[s4\[Gamma], {}, 0]*
      Coupling[s\[Gamma], {}, 0])/(48*Coupling[c\[Gamma], {}, 0]*
      Coupling[m\[CapitalPhi], {}, 0]^2) + 
@@ -27186,7 +27188,7 @@
      Coupling[cW2, {}, 0]^2*Coupling[s4\[Gamma], {}, 0]*
      Coupling[s\[Gamma], {}, 0])/(8*Coupling[c\[Gamma], {}, 0]*
      Coupling[m\[CapitalPhi], {}, 0]^2) - 
-   (7*hbar*Coupling[cHle, {Index[i1, Flavor], Index[i2, Flavor]}, 0]*
+   (11*hbar*Coupling[cHle, {Index[i1, Flavor], Index[i2, Flavor]}, 0]*
      Coupling[cW2, {}, 0]^4*Coupling[s4\[Gamma], {}, 0]*
      Coupling[s\[Gamma], {}, 0])/(48*Coupling[c\[Gamma], {}, 0]*
      Coupling[m\[CapitalPhi], {}, 0]^2) + 
@@ -42274,12 +42276,12 @@
     (128*Coupling[m\[CapitalPhi], {}, 0]^2) + 
    (Coupling[cW2, {}, 0]^4*Coupling[s4\[Gamma], {}, 0]^2)/
     (64*Coupling[m\[CapitalPhi], {}, 0]^2) - 
-   (7*hbar*Coupling[cB2, {}, 0]^2*Coupling[cW2, {}, 0]^4*
+   (11*hbar*Coupling[cB2, {}, 0]^2*Coupling[cW2, {}, 0]^4*
      Coupling[s4\[Gamma], {}, 0]^2)/(192*Coupling[m\[CapitalPhi], {}, 0]^2) + 
    (3*hbar*Coupling[c2\[Gamma], {}, 0]^2*Coupling[cB2, {}, 0]^2*
      Coupling[cW2, {}, 0]^4*Coupling[s4\[Gamma], {}, 0]^2)/
     (128*Coupling[m\[CapitalPhi], {}, 0]^2) - 
-   (7*hbar*Coupling[cW2, {}, 0]^6*Coupling[s4\[Gamma], {}, 0]^2)/
+   (11*hbar*Coupling[cW2, {}, 0]^6*Coupling[s4\[Gamma], {}, 0]^2)/
     (192*Coupling[m\[CapitalPhi], {}, 0]^2) + 
    (hbar*Coupling[c2\[Gamma], {}, 0]^2*Coupling[cW2, {}, 0]^6*
      Coupling[s4\[Gamma], {}, 0]^2)/(128*Coupling[m\[CapitalPhi], {}, 0]^2) + 
@@ -109860,7 +109862,7 @@
      Coupling[cW2, {}, 0]^2*Coupling[c\[Gamma], {}, 0]*
      Coupling[s4\[Gamma], {}, 0])/(8*Coupling[m\[CapitalPhi], {}, 0]^2*
      Coupling[s\[Gamma], {}, 0]) + 
-   (7*hbar*Coupling[cHqu, {Index[i1, Flavor], Index[i2, Flavor]}, 0]*
+   (11*hbar*Coupling[cHqu, {Index[i1, Flavor], Index[i2, Flavor]}, 0]*
      Coupling[cW2, {}, 0]^4*Coupling[c\[Gamma], {}, 0]*
      Coupling[s4\[Gamma], {}, 0])/(48*Coupling[m\[CapitalPhi], {}, 0]^2*
      Coupling[s\[Gamma], {}, 0]) - (hbar*Coupling[cB2, {}, 0]^4*
