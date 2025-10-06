@@ -38,7 +38,7 @@ $(OBJ_DIR)/%.o: $(LIB_DIR)/%.cpp | $(OBJ_DIR)
 
 # Clean object files and executables
 clean:
-	rm -f $(OBJ_DIR)/*.o $(TARGET1)
+	rm -f $(OBJ_DIR)/*.o $(TARGET1) $(TARGET2)
 	rm -rf obj
 
 # Phony targets

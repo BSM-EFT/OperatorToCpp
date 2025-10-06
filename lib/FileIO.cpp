@@ -1,14 +1,12 @@
 /**
  * @file FileIO.cpp
  * @author Suraj Prakash
- * @date 2025-07-11
+ * @date 2025-10-06
  * @brief A suite of utility functions to aid in reading input from and writing output to files
  */
 
 #include "FileIO.h"
 #include "OperatorImport.h"
-
-using Model = MSSM;
 
 #include <ios>
 #include <vector>
