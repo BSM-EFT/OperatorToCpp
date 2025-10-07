@@ -1,17 +1,21 @@
 /**
  * @file FileIO.h
  * @author Suraj Prakash
- * @date 2025-10-06
+ * @date 2025-10-07
  * @brief A suite of utility functions to aid in reading input from and writing output to files
  */
 
-#include "ModelName.h"
-
+#include <ios>
 #include <vector>
 #include <string>
 #include <unordered_map>
 #include <map>
 #include <utility>
+#include <sstream>
+#include <iomanip>
+#include <fstream>
+
+#define hb 0.006332574
 
 /// enum to indicate the nature of the output with respect to the order of loop-expansion
 enum class ORDER {
@@ -80,7 +84,28 @@ std::pair<std::string,std::vector<int>> split_name_idx(std::string full_name);
  * @param mubarsq square of the Mass/energy scale at which the evaluation occurs.
  * @return Numerical value of the coefficient.
  */
-double eval_wc(Model m, std::string s, double mubarsq);
+template<typename Model>
+double eval_wc(Model m, std::string s, double mubarsq, double hbar) {
+    double res{};
+
+    std::pair<std::string,std::vector<int>> name_idx = split_name_idx(s);
+    std::string name = std::get<0>(name_idx);
+    std::vector<int> idx = std::get<1>(name_idx);
+
+    switch (idx.size()) {
+        case 0:
+            res = m.fname_map_0f[name](mubarsq, hbar);
+            break;
+        case 2:
+            res = m.fname_map_2f[name](idx[0]-1, idx[1]-1, mubarsq, hbar);
+            break;
+        case 4:
+            res = m.fname_map_4f[name](idx[0]-1, idx[1]-1, idx[2]-1, idx[3]-1, mubarsq, hbar);
+            break;
+    }
+
+    return res;
+}
 
 /**
  * Create a line containing values of independent parameters and evaluated coefficients.
@@ -92,7 +117,35 @@ double eval_wc(Model m, std::string s, double mubarsq);
  * @param mubarsq square of the Mass/energy scale at which the evaluation occurs.
  * @return String constituting a single line/row of parameter(s), coefficient(s) information.
  */
-std::string create_row(Model& m, std::vector<std::string>& keys, std::vector<double>& vals, std::vector<std::string>& wc_names, double mubarsq);
+template<typename Model>
+std::string create_row(Model& m, std::vector<std::string>& keys, std::vector<double>& vals, std::vector<std::string>& wc_names, double mubarsq, ORDER ord) {
+    std::unordered_map<std::string, double> param_dict;
+    for (int i = 0; i < keys.size(); ++i) param_dict.emplace(keys[i], vals[i]);
+    m.updateParams(param_dict);
+
+    std::ostringstream rowstream;
+    rowstream << std::fixed << std::setprecision(2);
+    for (double val: vals) rowstream << val << ",";
+    rowstream << std::scientific << std::setprecision(5);
+
+    if (ord == ORDER::TREE) {
+        for (std::string wc: wc_names) rowstream << eval_wc(m, wc, mubarsq, 0.0) << ",";
+    } else if (ord == ORDER::FULL) {
+        for (std::string wc: wc_names) rowstream << eval_wc(m, wc, mubarsq, 0.006332574) << ",";
+    } else {
+        for (std::string wc: wc_names) rowstream << "[" << eval_wc(m, wc, mubarsq, 0.0) << "," << eval_wc(m, wc, mubarsq, 0.006332574) - eval_wc(m, wc, mubarsq, 0.0) << "],";
+    }
+
+    std::string row = rowstream.str();
+    return row.substr(0, row.length()-1);
+}
+
+/**
+ * Helper function to check if a file already exists. Prints a message to the user stating that the file will be overwritten.
+ *
+ * @param f Name of the file.
+ */
+void check_file_exists(std::string f);
 
 /**
  * Create a (.csv) file that stores a set of combinations of independent parameters and evaluated coefficients for each combination.
@@ -104,13 +157,43 @@ std::string create_row(Model& m, std::vector<std::string>& keys, std::vector<dou
  * @param mubarsq Square of the Mass/energy scale at which the evaluation occurs.
  * @param ord The order of the loop expansion, either tree, full or split (tree, loop) output is created.
  */
-void write_to_csv(std::string fname, Model& m, std::map<std::string, std::vector<double> > p_range_dict, std::vector<std::string> wc_names, double mubarsq, ORDER ord);
+template<typename Model>
+void write_to_csv(std::string fname, Model& m, std::map<std::string, std::vector<double> > p_range_dict, std::vector<std::string> wc_names, double mubarsq, ORDER ord) {
+    std::vector<std::string> keys;
+    for(auto it = p_range_dict.begin(); it != p_range_dict.end(); ++it) keys.emplace_back(it->first);
+    std::vector<std::vector<double> > p_combs = create_param_combs(p_range_dict);
+
+    check_file_exists(fname);
+    std::ofstream f1;
+    f1.open(fname, std::ios::out | std::ios::app);
+    std::ostringstream h_stream;
+    for (std::string key: keys) h_stream << key << ",";
+    for (std::string wc: wc_names) h_stream << wc << ",";
+
+    std::string header = h_stream.str();
+    f1 << header.substr(0, header.length()-1) << "\n";
+    for (auto p_comb: p_combs) f1 << create_row(m, keys, p_comb, wc_names, mubarsq, ord) << "\n";
+    f1.close();
+}
 
 /**
  * @overload
  * For the case when combinations of parameter values are already given instead of ranges for each parameter.
  */
-void write_to_csv(std::string fname, Model& m, std::vector<std::vector<double> > p_combs, std::vector<std::string> keys, std::vector<std::string> wc_names, double mubarsq, ORDER ord);
+template<typename Model>
+void write_to_csv(std::string fname, Model& m, std::vector<std::vector<double> > p_combs, std::vector<std::string> keys, std::vector<std::string> wc_names, double mubarsq, ORDER ord) {
+    check_file_exists(fname);
+    std::ofstream f1;
+    f1.open(fname, std::ios::out | std::ios::app);
+    std::ostringstream h_stream;
+    for (std::string key: keys) h_stream << key << ",";
+    for (std::string wc: wc_names) h_stream << wc << ",";
+
+    std::string header = h_stream.str();
+    f1 << header.substr(0, header.length()-1) << "\n";
+    for (auto p_comb: p_combs) f1 << create_row(m, keys, p_comb, wc_names, mubarsq, ord) << "\n";
+    f1.close();
+}
 
 /**
  * Create a (.yaml) file that stores a set of combinations of specified parameters and evaluated coefficients for a single benchmark point.
@@ -123,11 +206,25 @@ void write_to_csv(std::string fname, Model& m, std::vector<std::vector<double> >
  * @param mubarsq Square of the Mass/energy scale at which the evaluation occurs.
  * @param ord The order of the loop expansion, either tree, full or split (tree, loop) output is created.
  */
-void write_to_yaml(std::string fname, Model& m, std::unordered_map<std::string, double> p_dict, std::vector<std::string> keys, std::vector<std::string> wc_names, double mubarsq, ORDER ord);
+template<typename Model>
+void write_to_yaml(std::string fname, Model& m, std::unordered_map<std::string, double> p_dict, std::vector<std::string> keys, std::vector<std::string> wc_names, double mubarsq, ORDER ord) {
+    check_file_exists(fname);
+    std::ofstream f1;
+    f1.open(fname, std::ios::out | std::ios::app);
 
-/**
- * Helper function to check if a file already exists. Prints a message to the user stating that the file will be overwritten.
- *
- * @param f Name of the file.
- */
-void check_file_exists(std::string f);
+    f1 << std::fixed << std::setprecision(2);
+    for (std::string key: keys) {
+        f1 << key << ": " << p_dict[key] << "\n";
+    }
+
+    f1 << std::scientific << std::setprecision(5);
+    if (ord == ORDER::TREE) {
+        for (std::string wc: wc_names) f1 << wc << ": " << eval_wc(m, wc, mubarsq, 0.0) << "\n";
+    } else if (ord == ORDER::FULL) {
+        for (std::string wc: wc_names) f1 << wc << ": "  << eval_wc(m, wc, mubarsq, 0.006332574) << "\n";
+    } else {
+        for (std::string wc: wc_names) f1 << wc << ": "  << "[" << eval_wc(m, wc, mubarsq, 0.0) << "," << eval_wc(m, wc, mubarsq, 0.006332574) - eval_wc(m, wc, mubarsq, 0.0) << "]\n";
+    }
+
+    f1.close();
+}

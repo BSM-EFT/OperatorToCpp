@@ -1,14 +1,13 @@
 /**
  * @file FileIO.cpp
  * @author Suraj Prakash
- * @date 2025-10-06
+ * @date 2025-10-07
  * @brief A suite of utility functions to aid in reading input from and writing output to files
  */
 
 #include "FileIO.h"
 #include "OperatorImport.h"
 
-#include <ios>
 #include <vector>
 #include <string>
 #include <cctype>
@@ -16,25 +15,18 @@
 #include <map>
 #include <utility>
 #include <algorithm>
-#include <sstream>
-#include <iomanip>
 #include <fstream>
 #include <iostream>
 #include <filesystem>
 
 #define step 0.1
-#define hb 0.006332574
 
 using std::vector;
 using std::unordered_map;
 using std::map;
 using std::string;
 using std::isspace;
-using std::ostringstream;
-using std::setprecision;
-using std::ofstream;
 using std::ifstream;
-using std::ios;
 
 string trim_right(string s) {
     int i = s.length() - 1;
@@ -147,106 +139,6 @@ std::pair<string,vector<int>> split_name_idx(string full_name) {
     }
 
     return std::make_pair(name, idx);
-}
-
-
-double eval_wc(Model m, string s, double mubarsq, double hbar) {
-    double res{};
-
-    std::pair<std::string,std::vector<int>> name_idx = split_name_idx(s);
-    std::string name = std::get<0>(name_idx);
-    std::vector<int> idx = std::get<1>(name_idx);
-
-    switch (idx.size()) {
-        case 0:
-            res = m.fname_map_0f[name](mubarsq, hbar);
-            break;
-        case 2:
-            res = m.fname_map_2f[name](idx[0]-1, idx[1]-1, mubarsq, hbar);
-            break;
-        case 4:
-            res = m.fname_map_4f[name](idx[0]-1, idx[1]-1, idx[2]-1, idx[3]-1, mubarsq, hbar);
-            break;
-    }
-
-    return res;
-}
-
-string create_row(Model& m, vector<string>& keys, vector<double>& vals, vector<string>& wc_names, double mubarsq, ORDER ord) {
-    unordered_map<string, double> param_dict;
-    for (int i = 0; i < keys.size(); ++i) param_dict.emplace(keys[i], vals[i]);
-    m.updateParams(param_dict);
-
-    ostringstream rowstream;
-    rowstream << std::fixed << setprecision(2);
-    for (double val: vals) rowstream << val << ",";
-    rowstream << std::scientific << setprecision(5);
-
-    if (ord == ORDER::TREE) {
-        for (string wc: wc_names) rowstream << eval_wc(m, wc, mubarsq, 0.0) << ",";
-    } else if (ord == ORDER::FULL) {
-        for (string wc: wc_names) rowstream << eval_wc(m, wc, mubarsq, 0.006332574) << ",";
-    } else {
-        for (string wc: wc_names) rowstream << "[" << eval_wc(m, wc, mubarsq, 0.0) << "," << eval_wc(m, wc, mubarsq, 0.006332574) - eval_wc(m, wc, mubarsq, 0.0) << "],";
-    }
-
-    string row = rowstream.str();
-    return row.substr(0, row.length()-1);
-}
-
-void write_to_csv(string fname, Model& m, map<string, vector<double> > p_range_dict, vector<string> wc_names, double mubarsq, ORDER ord) {
-    vector<string> keys;
-    for(auto it = p_range_dict.begin(); it != p_range_dict.end(); ++it) keys.emplace_back(it->first);
-    vector<vector<double> > p_combs = create_param_combs(p_range_dict);
-
-    check_file_exists(fname);
-    ofstream f1;
-    f1.open(fname, ios::out | ios::app);
-    ostringstream h_stream;
-    for (string key: keys) h_stream << key << ",";
-    for (string wc: wc_names) h_stream << wc << ",";
-
-    string header = h_stream.str();
-    f1 << header.substr(0, header.length()-1) << "\n";
-    for (auto p_comb: p_combs) f1 << create_row(m, keys, p_comb, wc_names, mubarsq, ord) << "\n";
-    f1.close();
-}
-
-void write_to_csv(string fname, Model& m, vector<vector<double> > p_combs, vector<string> keys, vector<string> wc_names, double mubarsq, ORDER ord) {
-    check_file_exists(fname);
-    ofstream f1;
-    f1.open(fname, ios::out | ios::app);
-    ostringstream h_stream;
-    for (string key: keys) h_stream << key << ",";
-    for (string wc: wc_names) h_stream << wc << ",";
-
-    string header = h_stream.str();
-    f1 << header.substr(0, header.length()-1) << "\n";
-    for (auto p_comb: p_combs) f1 << create_row(m, keys, p_comb, wc_names, mubarsq, ord) << "\n";
-    f1.close();
-}
-
-
-void write_to_yaml(string fname, Model& m, unordered_map<string, double> p_dict, vector<string> keys, vector<string> wc_names, double mubarsq, ORDER ord) {
-    check_file_exists(fname);
-    ofstream f1;
-    f1.open(fname, ios::out | ios::app);
-
-    f1 << std::fixed << setprecision(2);
-    for (string key: keys) {
-        f1 << key << ": " << p_dict[key] << "\n";
-    }
-
-    f1 << std::scientific << setprecision(5);
-    if (ord == ORDER::TREE) {
-        for (string wc: wc_names) f1 << wc << ": " << eval_wc(m, wc, mubarsq, 0.0) << "\n";
-    } else if (ord == ORDER::FULL) {
-        for (string wc: wc_names) f1 << wc << ": "  << eval_wc(m, wc, mubarsq, 0.006332574) << "\n";
-    } else {
-        for (string wc: wc_names) f1 << wc << ": "  << "[" << eval_wc(m, wc, mubarsq, 0.0) << "," << eval_wc(m, wc, mubarsq, 0.006332574) - eval_wc(m, wc, mubarsq, 0.0) << "]\n";
-    }
-
-    f1.close();
 }
 
 void check_file_exists(string f) {
