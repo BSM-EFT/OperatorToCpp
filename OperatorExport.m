@@ -481,18 +481,13 @@ HeaderModelClass[className_,paramList_,line_] := Module[{args},
 (*Master builder*)
 
 
-HeaderFileBuilder[modelName_,paramList_]:=Module[{path,line1,line2},
+HeaderFileBuilder[modelName_,paramList_]:=Module[{path,line1},
 	path = FileNameJoin[{NotebookDirectory[],"include"}];
 	line1 = OpenWrite[path<>"/"<>modelName<>".h"];
 	HeaderPreprocessorDirectives[line1];
 	WriteLine[line1,""];
 	HeaderModelClass[modelName,paramList,line1];
 	Close[line1];
-	
-	line2 = OpenWrite[path<>"/"<>"ModelName.h"];
-	WriteLine[line2,"#include \""<>modelName<>".h\""];
-	WriteLine[line2,"using Model = "<>modelName<>";"];
-	Close[line2];
 ];
 
 
