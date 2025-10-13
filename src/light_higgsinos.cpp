@@ -1,10 +1,11 @@
 /**
  * @file light_higgsinos.cpp
  * @author Suraj Prakash
- * @date 2025-07-15
+ * @date 2025-10-13
  * @brief Random scan of Wilson coefficient values for a model with (relatively) light Higgsinos, stops and sbottoms
  */
 
+#include "MSSM.h"
 #include "FileIO.h"
 #include <cstdlib>
 #include <vector>
@@ -21,7 +22,7 @@ using std::cout;
 int main() {
 
     // create an instance of the model
-    Model sb_model;
+    MSSM sb_model;
 
     // dictionaries to store fixed and variable value parameters
     unordered_map<string, double> par_dict;

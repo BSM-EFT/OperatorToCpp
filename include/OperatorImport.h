@@ -1,7 +1,7 @@
 /**
  * @file OperatorImport.h
  * @author Suraj Prakash
- * @date 2025-06-04
+ * @date 2025-10-13
  * @brief Auxiliary classes and funtions to aid in the evaluation of expressions within the Wilson coefficient functions
  */
 
@@ -25,16 +25,6 @@ class LoopFunc {
         LoopFunc() = delete;
         LoopFunc(std::vector<std::variant<std::vector<double>, double> > list_of_masses, int code, double mubarsq);
 };
-
-/**
- * Evaluate loop functions.
- *
- * @param masses A vector of mass parameters involved in the loop function evaluation.
- * @param code A unique identifier specifying the specific loop function variety.
- * @param mubarsq The mass scale at which the evaluation is to occur.
- * @return The evaluated numerical value.
- */
-double LF(std::vector<double> masses, int code, double mubarsq);
 
 /// Implemntation of a class to faciliate calling and evaluating MassPow functors.
 class MassPow {

@@ -9,8 +9,8 @@ OBJ_DIR = obj
 OUT_DIR = .
 
 # Object files for each executable
-OBJ_FILES_1 = $(OBJ_DIR)/OperatorImport.o $(OBJ_DIR)/MSSM.o $(OBJ_DIR)/FileIO.o $(OBJ_DIR)/main.o
-OBJ_FILES_2 = $(OBJ_DIR)/OperatorImport.o $(OBJ_DIR)/MSSM.o $(OBJ_DIR)/FileIO.o $(OBJ_DIR)/light_higgsinos.o
+OBJ_FILES_1 = $(OBJ_DIR)/LF.o $(OBJ_DIR)/OperatorImport.o $(OBJ_DIR)/MSSM.o $(OBJ_DIR)/FileIO.o $(OBJ_DIR)/main.o
+OBJ_FILES_2 = $(OBJ_DIR)/LF.o $(OBJ_DIR)/OperatorImport.o $(OBJ_DIR)/MSSM.o $(OBJ_DIR)/FileIO.o $(OBJ_DIR)/light_higgsinos.o
 
 # Executables
 TARGET1 = $(OUT_DIR)/main.out
