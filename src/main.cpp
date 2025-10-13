@@ -1,11 +1,12 @@
 /**
  * @file main.cpp
  * @author Suraj Prakash
- * @date 2025-07-11
+ * @date 2025-10-07
  * @brief Interface for reading parameter values and WC names from files and
  *        writing WC values to a .csv file
  */
 
+#include "MSSM.h"
 #include "FileIO.h"
 #include <vector>
 #include <string>
@@ -23,7 +24,7 @@ using std::cout;
 int main() {
 
     // create an instance of the model
-    Model sb_model;
+    MSSM sb_model;
 
     // dictionaries to store fixed and variable value parameters
     unordered_map<string, double> par_dict;

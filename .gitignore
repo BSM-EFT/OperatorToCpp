@@ -35,4 +35,3 @@ test*
 .vscode/
 /**/__pycache__/*
 cross-check.nb
-ExportLF.nb

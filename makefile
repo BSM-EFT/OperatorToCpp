@@ -9,8 +9,8 @@ OBJ_DIR = obj
 OUT_DIR = .
 
 # Object files for each executable
-OBJ_FILES_1 = $(OBJ_DIR)/OperatorImport.o $(OBJ_DIR)/MSSM.o $(OBJ_DIR)/FileIO.o $(OBJ_DIR)/main.o
-OBJ_FILES_2 = $(OBJ_DIR)/OperatorImport.o $(OBJ_DIR)/MSSM.o $(OBJ_DIR)/FileIO.o $(OBJ_DIR)/light_higgsinos.o
+OBJ_FILES_1 = $(OBJ_DIR)/LF.o $(OBJ_DIR)/OperatorImport.o $(OBJ_DIR)/MSSM.o $(OBJ_DIR)/FileIO.o $(OBJ_DIR)/main.o
+OBJ_FILES_2 = $(OBJ_DIR)/LF.o $(OBJ_DIR)/OperatorImport.o $(OBJ_DIR)/MSSM.o $(OBJ_DIR)/FileIO.o $(OBJ_DIR)/light_higgsinos.o
 
 # Executables
 TARGET1 = $(OUT_DIR)/main.out
@@ -38,7 +38,7 @@ $(OBJ_DIR)/%.o: $(LIB_DIR)/%.cpp | $(OBJ_DIR)
 
 # Clean object files and executables
 clean:
-	rm -f $(OBJ_DIR)/*.o $(TARGET1)
+	rm -f $(OBJ_DIR)/*.o $(TARGET1) $(TARGET2)
 	rm -rf obj
 
 # Phony targets

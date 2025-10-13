@@ -1,11 +1,11 @@
 /**
  * @file light_higgsinos.cpp
  * @author Suraj Prakash
- * @date 2025-07-11
- * @brief Interface for reading parameter values and WC names from files and
- *        writing WC values to a .csv file
+ * @date 2025-10-13
+ * @brief Random scan of Wilson coefficient values for a model with (relatively) light Higgsinos, stops and sbottoms
  */
 
+#include "MSSM.h"
 #include "FileIO.h"
 #include <cstdlib>
 #include <vector>
@@ -22,7 +22,7 @@ using std::cout;
 int main() {
 
     // create an instance of the model
-    Model sb_model;
+    MSSM sb_model;
 
     // dictionaries to store fixed and variable value parameters
     unordered_map<string, double> par_dict;
@@ -44,21 +44,22 @@ int main() {
         double muTilde = (1000 + rand() % 2000)/2000.0;
         int upper = (int)(10-muTilde)*2000;
         double mqt3 = (muTilde*6000 + rand() % (upper*3))/6000.0;
-        double mut3 = (muTilde*4000 + rand() % (upper*2))/4000.0;
+        double mut3 = (muTilde*5000 + rand() % (upper*2))/5000.0;
+        double mdt3 = (muTilde*4000 + rand() % (upper*2))/4000.0;
 
         v.emplace_back(muTilde);
         v.emplace_back(mqt3);
         v.emplace_back(mut3);
+        v.emplace_back(mdt3);
         par_combs.emplace_back(v);
     }
-
 
     // generate results and store them in a data.csv file
     write_to_csv(
         "./plots/data-2.csv",
         sb_model,
         par_combs,
-        {"muTilde", "mqt3", "mut3"},
+        {"muTilde", "mqt3", "mut3", "mdt3"},
         wcs,
         mubarsq,
         ORDER::FULL
