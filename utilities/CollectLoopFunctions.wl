@@ -5,7 +5,7 @@
 
 
 SetDirectory[NotebookDirectory[]];
-MatchetePath =FileNameJoin[{NotebookDirectory[], "Matchete", "Kernel", "init.m"}];
+MatchetePath =FileNameJoin[{ParentDirectory[NotebookDirectory[]], "Matchete", "Kernel", "init.m"}];
 Get[MatchetePath]
 
 
@@ -13,7 +13,7 @@ Get[MatchetePath]
 (*Load one-loop matched result from file*)
 
 
-ImportPath=FileNameJoin[{NotebookDirectory[],"matching-results","MSSM-matching-conditions.m"}];
+ImportPath=FileNameJoin[{ParentDirectory[NotebookDirectory[]],"matching-results","MSSM-matching-conditions.m"}];
 matchedResult=Import[ImportPath];
 
 
@@ -93,7 +93,9 @@ AllExpCombs//Length
 
 ReplLoopFuncExpns={};
 Do[AppendTo[ReplLoopFuncExpns,AllExpCombs[[i]]->i],{i,1,Length[AllExpCombs]}];
-ReplLoopFuncExpns
+
+
+Export["LFRules.m",ReplLoopFuncExpns];
 
 
 (* ::Subsection:: *)
@@ -179,7 +181,7 @@ declaration="double LF(std::vector<double> masses, int code, double mubarsq);";
 
 
 CreateLFHeaderFile[]:=Module[{line},
-	line = OpenWrite[NotebookDirectory[]<>"/include/LF.h"];
+	line = OpenWrite[ParentDirectory[NotebookDirectory[]]<>"/include/LF.h"];
 	WriteLine[line, "#include <vector>"];
 	WriteLine[line, ""];
 	WriteLine[line, "/**"];
@@ -211,7 +213,7 @@ defClosingBrace = "}";
 
 
 CreateLFSourceFile[]:=Module[{line,ifElseBranches},
-	line = OpenWrite[NotebookDirectory[]<>"/lib/LF.cpp"];
+	line = OpenWrite[ParentDirectory[NotebookDirectory[]]<>"/lib/LF.cpp"];
 	WriteLine[line, declL1];
 	WriteLine[line, declL2];
 	WriteLine[line, declL3];
