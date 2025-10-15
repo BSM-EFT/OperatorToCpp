@@ -1,7 +1,7 @@
 /**
  * @file OperatorImport.cpp
  * @author Suraj Prakash
- * @date 2025-10-13
+ * @date 2025-10-14
  * @brief Auxiliary classes and funtions to aid in the evaluation of expressions within the Wilson coefficient functions
  */
 
@@ -17,6 +17,10 @@
 #include <tuple>
 #include <functional>
 #include <string>
+
+#if defined(_OPENMP)
+    #include <omp.h>
+#endif
 
 using std::vector;
 using std::transform;
@@ -192,16 +196,40 @@ double EinsSum(vector<variant<LoopFunc, MassPow, vector<vector<double> >, YF_tup
 
     } else {
         vector<vector<int> > cprod = cartesianProduct(num_flavours, num_idx);
+        vector<double> res(cprod.size());
 
-        for (vector<int> seq : cprod) {
-            vector<vector<int> > segregated_seqs = idx_seqs(index_order, free_indices, seq);
-            vector<double> res1;
-            for (int k = 0; k < tensor_objs.size(); k++)
-                std::visit([&res1, &segregated_seqs, &k](auto obj){res1.emplace_back(Eval(obj, segregated_seqs[k]));}, tensor_objs[k]);
+        #if defined(_OPENMP)
+            #pragma omp parallel for schedule(static)
+            for (int i = 0; i < cprod.size(); i++) {
+                vector<vector<int> > segregated_seqs = idx_seqs(index_order, free_indices, cprod[i]);
+                vector<double> res1;
+                for (int k = 0; k < tensor_objs.size(); k++)
+                    std::visit([&res1, &segregated_seqs, &k](auto obj){res1.emplace_back(Eval(obj, segregated_seqs[k]));}, tensor_objs[k]);
 
-            double res2 = accumulate(res1.begin(), res1.end(), 1.0, std::multiplies<double>());
-            sum += res2;
-        }
+                res[i] = reduce(res1.begin(), res1.end(), 1.0, std::multiplies<double>());
+            }
+
+            #pragma omp parallel for reduction(+:sum)
+            for(int i = 0; i < res.size(); i++) {
+                sum += res[i];
+            }
+
+        #else
+            transform(
+                cprod.begin(),
+                cprod.end(),
+                res.begin(),
+                [&tensor_objs, &index_order, &free_indices](auto seq){
+                    vector<vector<int> > segregated_seqs = idx_seqs(index_order, free_indices, seq);
+                    vector<double> res1;
+                    for (int k = 0; k < tensor_objs.size(); k++)
+                        std::visit([&res1, &segregated_seqs, &k](auto obj){res1.emplace_back(Eval(obj, segregated_seqs[k]));}, tensor_objs[k]);
+
+                    return reduce(res1.begin(), res1.end(), 1.0, std::multiplies<double>());
+                }
+            );
+            sum = reduce(res.begin(), res.end(), 0.0, std::plus<double>());
+        #endif
     }
     return sum;
 }

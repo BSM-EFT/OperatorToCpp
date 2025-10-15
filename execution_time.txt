@@ -1,0 +1,47 @@
+cH = -0.000414736, execution time = 4355.87 ms.
+cH = -0.000414736, execution time = 4436.91 ms.
+cH = -0.000414736, execution time = 4403.23 ms.
+cH = -0.000414736, execution time = 4441.03 ms.
+cH = -0.000414736, execution time = 4477.63 ms.
+cH = -0.000414736, execution time = 4547.8 ms.
+cH = -0.000414736, execution time = 4473.66 ms.
+cH = -0.000414736, execution time = 4491.69 ms.
+cH = -0.000414736, execution time = 4482.51 ms.
+cH = -0.000414736, execution time = 4478.66 ms.
+Execution time for 10 calls to cH with sequential EinsSum() and no caching: 44589.1 ms.
+
+cH = -0.000414736, execution time = 1217.15 ms.
+cH = -0.000414736, execution time = 1185.72 ms.
+cH = -0.000414736, execution time = 1203.51 ms.
+cH = -0.000414736, execution time = 1201.73 ms.
+cH = -0.000414736, execution time = 1199.29 ms.
+cH = -0.000414736, execution time = 1201.52 ms.
+cH = -0.000414736, execution time = 1202.22 ms.
+cH = -0.000414736, execution time = 1204.74 ms.
+cH = -0.000414736, execution time = 1204.45 ms.
+cH = -0.000414736, execution time = 1203.58 ms.
+Execution time for 10 calls to cH with parallel EinsSum() and no caching: 12024 ms.
+
+cH = -0.000414859, execution time = 4414.44 ms.
+cH = -0.000414859, execution time = 4364.09 ms.
+cH = -0.000414859, execution time = 4372.04 ms.
+cH = -0.000414859, execution time = 4371.3 ms.
+cH = -0.000414859, execution time = 4373.41 ms.
+cH = -0.000414859, execution time = 4372.64 ms.
+cH = -0.000414859, execution time = 4388.52 ms.
+cH = -0.000414859, execution time = 4366.61 ms.
+cH = -0.000414859, execution time = 4368.65 ms.
+cH = -0.000414859, execution time = 4362.47 ms.
+Execution time for 10 calls to cH with sequential EinsSum() and caching: 43754.3 ms.
+
+cH = -0.000414859, execution time = 1290.29 ms.
+cH = -0.000414859, execution time = 1254.58 ms.
+cH = -0.000414859, execution time = 1259.78 ms.
+cH = -0.000414859, execution time = 1250.94 ms.
+cH = -0.000414859, execution time = 1247.02 ms.
+cH = -0.000414859, execution time = 1245.66 ms.
+cH = -0.000414859, execution time = 1248.32 ms.
+cH = -0.000414859, execution time = 1250.29 ms.
+cH = -0.000414859, execution time = 1248.81 ms.
+cH = -0.000414859, execution time = 1249.56 ms.
+Execution time for 10 calls to cH with parallel EinsSum() and caching: 12545.3 ms.

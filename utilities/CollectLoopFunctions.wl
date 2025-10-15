@@ -5,7 +5,7 @@
 
 
 SetDirectory[NotebookDirectory[]];
-MatchetePath =FileNameJoin[{NotebookDirectory[], "Matchete", "Kernel", "init.m"}];
+MatchetePath =FileNameJoin[{ParentDirectory[NotebookDirectory[]], "Matchete", "Kernel", "init.m"}];
 Get[MatchetePath]
 
 
@@ -13,7 +13,7 @@ Get[MatchetePath]
 (*Load one-loop matched result from file*)
 
 
-ImportPath=FileNameJoin[{NotebookDirectory[],"matching-results","MSSM-matching-conditions.m"}];
+ImportPath=FileNameJoin[{ParentDirectory[NotebookDirectory[]],"matching-results","MSSM-matching-conditions.m"}];
 matchedResult=Import[ImportPath];
 
 
@@ -93,7 +93,9 @@ AllExpCombs//Length
 
 ReplLoopFuncExpns={};
 Do[AppendTo[ReplLoopFuncExpns,AllExpCombs[[i]]->i],{i,1,Length[AllExpCombs]}];
-ReplLoopFuncExpns
+
+
+Export["LFRules.m",ReplLoopFuncExpns];
 
 
 (* ::Subsection:: *)
@@ -137,13 +139,13 @@ CreateIfElseBlock[ExpComb_,massArgList_]:=Module[{pairs,repRules,rules,strList},
 	(* Create the first if branch *)
 	AppendTo[
 		strList,
-		StringReplace[StringJoin["if (",ToString[pairs[[1]][[1]]]," == ",ToString[pairs[[1]][[2]]],") { return ", ConvertFunctionCallToString[ExpComb,rules[[1]]],"; }"  ],GenerateMassRepRules[Length[ExpComb]]]
+		StringReplace[StringJoin["if (abs(",ToString[pairs[[1]][[1]]]," - ",ToString[pairs[[1]][[2]]],") < 1e-6) { return ", ConvertFunctionCallToString[ExpComb,rules[[1]]],"; }"  ],GenerateMassRepRules[Length[ExpComb]]]
 	];
 
 	(* Create the else-if branches *)
 	If[
 		Length[pairs]>1,
-		Do[AppendTo[strList,StringReplace[StringJoin["else if (",ToString[pairs[[i]][[1]]]," == ",ToString[pairs[[i]][[2]]],") { return ", ConvertFunctionCallToString[ExpComb,rules[[i]]],"; }"  ],GenerateMassRepRules[Length[ExpComb]]]],{i,2,Length[pairs]}]
+		Do[AppendTo[strList,StringReplace[StringJoin["else if (abs(",ToString[pairs[[i]][[1]]]," - ",ToString[pairs[[i]][[2]]],") < 1e-6) { return ", ConvertFunctionCallToString[ExpComb,rules[[i]]],"; }"  ],GenerateMassRepRules[Length[ExpComb]]]],{i,2,Length[pairs]}]
 	];
 
 	(* Create the non-degenerate else branch *)
@@ -179,7 +181,7 @@ declaration="double LF(std::vector<double> masses, int code, double mubarsq);";
 
 
 CreateLFHeaderFile[]:=Module[{line},
-	line = OpenWrite[NotebookDirectory[]<>"/include/LF.h"];
+	line = OpenWrite[ParentDirectory[NotebookDirectory[]]<>"/include/LF.h"];
 	WriteLine[line, "#include <vector>"];
 	WriteLine[line, ""];
 	WriteLine[line, "/**"];
@@ -211,7 +213,7 @@ defClosingBrace = "}";
 
 
 CreateLFSourceFile[]:=Module[{line,ifElseBranches},
-	line = OpenWrite[NotebookDirectory[]<>"/lib/LF.cpp"];
+	line = OpenWrite[ParentDirectory[NotebookDirectory[]]<>"/lib/LF.cpp"];
 	WriteLine[line, declL1];
 	WriteLine[line, declL2];
 	WriteLine[line, declL3];
