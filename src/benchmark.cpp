@@ -1,7 +1,7 @@
 /**
  * @file benchmark.cpp
  * @author Suraj Prakash
- * @date 2025-10-14
+ * @date 2025-10-16
  * @brief Code for estimating time performance of the Wilson coefficient functions in MSSM.h and MSSM.cpp
  */
 
@@ -85,7 +85,7 @@ int main() {
 
     const auto tf = std::chrono::high_resolution_clock::now();
     const std::chrono::duration<double, std::milli> ms = tf - ti;
-    std::cout << "Execution time for 10 calls to cH with parallel EinsSum() and no caching: " << ms.count() << " ms.\n\n";
+    std::cout << "Execution time for 10 calls to cH with parallel EinsSum() and caching: " << ms.count() << " ms.\n\n";
 
     return 0;
 }
