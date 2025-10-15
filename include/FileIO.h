@@ -1,7 +1,7 @@
 /**
  * @file FileIO.h
  * @author Suraj Prakash
- * @date 2025-10-07
+ * @date 2025-10-15
  * @brief A suite of utility functions to aid in reading input from and writing output to files
  */
 
@@ -126,7 +126,7 @@ std::string create_row(Model& m, std::vector<std::string>& keys, std::vector<dou
     std::ostringstream rowstream;
     rowstream << std::fixed << std::setprecision(2);
     for (double val: vals) rowstream << val << ",";
-    rowstream << std::scientific << std::setprecision(5);
+    rowstream << std::scientific << std::setprecision(1);
 
     if (ord == ORDER::TREE) {
         for (std::string wc: wc_names) rowstream << eval_wc(m, wc, mubarsq, 0.0) << ",";
@@ -217,7 +217,7 @@ void write_to_yaml(std::string fname, Model& m, std::unordered_map<std::string, 
         f1 << key << ": " << p_dict[key] << "\n";
     }
 
-    f1 << std::scientific << std::setprecision(5);
+    f1 << std::scientific << std::setprecision(1);
     if (ord == ORDER::TREE) {
         for (std::string wc: wc_names) f1 << wc << ": " << eval_wc(m, wc, mubarsq, 0.0) << "\n";
     } else if (ord == ORDER::FULL) {
