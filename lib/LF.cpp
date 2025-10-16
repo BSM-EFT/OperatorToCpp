@@ -1,8 +1,5 @@
+#include "pch.h"
 #include "LF.h"
-#include <vector>
-#include <cmath>
-using std::vector;
-
 using std::vector;
 
 // elaborate definitions of loop-functions in terms of masses

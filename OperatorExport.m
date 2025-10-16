@@ -379,7 +379,7 @@ ConvertFullExpression[sumOfExprs_,ComplexPars_]:=Module[{exprList,str},
 
 
 HeaderPreprocessorDirectives[line_] := Module[{},
-	WriteLine[line, ""];
+	WriteLine[line, "#pragma once"];
 	WriteLine[line, "#include <vector>"];
 	WriteLine[line, "#include <string>"];
 	WriteLine[line, "#include <unordered_map>"];
@@ -487,13 +487,7 @@ HeaderFileBuilder[modelName_,paramList_]:=Module[{path,line1},
 
 
 BuildPreprocessorDirectives[modelName_,line_] := Module[{},
-	WriteLine[line, ""];
-	WriteLine[line, "#include <iostream>"];
-	WriteLine[line, "#include <cmath>"];
-	WriteLine[line, "#include <vector>"];
-	WriteLine[line, "#include <string>"];
-	WriteLine[line, "#include <unordered_map>"];
-	WriteLine[line, "#include <utility>"];
+	WriteLine[line, "#include \"pch.h\""];
 	WriteLine[line, "#include \"OperatorImport.h\""];
 	WriteLine[line, "#include \""<>modelName<>".h\""];
 ];

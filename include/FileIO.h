@@ -1,10 +1,11 @@
 /**
  * @file FileIO.h
  * @author Suraj Prakash
- * @date 2025-10-15
+ * @date 2025-10-17
  * @brief A suite of utility functions to aid in reading input from and writing output to files
  */
 
+#pragma once
 #include <ios>
 #include <vector>
 #include <string>

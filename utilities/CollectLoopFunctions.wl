@@ -182,6 +182,7 @@ declaration="double LF(std::vector<double> masses, int code, double mubarsq);";
 
 CreateLFHeaderFile[]:=Module[{line},
 	line = OpenWrite[ParentDirectory[NotebookDirectory[]]<>"/include/LF.h"];
+	WriteLine[line, "#pragma once"];
 	WriteLine[line, "#include <vector>"];
 	WriteLine[line, ""];
 	WriteLine[line, "/**"];
@@ -201,10 +202,9 @@ CreateLFHeaderFile[]:=Module[{line},
 (*Source file*)
 
 
-declL1 = "#include \"LF.h\"";
-declL2 = "#include <vector>";
-declL3 = "#include <cmath>";
-declL4 = "using std::vector;";
+declL1 = "#include \"pch.h\"";
+declL2 = "#include \"LF.h\"";
+declL3 = "using std::vector;";
 doc = "// elaborate definitions of loop-functions in terms of masses";
 defL1 = "double LF(vector<double> masses, int code, double mubarsq) {";
 defL2 = "    switch(code) {";
@@ -217,9 +217,6 @@ CreateLFSourceFile[]:=Module[{line,ifElseBranches},
 	WriteLine[line, declL1];
 	WriteLine[line, declL2];
 	WriteLine[line, declL3];
-	WriteLine[line, declL4];
-	WriteLine[line, ""];
-	WriteLine[line, declL4];
 	WriteLine[line, ""];
 	WriteLine[line, doc];
 	WriteLine[line, defL1];

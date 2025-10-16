@@ -4,7 +4,7 @@ UNAME_S = $(shell uname -s)
 # Default to c++ (will be overwritten if GCC found)
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wno-sign-compare -Iinclude
-LIB =
+LIBS =
 
 # Enable OpenMP
 ifeq ($(UNAME_S),Darwin)
@@ -16,6 +16,10 @@ else
     CXXFLAGS += -fopenmp
     LIBS += -lgomp
 endif
+
+# Precompiled header
+PCH = include/pch.h
+PCH_GCH = include/pch.pch
 
 # Directories
 SRC_DIR = src
@@ -32,6 +36,10 @@ OBJ_FILES_3 = $(OBJ_DIR)/LF.o $(OBJ_DIR)/OperatorImport.o $(OBJ_DIR)/MSSM.o $(OB
 TARGET1 = $(OUT_DIR)/main.out
 TARGET2 = $(OUT_DIR)/light_higgsinos.out
 TARGET3 = $(OUT_DIR)/benchmark.out
+
+# Build the precompiled header
+$(PCH_GCH): $(PCH)
+	$(CXX) $(CXXFLAGS) -x c++-header $< -o $@
 
 # Create obj folder if it does not exist
 $(OBJ_DIR):
@@ -51,16 +59,16 @@ $(TARGET3): $(OBJ_FILES_3) | $(OBJ_DIR)
 	$(CXX) $(OBJ_FILES_3) -o $(TARGET3) $(LIBS)
 
 # Compile .cpp files to .o files in src/ directory
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(PCH_GCH) | $(OBJ_DIR)
+	$(CXX) $(CXXFLAGS) -include $(basename $(PCH)) -c $< -o $@
 
 # Compile .cpp files to .o files in lib/ directory
-$(OBJ_DIR)/%.o: $(LIB_DIR)/%.cpp | $(OBJ_DIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+$(OBJ_DIR)/%.o: $(LIB_DIR)/%.cpp $(PCH_GCH) | $(OBJ_DIR)
+	$(CXX) $(CXXFLAGS) -include $(basename $(PCH)) -c $< -o $@
 
 # Clean object files and executables
 clean:
-	rm -f $(OBJ_DIR)/*.o $(TARGET1) $(TARGET2) $(TARGET3)
+	rm -f $(OBJ_DIR)/*.o $(TARGET1) $(TARGET2) $(TARGET3) $(PCH_GCH)
 	rm -rf obj
 
 # Phony targets

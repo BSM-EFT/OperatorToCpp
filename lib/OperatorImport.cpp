@@ -1,22 +1,13 @@
 /**
  * @file OperatorImport.cpp
  * @author Suraj Prakash
- * @date 2025-10-14
+ * @date 2025-10-17
  * @brief Auxiliary classes and funtions to aid in the evaluation of expressions within the Wilson coefficient functions
  */
 
+#include "pch.h"
 #include "OperatorImport.h"
 #include "LF.h"
-#include <vector>
-#include <cmath>
-#include <algorithm>
-#include <numeric>
-#include <variant>
-#include <cassert>
-#include <stdexcept>
-#include <tuple>
-#include <functional>
-#include <string>
 
 #if defined(_OPENMP)
     #include <omp.h>

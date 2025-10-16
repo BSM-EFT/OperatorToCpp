@@ -1,23 +1,13 @@
 /**
  * @file FileIO.cpp
  * @author Suraj Prakash
- * @date 2025-10-07
+ * @date 2025-10-17
  * @brief A suite of utility functions to aid in reading input from and writing output to files
  */
 
+#include "pch.h"
 #include "FileIO.h"
 #include "OperatorImport.h"
-
-#include <vector>
-#include <string>
-#include <cctype>
-#include <unordered_map>
-#include <map>
-#include <utility>
-#include <algorithm>
-#include <fstream>
-#include <iostream>
-#include <filesystem>
 
 #define step 0.1
 
