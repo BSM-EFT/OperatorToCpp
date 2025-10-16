@@ -436,28 +436,6 @@ HeaderModelClass[className_,paramList_,line_] := Module[{args},
 	
 	WriteLine[line, ""];
 	
-	(* define and initialize maps storing (name,lambda) pairs for Wilson Coefficients separated based on number of fermions *)
-	(* 0-fermion operators *)
-	WriteLine[line, "    std::unordered_map<std::string, std::function<double(double,double)>> fname_map_0f = {"];
-	Do[WriteLine[line, "        {\"" <> WCList[[1]][[i]] <> "\", [this](double msq, double hbar){ return this ->"<>WCList[[1]][[i]]<>"(msq, hbar); } },"], {i,1,Length[WCList[[1]]]-1}];
-	WriteLine[line, "        {\"" <> WCList[[1]][[-1]] <> "\", [this](double msq, double hbar){ return this ->"<>WCList[[1]][[-1]]<>"(msq, hbar); } }"];
-	WriteLine[line, "    };"];
-	WriteLine[line, ""];
-	
-	(* 2-fermion operators *)
-	WriteLine[line, "    std::unordered_map<std::string, std::function<double(int,int,double,double)>> fname_map_2f = {"];
-	Do[WriteLine[line, "        {\"" <> WCList[[2]][[i]] <> "\", [this](int k, int l, double msq, double hbar){ return this ->"<>WCList[[2]][[i]]<>"(k, l, msq, hbar); } },"], {i,1,Length[WCList[[2]]]-1}];
-	WriteLine[line, "        {\"" <> WCList[[2]][[-1]] <> "\", [this](int k, int l, double msq, double hbar){ return this ->"<>WCList[[2]][[-1]]<>"(k, l, msq, hbar); } }"];
-	WriteLine[line, "    };"];
-	WriteLine[line, ""];
-	
-	(* 4-fermion operators *)
-	WriteLine[line, "    std::unordered_map<std::string, std::function<double(int,int,int,int,double,double)>> fname_map_4f = {"];
-	Do[WriteLine[line, "        {\"" <> WCList[[3]][[i]] <> "\", [this](int i, int j, int k, int l, double msq, double hbar){ return this ->"<>WCList[[3]][[i]]<>"(i, j, k, l, msq, hbar); } },"], {i,1,Length[WCList[[3]]]-1}];
-	WriteLine[line, "        {\"" <> WCList[[3]][[-1]] <> "\", [this](int i, int j, int k, int l, double msq, double hbar){ return this ->"<>WCList[[3]][[-1]]<>"(i, j, k, l, msq, hbar); } }"];
-	WriteLine[line, "    };"];
-	WriteLine[line, ""];
-	
 	WriteLine[line, "};"];
 	WriteLine[line, ""];
 ];
@@ -640,12 +618,18 @@ BuildPrinter[className_, paramList_, line_]:=Module[{},
 (*Builder for a single WC function (Warsaw Basis)*)
 
 
-BuildFunctionWarsaw[modelName_,WCname_,expr_,ComplexPars_,line_]:=Module[{returnExpr},
+BuildFunctionWarsaw[modelName_,WCname_,expr_,ComplexPars_]:=Module[{returnExpr,path,line},
 	returnExpr = ConvertFullExpression[expr,ComplexPars];
+	
+	path = FileNameJoin[{NotebookDirectory[],"lib"}];
+	line = OpenWrite[path<>"/"<>First[StringSplit[WCname,"("]]<>".cpp"];
+	WriteLine[line, "#include \"OperatorImport.h\""];
+	WriteLine[line, "#include \""<>modelName<>".h\""];
 	WriteLine[line,""];
 	WriteLine[line, "double "<>modelName<>"::"<>WCname<> " {"];		
 	WriteLine[line, "    return ("<>returnExpr<>");"];
 	WriteLine[line, "}"];
+	Close[line];
 ]
 
 
@@ -676,11 +660,12 @@ SourceFileBuilder[modelName_, paramList_, ComplexPars_, matchingOutput_]:=Module
 	BuildUpdater[modelName,paramList,line1];
 	BuildPrinter[modelName,paramList,line1];
 	
+	Close[line1];
+	
 	Do[
-		BuildFunctionWarsaw[modelName,WarsawAll[keyList[[k]]],exprList[[k]],ComplexPars,line1],
+		BuildFunctionWarsaw[modelName,WarsawAll[keyList[[k]]],exprList[[k]],ComplexPars],
 	{k,1,Length[matchingOutput]}];
 	
-	Close[line1];
 ]
 
 

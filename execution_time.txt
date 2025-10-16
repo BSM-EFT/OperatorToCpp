@@ -1,3 +1,7 @@
+===================
+ -O0 optimization
+===================
+
 cH = -0.000414736, execution time = 4355.87 ms.
 cH = -0.000414736, execution time = 4436.91 ms.
 cH = -0.000414736, execution time = 4403.23 ms.
