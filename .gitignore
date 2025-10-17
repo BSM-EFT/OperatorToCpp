@@ -35,3 +35,5 @@ test*
 .vscode/
 /**/__pycache__/*
 cross-check.nb
+build/
+.cache/
