@@ -1,5 +1,5 @@
 from math import sqrt
-from matching import mssm
+from match_to_py import MSSM
 
 d1 = {
     "g1": 0.15 / sqrt(2),
@@ -30,7 +30,11 @@ d1 = {
     "mdt3": 1018000,
 }
 
-m1 = mssm(d1)
+mubarsq = 1.05 * 1.05
+hbar = 0.006332574
+m1 = MSSM(d1)
 
-for i in range(10):
-    print(m1.cH(1.05 * 1.05, 0.006332574))
+print(m1.cH(mubarsq, hbar))
+print(m1.cllHH(0, 0, mubarsq, hbar))
+print(m1.cHe(1, 1, mubarsq, hbar))
+print(m1.cuu(2, 2, 2, 2, mubarsq, hbar))

@@ -5,7 +5,7 @@
 
 
 SetDirectory[NotebookDirectory[]];
-MatchetePath =FileNameJoin[{ParentDirectory[NotebookDirectory[]], "Matchete", "Kernel", "init.m"}];
+MatchetePath =FileNameJoin[{NotebookDirectory[], "Matchete", "Kernel", "init.m"}];
 Get[MatchetePath]
 
 
@@ -13,7 +13,7 @@ Get[MatchetePath]
 (*Load one-loop matched result from file*)
 
 
-ImportPath=FileNameJoin[{ParentDirectory[NotebookDirectory[]],"matching-results","MSSM-matching-conditions.m"}];
+ImportPath=FileNameJoin[{NotebookDirectory[],"matching-results","MSSM-matching-conditions.m"}];
 matchedResult=Import[ImportPath];
 
 

@@ -38,7 +38,7 @@ set(PCH_HEADER ${PROJECT_SOURCE_DIR}/include/pch.h)
 
 
 #  Build the core library
-file(GLOB LIB_SOURCES ${PROJECT_SOURCE_DIR}/lib/*.cpp)
+file(GLOB LIB_SOURCES ${PROJECT_SOURCE_DIR}/lib/*.cpp ${PROJECT_SOURCE_DIR}/lib/*/*.cpp)
 add_library(cpp_backend STATIC ${LIB_SOURCES})
 target_include_directories(cpp_backend PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(cpp_backend PRIVATE ${OPENMP_LIBS})
@@ -61,14 +61,14 @@ endif()
 set(PYBIND11_FINDPYTHON ON)
 find_package(pybind11 CONFIG REQUIRED)
 
-pybind11_add_module(matching ${PROJECT_SOURCE_DIR}/src/myBindings.cpp)
-target_link_libraries(matching PRIVATE cpp_backend)
+pybind11_add_module(match_to_py ${PROJECT_SOURCE_DIR}/src/pyBindings.cpp)
+target_link_libraries(match_to_py PRIVATE cpp_backend)
 
 if(EXISTS ${PCH_HEADER})
-    target_precompile_headers(matching REUSE_FROM cpp_backend)
+    target_precompile_headers(match_to_py REUSE_FROM cpp_backend)
 endif()
 
-install(TARGETS matching DESTINATION .)
+install(TARGETS match_to_py DESTINATION .)
 
 
 #  Messages

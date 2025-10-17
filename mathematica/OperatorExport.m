@@ -15,6 +15,7 @@ SimplifyOutput::usage = "SimplifyOutput[matchedResult] creates a dictionary cont
 SegregateParams::usage = "SegregateParams[SimplifiedOutput, ComlexParams] collects all unique parameters within the simpplified matching output and segregates them based on their dimensionality. Keeps track of the complex parameters to ensure that their conjugates are not counted as distinct parameters.";
 HeaderFileBuilder::usage = "HeaderFileBuilder[ModelName,ModelParams] creates a ModelName.h file that defines a ModelName class with the model parameters as member variables and Warsaw basis Wilson coefficients as methods. Also, declares methods for initalizing, updating and printing the parameters of a ModelName object.";
 SourceFileBuilder::usage = "SourceFileBuilder[ModelName,ModelParams,ComplexParams,SimplifiedOutput] creates a ModelName.cpp file with implementations for each Wilson coefficient method corresponding to the ModelName class. The method bodies are built by further manipulating the SimplifiedOutput.";
+GeneratePythonDeclarations::usage = "GeneratePythonDeclarations[ModelName] creates a ModelName.pyi file with declarations for the model class and each Wilson coefficient method.";
 
 
 (* ::Subsection:: *)
@@ -199,7 +200,7 @@ SegregateParams[matchingDict_,ComplexPars_]:=Module[{extractedList},
 (*Replace the loop function exponents*)
 
 
-ImportPath=FileNameJoin[{NotebookDirectory[],"./utilities/LFRules.m"}];
+ImportPath=FileNameJoin[{NotebookDirectory[],"./LFRules.m"}];
 ReplLoopFuncExpns=Import[ImportPath];
 
 
@@ -383,11 +384,9 @@ HeaderPreprocessorDirectives[line_] := Module[{},
 	WriteLine[line, "#include <vector>"];
 	WriteLine[line, "#include <string>"];
 	WriteLine[line, "#include <unordered_map>"];
-	WriteLine[line, "#include <functional>"];
 ];
 
 HeaderModelClass[className_,paramList_,line_] := Module[{args},
-	WriteLine[line, ""];
 	WriteLine[line, "class "<>className<>" {"];
 	WriteLine[line, "    private:"];
 	
@@ -445,13 +444,21 @@ HeaderModelClass[className_,paramList_,line_] := Module[{args},
 (*Master builder*)
 
 
-HeaderFileBuilder[modelName_,paramList_]:=Module[{path,line1},
-	path = FileNameJoin[{NotebookDirectory[],"include"}];
+HeaderFileBuilder[modelName_,paramList_]:=Module[{path,line1,line2},
+	path = FileNameJoin[{ParentDirectory[NotebookDirectory[]],"include"}];
+	
 	line1 = OpenWrite[path<>"/"<>modelName<>".h"];
 	HeaderPreprocessorDirectives[line1];
 	WriteLine[line1,""];
 	HeaderModelClass[modelName,paramList,line1];
 	Close[line1];
+	
+	line2 = OpenWrite[path<>"/"<>"modelName.h"];
+	WriteLine[line2, "#pragma once"];
+	WriteLine[line2, "#include \""<>modelName<>".h\""];
+	WriteLine[line2, "using Model = "<>modelName<>";"];
+	WriteLine[line2, "const char py_class[] = \""<>modelName<>"\";"];
+	Close[line2];	
 ];
 
 
@@ -618,11 +625,19 @@ BuildPrinter[className_, paramList_, line_]:=Module[{},
 (*Builder for a single WC function (Warsaw Basis)*)
 
 
-BuildFunctionWarsaw[modelName_,WCname_,expr_,ComplexPars_]:=Module[{returnExpr,path,line},
+BuildFunctionWarsaw[modelName_,WCname_,expr_,ComplexPars_]:=Module[{returnExpr,fileName,path,line},
 	returnExpr = ConvertFullExpression[expr,ComplexPars];
+	path = FileNameJoin[{ParentDirectory[NotebookDirectory[]],"lib"}];
+	fileName = First[StringSplit[WCname,"("]];
+	line = Which[
+		MemberQ[WCList[[1]],fileName],
+		OpenWrite[path<>"/bosonic/"<>fileName<>".cpp"],
+		MemberQ[WCList[[2]],fileName],
+		OpenWrite[path<>"/two_fermions/"<>fileName<>".cpp"],
+		MemberQ[WCList[[3]],fileName],
+		OpenWrite[path<>"/four_fermions/"<>fileName<>".cpp"]
+	];
 	
-	path = FileNameJoin[{NotebookDirectory[],"lib"}];
-	line = OpenWrite[path<>"/"<>First[StringSplit[WCname,"("]]<>".cpp"];
 	WriteLine[line, "#include \"OperatorImport.h\""];
 	WriteLine[line, "#include \""<>modelName<>".h\""];
 	WriteLine[line,""];
@@ -652,7 +667,7 @@ SourceFileBuilder[modelName_, paramList_, ComplexPars_, matchingOutput_]:=Module
 	keyList=Keys[matchingOutput];
 	exprList=Values[matchingOutput];
 	
-	path = FileNameJoin[{NotebookDirectory[],"lib"}];
+	path = FileNameJoin[{ParentDirectory[NotebookDirectory[]],"lib"}];
 	line1 = OpenWrite[path<>"/"<>modelName<>".cpp"];
 	
 	BuildPreprocessorDirectives[modelName,line1];
@@ -671,13 +686,80 @@ SourceFileBuilder[modelName_, paramList_, ComplexPars_, matchingOutput_]:=Module
 
 
 (* ::Subsection:: *)
-(*Create .cpp and .h files*)
+(*Builder for .pyi file with python type information for all WC functions*)
 
 
-CreateSourceAndHeader[modelName_,paramList_,WarsawOutput_]:=Module[{line1},
-	HeaderFileBuilder[modelName,paramList];
-	SourceFileBuilder[modelName, paramList, WarsawOutput]
-];
+GeneratePythonDeclarations[modelName_]:= Module[{path,line},
+	path = FileNameJoin[{ParentDirectory[NotebookDirectory[]],"py"}];
+	line = OpenWrite[path<>"/"<>"match_to_py.pyi"];
+	WriteLine[line, "class "<>modelName<>":"];
+	WriteLine[line, "    def __init__(self, param: dict[str, float]) -> None: ..."];
+	WriteLine[line, "    def cllHH(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cG(self, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cW(self, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cGt(self, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cWt(self, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cH(self, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cHBox(self, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cHD(self, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cHG(self, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cHW(self, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cHB(self, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cHWB(self, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cHGt(self, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cHWt(self, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cHBt(self, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cHWtB(self, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def ceH(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cuH(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cdH(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def ceW(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def ceB(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cuG(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cuW(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cuB(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cdG(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cdW(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cdB(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cHl1(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cHl3(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cHe(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cHq1(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cHq3(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cHu(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cHd(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cHud(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cll(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cqq1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cqq3(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def clq1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def clq3(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cee(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cuu(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cdd(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def ceu(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def ced(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cud1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cud8(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cle(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def clu(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cld(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cqe(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cqu1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cqu8(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cqd1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cqd8(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cledq(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cquqd1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cquqd8(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def clequ1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def clequ3(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cduq(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cqqu(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cqqq(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def cduu(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	Close[line];
+]
 
 
 (* ::Section:: *)
