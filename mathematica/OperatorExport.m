@@ -693,7 +693,8 @@ GeneratePythonDeclarations[modelName_]:= Module[{path,line},
 	path = FileNameJoin[{ParentDirectory[NotebookDirectory[]],"py"}];
 	line = OpenWrite[path<>"/"<>"match_to_py.pyi"];
 	WriteLine[line, "class "<>modelName<>":"];
-	WriteLine[line, "    def __init__(self, param: dict[str, float]) -> None: ..."];
+	WriteLine[line, "    def __init__(self, param_dict: dict[str, float]) -> None: ..."];
+	WriteLine[line, "    def updateParams(self, param_dict: dict[str, float]) -> None: ..."];
 	WriteLine[line, "    def cllHH(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
 	WriteLine[line, "    def cG(self, mubarsq: float, hbar: float) -> float: ..."];
 	WriteLine[line, "    def cW(self, mubarsq: float, hbar: float) -> float: ..."];
