@@ -38,3 +38,5 @@ cross-check.nb
 build/
 .cache/
 py/__pycache__
+py/plots
+*.pdf
