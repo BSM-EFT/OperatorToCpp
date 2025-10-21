@@ -37,3 +37,4 @@ test*
 cross-check.nb
 build/
 .cache/
+py/__pycache__
