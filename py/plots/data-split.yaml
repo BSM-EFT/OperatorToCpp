@@ -1,0 +1,38 @@
+muTilde: 1000000
+mPhi: 1.1e+00
+cH:
+  tree: 4.0e-03
+  loop: -8.7e+09
+ceH_33:
+  tree: 2.9e-05
+  loop: -1.3e+08
+cuH_33:
+  tree: -1.1e-01
+  loop: 1.3e+11
+cdH_33:
+  tree: 4.1e-04
+  loop: -1.8e+09
+cle_3333:
+  tree: -1.1e-07
+  loop: 7.1e+05
+cledq_3333:
+  tree: 3.0e-06
+  loop: -2.0e+07
+clequ1_3333:
+  tree: 8.2e-04
+  loop: -2.8e+09
+cquqd1_3333:
+  tree: -1.1e-02
+  loop: 3.9e+10
+cqu1_3333:
+  tree: -5.2e-01
+  loop: 4.9e+10
+cqu8_3333:
+  tree: -3.1e+00
+  loop: 2.9e+11
+cqd1_3333:
+  tree: -7.0e-06
+  loop: 4.6e+07
+cqd8_3333:
+  tree: -4.2e-05
+  loop: 2.8e+08

@@ -1,10 +1,11 @@
 /**
  * @file OperatorImport.h
  * @author Suraj Prakash
- * @date 2025-10-13
+ * @date 2025-10-17
  * @brief Auxiliary classes and funtions to aid in the evaluation of expressions within the Wilson coefficient functions
  */
 
+#pragma once
 #include <vector>
 #include <string>
 #include <variant>
