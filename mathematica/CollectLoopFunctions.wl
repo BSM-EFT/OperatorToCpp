@@ -5,16 +5,14 @@
 
 
 SetDirectory[NotebookDirectory[]];
-MatchetePath =FileNameJoin[{NotebookDirectory[], "Matchete", "Kernel", "init.m"}];
-Get[MatchetePath]
+Needs["Matchete`"];
 
 
 (* ::Subsection:: *)
-(*Load one-loop matched result from file*)
+(*Load one-loop matched result from (globally specified) path*)
 
 
-ImportPath=FileNameJoin[{NotebookDirectory[],"matching-results","MSSM-matching-conditions.m"}];
-matchedResult=Import[ImportPath];
+matchedResultLocal=Import[$MatchedResultsPath];
 
 
 (* ::Subsection:: *)
@@ -36,8 +34,8 @@ ExtractAllLoopFuncExps[exprList_]:=Module[{expr,expComb,expCombs},
 ]
 
 
-ExpCombs=ExtractAllLoopFuncExps[Total[Values[matchedResult]]]
-ExpCombs//Length
+ExpCombs=ExtractAllLoopFuncExps[Total[Values[matchedResultLocal]]]
+Clear[matchedResultLocal]
 
 
 (* ::Subsection:: *)
@@ -242,3 +240,6 @@ CreateLFHeaderFile[]
 
 
 CreateLFSourceFile[]
+
+
+Remove["Matchete`*"]

@@ -200,8 +200,8 @@ SegregateParams[matchingDict_,ComplexPars_]:=Module[{extractedList},
 (*Replace the loop function exponents*)
 
 
-ImportPath=FileNameJoin[{NotebookDirectory[],"./LFRules.m"}];
-ReplLoopFuncExpns=Import[ImportPath];
+RulesFile=FileNameJoin[{NotebookDirectory[],"./LFRules.m"}];
+ReplLoopFuncExpns=Import[RulesFile];
 
 
 (* ::Subsubsection:: *)
