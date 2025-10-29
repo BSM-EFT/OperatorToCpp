@@ -1,9 +1,11 @@
 #include "pch.h"
 #include "LF.h"
+#include "complex_math.h"
 using std::vector;
+using std::complex;
 
 // elaborate definitions of loop-functions in terms of masses
-double LF(vector<double> masses, int code, double mubarsq) {
+complex<double> LF(vector<complex<double> > masses, int code, double mubarsq) {
     switch(code) {
         case 1: 
             return pow(masses[0],2)*(1 + log(mubarsq/pow(masses[0],2)));

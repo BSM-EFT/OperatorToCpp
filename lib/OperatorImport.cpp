@@ -1,7 +1,7 @@
 /**
  * @file OperatorImport.cpp
  * @author Suraj Prakash
- * @date 2025-10-17
+ * @date 2025-10-29
  * @brief Auxiliary classes and funtions to aid in the evaluation of expressions within the Wilson coefficient functions
  */
 
@@ -19,38 +19,39 @@ using std::accumulate;
 using std::variant;
 using std::invalid_argument;
 using std::string;
+using std::complex;
 
-LoopFunc::LoopFunc(vector<variant<vector<double>, double> > list_of_masses, int code, double mubarsq) {
-  for (variant<vector<double>, double> mass_vec: list_of_masses) {
+LoopFunc::LoopFunc(vector<variant<vector<complex<double> >, complex<double> > > list_of_masses, int code, double mubarsq) {
+  for (variant<vector<complex<double> >, complex<double> > mass_vec: list_of_masses) {
     this->masses.emplace_back(mass_vec);
   }
   this->code = code;
   this->mubarsq = mubarsq;
 }
 
-MassPow::MassPow(variant<vector<double>, double> mass, int exp) {
+MassPow::MassPow(variant<vector<complex<double> >, complex<double> > mass, int exp) {
     this->mass = mass;
     this->exp = exp;
 }
 
 // Eval function that operates on a matrix and a vector containing indices {i, j}
-double Eval(const vector<vector<double> >& matrix, const vector<int>& idx) {
+complex<double> Eval(const vector<vector<complex<double>> >& matrix, const vector<int>& idx) {
     assert(idx.size()==2);
     return matrix[idx[0]][idx[1]];
 }
 
 // overloaded Eval function for the special case of Yukawa functions
-typedef std::tuple<std::function<double(int, int, double)>, double> YF_tuple;
+typedef std::tuple<std::function<complex<double>(int, int, double)>, double> YF_tuple;
 
-double Eval(YF_tuple x, vector<int> idx) {
-   std::function<double(int, int, double)> f = std::get<0>(x);
+complex<double> Eval(YF_tuple x, vector<int> idx) {
+   std::function<complex<double>(int, int, double)> f = std::get<0>(x);
    double mubarsq = std::get<1>(x);
    return f(idx[0], idx[1], mubarsq);
 }
 
 // overloaded Eval function that returns the appropriate loop function for given combination of masses and exponents
-double Eval(LoopFunc loopf, const vector<int>& idx) {
-    vector<double> mass_arg;
+complex<double> Eval(LoopFunc loopf, const vector<int>& idx) {
+    vector<complex<double> > mass_arg;
     int i = 0;
 
     for (auto mass : loopf.masses) {
@@ -66,33 +67,33 @@ double Eval(LoopFunc loopf, const vector<int>& idx) {
 }
 
 // overloaded Eval function that operates on a MassPow object and a vector containing zero or one element
-double Eval(MassPow masspw, const vector<int>& idx) {
-    variant<vector<double>, double> mass = masspw.mass;
+complex<double> Eval(MassPow masspw, const vector<int>& idx) {
+    variant<vector<complex<double>>, complex<double>> mass = masspw.mass;
     int pw = masspw.exp;
-    double res = 1;
+    complex<double> res = 1;
 
     std::visit([&pw, &idx, &res](auto m){ res = exponentiate(m, idx, pw); }, mass);
     return res;
 }
 
 // helper to helper functions
-int dim(vector<double>& m) { return 1; }
+int dim(vector<complex<double>>& m) { return 1; }
 
-int dim(double& m) { return 0; }
+int dim(complex<double>& m) { return 0; }
 
-double apply(vector<double>& m, int i) { return m[i]; }
+complex<double> apply(vector<complex<double>>& m, int i) { return m[i]; }
 
-double apply(double& m, int i) {
+complex<double> apply(complex<double>& m, int i) {
     assert(i==0);
     return m;
 }
 
-double exponentiate(vector<double> m, const vector<int> idx, int pw) {
+complex<double> exponentiate(vector<complex<double>> m, const vector<int> idx, int pw) {
     assert(idx.size()==1);
     return pow(m[idx[0]], pw);
 }
 
-double exponentiate(double m, const vector<int> idx, int pw) {
+complex<double> exponentiate(complex<double> m, const vector<int> idx, int pw) {
     assert(idx.size()==0);
     return pow(m, pw);
 }
@@ -168,36 +169,43 @@ vector<vector<int> > cartesianProduct(int num_flavours, int num_idx) {
 
 // Einstein summation function for a variant containing (a loop function, a mass raised to some power, matrices or the Yukawa functions)
 // and a specified ordering of repeated & free indices
-double EinsSum(vector<variant<LoopFunc, MassPow, vector<vector<double> >, YF_tuple> > tensor_objs, vector<vector<int> > index_order, vector<int> free_indices) {
+complex<double> EinsSum(vector<variant<LoopFunc, MassPow, vector<vector<complex<double>> >, YF_tuple> > tensor_objs, vector<vector<int> > index_order, vector<int> free_indices) {
     int num_flavours = 3;   // hardcoded for now, should never be 0 or negative
     int num_idx = maxRepIdx(index_order);
 
-    double sum{};
+    complex<double> sum{};
 
     if (num_idx == 0) { // if there are no repeated indices, we only need to evaluate once, no looping necessary
         vector<vector<int> > segregated_seqs = idx_seqs(index_order, free_indices);
-        vector<double> res1;
+        vector<complex<double> > res1;
 
         for (int k = 0; k < tensor_objs.size(); k++) {
             std::visit([&res1, &segregated_seqs, &k](auto obj){
                 res1.emplace_back(Eval(obj, segregated_seqs[k]));
                 }, tensor_objs[k]);
         }
-        sum = accumulate(res1.begin(), res1.end(), 1.0, std::multiplies<double>());
+        
+        complex<double> res = 1.0;
+        for (auto r: res1) {
+            res *= r;
+        }
+        sum = res;
 
     } else {
         vector<vector<int> > cprod = cartesianProduct(num_flavours, num_idx);
-        vector<double> res(cprod.size());
+        vector<complex<double> > res(cprod.size());
 
         #if defined(_OPENMP)
             #pragma omp parallel for schedule(static)
             for (int i = 0; i < cprod.size(); i++) {
                 vector<vector<int> > segregated_seqs = idx_seqs(index_order, free_indices, cprod[i]);
-                vector<double> res1;
+                vector<complex<double> > res1;
                 for (int k = 0; k < tensor_objs.size(); k++)
                     std::visit([&res1, &segregated_seqs, &k](auto obj){res1.emplace_back(Eval(obj, segregated_seqs[k]));}, tensor_objs[k]);
 
-                res[i] = reduce(res1.begin(), res1.end(), 1.0, std::multiplies<double>());
+                res[i] = 1.0;
+                for (auto r: res1)
+                    res[i] *= r;                
             }
 
             #pragma omp parallel for reduction(+:sum)
@@ -212,14 +220,22 @@ double EinsSum(vector<variant<LoopFunc, MassPow, vector<vector<double> >, YF_tup
                 res.begin(),
                 [&tensor_objs, &index_order, &free_indices](auto seq){
                     vector<vector<int> > segregated_seqs = idx_seqs(index_order, free_indices, seq);
-                    vector<double> res1;
+                    vector<complex<double> > res1;
                     for (int k = 0; k < tensor_objs.size(); k++)
                         std::visit([&res1, &segregated_seqs, &k](auto obj){res1.emplace_back(Eval(obj, segregated_seqs[k]));}, tensor_objs[k]);
 
-                    return reduce(res1.begin(), res1.end(), 1.0, std::multiplies<double>());
+                    complex<double> r = 1.0;
+                    for (auto r1: res1)
+                        r *= r1;
+
+                    return r;
                 }
             );
-            sum = reduce(res.begin(), res.end(), 0.0, std::plus<double>());
+           
+            for(int i = 0; i < res.size(); i++) {
+                sum += res[i];
+            }
+             
         #endif
     }
     return sum;

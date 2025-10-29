@@ -2,15 +2,17 @@
 #include <pybind11/cast.h>
 #include <pybind11/detail/common.h>
 #include <pybind11/stl.h>
+#include <pybind11/complex.h>
 #include <unordered_map>
 #include <string>
+#include <complex>
 #include "modelName.h"
 
 namespace py = pybind11;
 
 PYBIND11_MODULE(match_to_py, m, py::mod_gil_not_used()) {
     py::class_<Model>(m, py_class)
-        .def(py::init<std::unordered_map<std::string, double>>())
+        .def(py::init<std::unordered_map<std::string, std::complex<double> > >())
         .def("updateParams", &Model::updateParams, py::arg("param_dict"))
         .def("cllHH", &Model::cllHH, py::arg("i1"), py::arg("i2"), py::arg("mubarsq"), py::arg("hbar"))
         .def("cG", &Model::cG, py::arg("mubarsq"), py::arg("hbar"))

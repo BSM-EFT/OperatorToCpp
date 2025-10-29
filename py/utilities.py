@@ -43,7 +43,9 @@ def read_param_values(filename):
         keys_to_pop = list()
 
     for (key, val) in param_dict.items():
-        if type(val) == list:
+        if type(val) == dict:
+            param_dict[key] = complex(val["real"], val["imag"])
+        elif type(val) == list:
             ranges_dict[key] = np.linspace(val[0],val[1],val[2])
             keys_to_pop.append(key)
     

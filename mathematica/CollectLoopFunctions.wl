@@ -175,13 +175,14 @@ AppendTo[dict1,ToString[i]->strList],{i,1,Length[AllExpCombs]}]
 (*Header file*)
 
 
-declaration="double LF(std::vector<double> masses, int code, double mubarsq);";
+declaration="std::complex<double> LF(std::vector<std::complex<double> > masses, int code, double mubarsq);";
 
 
 CreateLFHeaderFile[]:=Module[{line},
 	line = OpenWrite[ParentDirectory[NotebookDirectory[]]<>"/include/LF.h"];
 	WriteLine[line, "#pragma once"];
 	WriteLine[line, "#include <vector>"];
+	WriteLine[line, "#include <complex>"];
 	WriteLine[line, ""];
 	WriteLine[line, "/**"];
 	WriteLine[line, " * Evaluate loop functions."];
@@ -202,9 +203,11 @@ CreateLFHeaderFile[]:=Module[{line},
 
 declL1 = "#include \"pch.h\"";
 declL2 = "#include \"LF.h\"";
-declL3 = "using std::vector;";
+declL3 = "#include \"complex_math.h\"";
+declL4 = "using std::vector;";
+declL5 = "using std::complex;";
 doc = "// elaborate definitions of loop-functions in terms of masses";
-defL1 = "double LF(vector<double> masses, int code, double mubarsq) {";
+defL1 = "complex<double> LF(vector<complex<double> > masses, int code, double mubarsq) {";
 defL2 = "    switch(code) {";
 defClosingBraceSwitch = "    }";
 defClosingBrace = "}";
@@ -215,6 +218,8 @@ CreateLFSourceFile[]:=Module[{line,ifElseBranches},
 	WriteLine[line, declL1];
 	WriteLine[line, declL2];
 	WriteLine[line, declL3];
+	WriteLine[line, declL4];
+	WriteLine[line, declL5];
 	WriteLine[line, ""];
 	WriteLine[line, doc];
 	WriteLine[line, defL1];

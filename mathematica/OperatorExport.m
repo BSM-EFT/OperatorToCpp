@@ -344,7 +344,7 @@ ConvertSingleTerm[expr_,ComplexPars_]:=Module[{str,newStr},
 					MassPowWrapper[
 						LoopFuncWrapper[expr]]]]];
 	newStr=StringReplace[str,{"Power" -> "pow", "Log"->"log", "Sqrt"->"sqrt", "Delta("->"KronDelta(", "Pi"->"3.14159", "\""->"",".*"->"*", ". "->".0 ", ".)"->".0)" , "+ -" -> "- ",Whitespace->""}];
-	newStr=StringReplace[newStr,ReplaceCCString[ComplexPars]];
+	(*newStr=StringReplace[newStr,ReplaceCCString[ComplexPars]];*)
 	Return[newStr]
 ];
 
@@ -383,29 +383,47 @@ HeaderPreprocessorDirectives[line_] := Module[{},
 	WriteLine[line, "#pragma once"];
 	WriteLine[line, "#include <vector>"];
 	WriteLine[line, "#include <string>"];
+	WriteLine[line, "#include <complex>"];
 	WriteLine[line, "#include <unordered_map>"];
 ];
 
-HeaderModelClass[className_,paramList_,line_] := Module[{args},
+HeaderModelClass[className_,paramList_,ComplexPars_,line_] := Module[{args},
 	WriteLine[line, "class "<>className<>" {"];
 	WriteLine[line, "    private:"];
 	
 	(* define and initialize 0-dimensional parameters *)
 	If[Length[paramList[[1]]]!=0,
-		Do[WriteLine[line, "        "<>"double "<>ToString[paramList[[1]][[i]]]<>" = 0.0;"],{i,1,Length[paramList[[1]]]}]
+		Do[
+			WriteLine[line, "        "<>"std::complex<double> "<>ToString[paramList[[1]][[i]]]<>" = 0.0;"];
+			If[
+				MemberQ[ComplexPars,paramList[[1]][[i]]],
+				WriteLine[line, "        "<>"std::complex<double> "<>ToString[paramList[[1]][[i]]]<>"c = 0.0;"];
+			], {i,1,Length[paramList[[1]]]}
+		];
 	];
 	WriteLine[line, ""];
 	
 	(* define and initialize 1-dimensional parameters (masses) *)
 	If[Length[paramList[[2]]]!=0,
-		Do[WriteLine[line, "        "<>"std::vector<double> "<>ToString[paramList[[2]][[i]]]<>" = {0.0, 0.0, 0.0};"], {i,1,Length[paramList[[2]]]}];
+		Do[
+			WriteLine[line, "        "<>"std::vector<std::complex<double> > "<>ToString[paramList[[2]][[i]]]<>" = {0.0, 0.0, 0.0};"];
+			If[
+				MemberQ[ComplexPars,paramList[[2]][[i]]],
+				WriteLine[line, "        "<>"std::vector<std::complex<double> > "<>ToString[paramList[[2]][[i]]]<>"c = {0.0, 0.0, 0.0};"];
+			], {i,1,Length[paramList[[2]]]}
+		];
 	];
 	WriteLine[line, ""];
 	
 	(* define and initialize 2-dimensional parameters *)
 	If[Length[paramList[[3]]]!=0,
-		Do[WriteLine[line, "        "<>"std::vector<std::vector<double> > "<>ToString[paramList[[3]][[i]]]<>" = {{0.0, 0.0, 0.0},{0.0, 0.0, 0.0},{0.0, 0.0, 0.0}};"],
-		{i,1,Length[paramList[[3]]]}];
+		Do[
+			WriteLine[line, "        "<>"std::vector<std::vector<std::complex<double> > > "<>ToString[paramList[[3]][[i]]]<>" = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};"];
+			If[
+				MemberQ[ComplexPars,paramList[[3]][[i]]],
+				WriteLine[line, "        "<>"std::vector<std::vector<std::complex<double> > > "<>ToString[paramList[[3]][[i]]]<>"c = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};"];
+			],{i,1,Length[paramList[[3]]]}
+		];
 	];
 	WriteLine[line, ""];
 		
@@ -415,23 +433,15 @@ HeaderModelClass[className_,paramList_,line_] := Module[{args},
 	WriteLine[line, ""];
 	
 	(* declaration for the overloaded constructor*)
-	WriteLine[line, StringJoin["        ", className, "(std::unordered_map<std::string, double> params);"]];
+	WriteLine[line, StringJoin["        ", className, "(std::unordered_map<std::string, std::complex<double> > params);"]];
 	WriteLine[line, ""];
 
 	(* declaration for the updater method *)
-	WriteLine[line, StringJoin["        void updateParams", "(std::unordered_map<std::string, double> params);"]];
+	WriteLine[line, StringJoin["        void updateParams", "(std::unordered_map<std::string, std::complex<double> > params);"]];
 	WriteLine[line, ""];
-	
-	(* declaration for a method that prints the names of all parameters *)
-	WriteLine[line, StringJoin["        void printParamNames", "();"]];
-	WriteLine[line, ""];
-	
-	(* declaration for a method that prints the names and current values of all parameters *)
-	WriteLine[line, StringJoin["        void printParams", "();"]];
-	WriteLine[line, ""];
-	
+		
 	(* declarations for WC methods (Warsaw) *)
-	Do[WriteLine[line,"        double "<>Values[WarsawAll][[i]]<>";"],{i,1,Length[WarsawAll]}];
+	Do[WriteLine[line,"        std::complex<double> "<>Values[WarsawAll][[i]]<>";"],{i,1,Length[WarsawAll]}];
 	
 	WriteLine[line, ""];
 	
@@ -444,13 +454,13 @@ HeaderModelClass[className_,paramList_,line_] := Module[{args},
 (*Master builder*)
 
 
-HeaderFileBuilder[modelName_,paramList_]:=Module[{path,line1,line2},
+HeaderFileBuilder[modelName_,paramList_,ComplexPars_]:=Module[{path,line1,line2},
 	path = FileNameJoin[{ParentDirectory[NotebookDirectory[]],"include"}];
 	
 	line1 = OpenWrite[path<>"/"<>modelName<>".h"];
 	HeaderPreprocessorDirectives[line1];
 	WriteLine[line1,""];
-	HeaderModelClass[modelName,paramList,line1];
+	HeaderModelClass[modelName,paramList,ComplexPars,line1];
 	Close[line1];
 	
 	line2 = OpenWrite[path<>"/"<>"modelName.h"];
@@ -473,148 +483,250 @@ HeaderFileBuilder[modelName_,paramList_]:=Module[{path,line1,line2},
 
 BuildPreprocessorDirectives[modelName_,line_] := Module[{},
 	WriteLine[line, "#include \"pch.h\""];
-	WriteLine[line, "#include \"OperatorImport.h\""];
 	WriteLine[line, "#include \""<>modelName<>".h\""];
 ];
 
-BuildConstructor[className_, paramList_, line_]:=Module[{args},
+BuildConstructor[className_, paramList_, ComplexPars_, line_]:=Module[{args},
 	WriteLine[line, ""];
-	WriteLine[line, StringJoin[className, "::", className, "(std::unordered_map<std::string, double> params) {"]];
+	WriteLine[line, StringJoin[className, "::", className, "(std::unordered_map<std::string, std::complex<double>> params) {"]];
 	
 	If[Length[paramList[[1]]]!=0,
-		Do[WriteLine[line, "    if (params.find(\""<>ToString[paramList[[1]][[i]]]<>"\") != params.end()) this->"<>ToString[paramList[[1]][[i]]]<>" = params[\""<>ToString[paramList[[1]][[i]]]<>"\"];"], 
-			{i,1,Length[paramList[[1]]]}]	
+		Do[
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[1]][[i]]]<>"\") != params.end()) {"];
+			WriteLine[line, "        this->"<>ToString[paramList[[1]][[i]]]<>" = params[\""<>ToString[paramList[[1]][[i]]]<>"\"];"];
+			If[
+				MemberQ[ComplexPars,paramList[[1]][[i]]],
+				WriteLine[line, "        this->"<>ToString[paramList[[1]][[i]]]<>"c = std::conj(params[\""<>ToString[paramList[[1]][[i]]]<>"\"]);"];];
+			WriteLine[line, "    }"], {i,1,Length[paramList[[1]]]}]	
 	];
 	
 	If[Length[paramList[[2]]]!=0,
 		Do[
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>"1\") != params.end()) this->"<>ToString[paramList[[2]][[i]]]<>"[0] = params[\""<>ToString[paramList[[2]][[i]]]<>"1\"];"];
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>"2\") != params.end()) this->"<>ToString[paramList[[2]][[i]]]<>"[1] = params[\""<>ToString[paramList[[2]][[i]]]<>"2\"];"];
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>"3\") != params.end()) this->"<>ToString[paramList[[2]][[i]]]<>"[2] = params[\""<>ToString[paramList[[2]][[i]]]<>"3\"];"], 
-		{i,1,Length[paramList[[2]]]}]	
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>"1\") != params.end()) {"];
+			WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"[0] = params[\""<>ToString[paramList[[2]][[i]]]<>"1\"];"];
+			If[
+				MemberQ[ComplexPars,paramList[[2]][[i]]],
+				WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"c[0] = std::conj(params[\""<>ToString[paramList[[2]][[i]]]<>"1\"]);"];
+			];
+			WriteLine[line, "    }"];
+			
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>"2\") != params.end()) {"];
+			WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"[1] = params[\""<>ToString[paramList[[2]][[i]]]<>"2\"];"];
+			If[
+				MemberQ[ComplexPars,paramList[[2]][[i]]],
+				WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"c[1] = std::conj(params[\""<>ToString[paramList[[2]][[i]]]<>"2\"]);"];
+			];
+			WriteLine[line, "    }"];
+			
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>"3\") != params.end()) {"];
+			WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"[2] = params[\""<>ToString[paramList[[2]][[i]]]<>"3\"];"];
+			If[
+				MemberQ[ComplexPars,paramList[[2]][[i]]],
+				WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"c[2] = std::conj(params[\""<>ToString[paramList[[2]][[i]]]<>"3\"]);"];
+			];
+			WriteLine[line, "    }"], 
+			{i,1,Length[paramList[[2]]]}]	
 	];
 	
 	If[Length[paramList[[3]]]!=0,
 		Do[
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"11\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[0][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"11\"];"];
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"12\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[0][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"12\"];"];
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"13\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[0][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"13\"];"];
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"21\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[1][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"21\"];"];
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"22\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[1][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"22\"];"];
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"23\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[1][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"23\"];"];
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"31\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[2][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"31\"];"];
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"32\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[2][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"32\"];"];
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"33\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[2][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"33\"];"], 
-		{i,1,Length[paramList[[3]]]}]	
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"11\") != params.end()) {"];
+			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[0][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"11\"];"];
+			If[
+				MemberQ[ComplexPars,paramList[[3]][[i]]],
+				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[0][0] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"11\"]);"];
+			];
+			WriteLine[line, "    }"];
+			
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"12\") != params.end()) {"];
+			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[0][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"12\"];"];
+			If[
+				MemberQ[ComplexPars,paramList[[3]][[i]]],
+				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[1][0] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"12\"]);"];
+			];
+			WriteLine[line, "    }"];
+			
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"13\") != params.end()) {"];
+			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[0][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"13\"];"];
+			If[
+				MemberQ[ComplexPars,paramList[[3]][[i]]],
+				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[2][0] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"13\"]);"];
+			];
+			WriteLine[line, "    }"];
+			
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"21\") != params.end()) {"];
+			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[1][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"21\"];"];
+			If[
+				MemberQ[ComplexPars,paramList[[3]][[i]]],
+				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[0][1] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"21\"]);"];
+			];
+			WriteLine[line, "    }"];
+			
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"22\") != params.end()) {"];
+			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[1][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"22\"];"];
+			If[
+				MemberQ[ComplexPars,paramList[[3]][[i]]],
+				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[1][1] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"22\"]);"];
+			];
+			WriteLine[line, "    }"];
+			
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"23\") != params.end()) {"];
+			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[1][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"23\"];"];
+			If[
+				MemberQ[ComplexPars,paramList[[3]][[i]]],
+				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[2][1] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"23\"]);"];
+			];
+			WriteLine[line, "    }"];
+			
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"31\") != params.end()) {"];
+			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[2][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"31\"];"];
+			If[
+				MemberQ[ComplexPars,paramList[[3]][[i]]],
+				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[0][2] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"31\"]);"];
+			];
+			WriteLine[line, "    }"];
+			
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"32\") != params.end()) {"];
+			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[2][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"32\"];"];
+			If[
+				MemberQ[ComplexPars,paramList[[3]][[i]]],
+				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[1][2] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"32\"]);"];
+			];
+			WriteLine[line, "    }"];
+			
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"33\") != params.end()) {"];
+			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[2][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"33\"];"];
+			If[
+				MemberQ[ComplexPars,paramList[[3]][[i]]],
+				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[2][2] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"33\"]);"];
+			];
+			WriteLine[line, "    }"];
+			
+			
+		,{i,1,Length[paramList[[3]]]}]	
 	];
 	
 	WriteLine[line, StringJoin["}"]];
 ];
 
-BuildUpdater[className_, paramList_, line_]:=Module[{},
+BuildUpdater[className_, paramList_, ComplexPars_, line_]:=Module[{},
 	WriteLine[line, ""];
-	WriteLine[line, StringJoin["void ", className, "::updateParams", "(std::unordered_map<std::string, double> params) {"]];
+	WriteLine[line, StringJoin["void ", className, "::updateParams", "(std::unordered_map<std::string, std::complex<double>> params) {"]];
 	
 	If[Length[paramList[[1]]]!=0,
-		Do[WriteLine[line, "    if (params.find(\""<>ToString[paramList[[1]][[i]]]<>"\") != params.end()) this->"<>ToString[paramList[[1]][[i]]]<>" = params[\""<>ToString[paramList[[1]][[i]]]<>"\"];"], 
-		{i,1,Length[paramList[[1]]]}]	
+		Do[
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[1]][[i]]]<>"\") != params.end()) {"];
+			WriteLine[line, "        this->"<>ToString[paramList[[1]][[i]]]<>" = params[\""<>ToString[paramList[[1]][[i]]]<>"\"];"];
+			If[
+				MemberQ[ComplexPars,paramList[[1]][[i]]],
+				WriteLine[line, "        this->"<>ToString[paramList[[1]][[i]]]<>"c = std::conj(params[\""<>ToString[paramList[[1]][[i]]]<>"\"]);"];];
+			WriteLine[line, "    }"], {i,1,Length[paramList[[1]]]}]	
 	];
 	
 	If[Length[paramList[[2]]]!=0,
 		Do[
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>"1\") != params.end()) this->"<>ToString[paramList[[2]][[i]]]<>"[0] = params[\""<>ToString[paramList[[2]][[i]]]<>"1\"];"];
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>"2\") != params.end()) this->"<>ToString[paramList[[2]][[i]]]<>"[1] = params[\""<>ToString[paramList[[2]][[i]]]<>"2\"];"];
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>"3\") != params.end()) this->"<>ToString[paramList[[2]][[i]]]<>"[2] = params[\""<>ToString[paramList[[2]][[i]]]<>"3\"];"], 
-		{i,1,Length[paramList[[2]]]}]	
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>"1\") != params.end()) {"];
+			WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"[0] = params[\""<>ToString[paramList[[2]][[i]]]<>"1\"];"];
+			If[
+				MemberQ[ComplexPars,paramList[[2]][[i]]],
+				WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"c[0] = std::conj(params[\""<>ToString[paramList[[2]][[i]]]<>"1\"]);"];
+			];
+			WriteLine[line, "    }"];
+			
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>"2\") != params.end()) {"];
+			WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"[1] = params[\""<>ToString[paramList[[2]][[i]]]<>"2\"];"];
+			If[
+				MemberQ[ComplexPars,paramList[[2]][[i]]],
+				WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"c[1] = std::conj(params[\""<>ToString[paramList[[2]][[i]]]<>"2\"]);"];
+			];
+			WriteLine[line, "    }"];
+			
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>"3\") != params.end()) {"];
+			WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"[2] = params[\""<>ToString[paramList[[2]][[i]]]<>"3\"];"];
+			If[
+				MemberQ[ComplexPars,paramList[[2]][[i]]],
+				WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"c[2] = std::conj(params[\""<>ToString[paramList[[2]][[i]]]<>"3\"]);"];
+			];
+			WriteLine[line, "    }"], 
+			{i,1,Length[paramList[[2]]]}]	
 	];
 	
 	If[Length[paramList[[3]]]!=0,
 		Do[
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"11\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[0][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"11\"];"];
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"12\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[0][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"12\"];"];
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"13\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[0][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"13\"];"];
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"21\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[1][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"21\"];"];
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"22\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[1][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"22\"];"];
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"23\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[1][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"23\"];"];
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"31\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[2][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"31\"];"];
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"32\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[2][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"32\"];"];
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"33\") != params.end()) this->"<>ToString[paramList[[3]][[i]]]<>"[2][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"33\"];"], 
-		{i,1,Length[paramList[[3]]]}]	
-	];
-	
-	WriteLine[line, "}"];
-];
-
-
-(* ::Subsubsection::Closed:: *)
-(*Builder for printer methods*)
-
-
-BuildPrinter[className_, paramList_, line_]:=Module[{},
-	WriteLine[line, ""];
-	WriteLine[line, "void "<>className<>"::printParamNames"<>"()"<>"{"];
-	
-	If[Length[paramList[[1]]]!=0,
-		WriteLine[line, StringJoin["    std::cout << ","\"\\n", "Scalar-valued parameters", "\"", " << \"\\n\";"]];
-		WriteLine[line, StringJoin["    std::cout << ","\"", "-----------------", "\"", " << \"\\n\";"]];
-		Do[WriteLine[line, StringJoin["    std::cout << ", "\"", ToString[paramList[[1]][[i]]], "\" << \"\\n\";"]],{i,1,Length[paramList[[1]]]}];
-		WriteLine[line, ""]
-	];
-	
-	If[Length[paramList[[2]]]!=0,
-		WriteLine[line, StringJoin["    std::cout << ","\"\\n", "Vector-valued parameters", "\"", " << \"\\n\";"]];
-		WriteLine[line, StringJoin["    std::cout << ","\"", "-----------------", "\"", " << \"\\n\";"]];
-		Do[WriteLine[line, StringJoin["    std::cout << ", "\"", ToString[paramList[[2]][[i]]], "\" << \"\\n\";"]],{i,1,Length[paramList[[2]]]}];
-		WriteLine[line, ""]
-	];
-	
-	If[Length[paramList[[3]]]!=0,
-		WriteLine[line, StringJoin["    std::cout << ","\"\\n", "Matrix-valued parameters", "\"", " << \"\\n\";"]];
-		WriteLine[line, StringJoin["    std::cout << ","\"", "-----------------", "\"", " << \"\\n\";"]];
-		Do[WriteLine[line, StringJoin["    std::cout << ", "\"", ToString[paramList[[3]][[i]]], "\" << \"\\n\";"]],{i,1,Length[paramList[[3]]]}];
-		WriteLine[line, ""]
-	];
-	
-	WriteLine[line, "}"];
-	
-	WriteLine[line, ""];
-	WriteLine[line, "void "<>className<>"::printParams"<>"()"<>"{"];
-	
-	If[Length[paramList[[1]]]!=0,
-		WriteLine[line, StringJoin["    std::cout << ","\"\\n", "Scalar-valued parameters", "\"", " << \"\\n\";"]];
-		WriteLine[line, StringJoin["    std::cout << ","\"", "-----------------", "\"", " << \"\\n\";"]];
-		Do[
-			WriteLine[line, StringJoin["    std::cout << ", "\"", ToString[paramList[[1]][[i]]], ": \" << ", ToString[paramList[[1]][[i]]], " << \"\\n\";"]],
-		{i,1,Length[paramList[[1]]]}];
-		WriteLine[line, ""]
-	];
-	
-	If[Length[paramList[[2]]]!=0,
-		WriteLine[line, StringJoin["    std::cout << ","\"\\n", "Vector-valued parameters", "\"", " << \"\\n\";"]];
-		WriteLine[line, StringJoin["    std::cout << ","\"", "-----------------", "\"", " << \"\\n\";"]];
-		Do[
-			WriteLine[line, StringJoin["    std::cout << ", "\"", ToString[paramList[[2]][[i]]], "1: \" << ", ToString[paramList[[2]][[i]]], "[0] << \"\\n\";"]];
-			WriteLine[line, StringJoin["    std::cout << ", "\"", ToString[paramList[[2]][[i]]], "2: \" << ", ToString[paramList[[2]][[i]]], "[1] << \"\\n\";"]];
-			WriteLine[line, StringJoin["    std::cout << ", "\"", ToString[paramList[[2]][[i]]], "3: \" << ", ToString[paramList[[2]][[i]]], "[2] << \"\\n\";"]],
-		{i,1,Length[paramList[[2]]]}];
-		WriteLine[line, ""]
-	];
-	
-	If[Length[paramList[[3]]]!=0,
-		WriteLine[line, StringJoin["    std::cout << ","\"\\n", "Matrix-valued parameters", "\"", " << \"\\n\";"]];
-		WriteLine[line, StringJoin["    std::cout << ","\"", "-----------------", "\"", " << \"\\n\";"]];
-		Do[
-			WriteLine[line, StringJoin["    std::cout << ", "\"", ToString[paramList[[3]][[i]]], "11: \" << ", ToString[paramList[[3]][[i]]], "[0][0] << \"\\n\";"]];
-			WriteLine[line, StringJoin["    std::cout << ", "\"", ToString[paramList[[3]][[i]]], "12: \" << ", ToString[paramList[[3]][[i]]], "[0][1] << \"\\n\";"]];
-			WriteLine[line, StringJoin["    std::cout << ", "\"", ToString[paramList[[3]][[i]]], "13: \" << ", ToString[paramList[[3]][[i]]], "[0][2] << \"\\n\";"]];
-			WriteLine[line, StringJoin["    std::cout << ", "\"", ToString[paramList[[3]][[i]]], "21: \" << ", ToString[paramList[[3]][[i]]], "[1][0] << \"\\n\";"]];
-			WriteLine[line, StringJoin["    std::cout << ", "\"", ToString[paramList[[3]][[i]]], "22: \" << ", ToString[paramList[[3]][[i]]], "[1][1] << \"\\n\";"]];
-			WriteLine[line, StringJoin["    std::cout << ", "\"", ToString[paramList[[3]][[i]]], "23: \" << ", ToString[paramList[[3]][[i]]], "[1][2] << \"\\n\";"]];
-			WriteLine[line, StringJoin["    std::cout << ", "\"", ToString[paramList[[3]][[i]]], "31: \" << ", ToString[paramList[[3]][[i]]], "[2][0] << \"\\n\";"]];
-			WriteLine[line, StringJoin["    std::cout << ", "\"", ToString[paramList[[3]][[i]]], "32: \" << ", ToString[paramList[[3]][[i]]], "[2][1] << \"\\n\";"]];
-			WriteLine[line, StringJoin["    std::cout << ", "\"", ToString[paramList[[3]][[i]]], "33: \" << ", ToString[paramList[[3]][[i]]], "[2][2] << \"\\n\";"]],
-		{i,1,Length[paramList[[3]]]}];
-		WriteLine[line, ""]
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"11\") != params.end()) {"];
+			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[0][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"11\"];"];
+			If[
+				MemberQ[ComplexPars,paramList[[3]][[i]]],
+				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[0][0] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"11\"]);"];
+			];
+			WriteLine[line, "    }"];
+			
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"12\") != params.end()) {"];
+			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[0][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"12\"];"];
+			If[
+				MemberQ[ComplexPars,paramList[[3]][[i]]],
+				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[1][0] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"12\"]);"];
+			];
+			WriteLine[line, "    }"];
+			
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"13\") != params.end()) {"];
+			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[0][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"13\"];"];
+			If[
+				MemberQ[ComplexPars,paramList[[3]][[i]]],
+				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[2][0] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"13\"]);"];
+			];
+			WriteLine[line, "    }"];
+			
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"21\") != params.end()) {"];
+			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[1][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"21\"];"];
+			If[
+				MemberQ[ComplexPars,paramList[[3]][[i]]],
+				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[0][1] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"21\"]);"];
+			];
+			WriteLine[line, "    }"];
+			
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"22\") != params.end()) {"];
+			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[1][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"22\"];"];
+			If[
+				MemberQ[ComplexPars,paramList[[3]][[i]]],
+				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[1][1] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"22\"]);"];
+			];
+			WriteLine[line, "    }"];
+			
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"23\") != params.end()) {"];
+			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[1][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"23\"];"];
+			If[
+				MemberQ[ComplexPars,paramList[[3]][[i]]],
+				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[2][1] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"23\"]);"];
+			];
+			WriteLine[line, "    }"];
+			
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"31\") != params.end()) {"];
+			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[2][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"31\"];"];
+			If[
+				MemberQ[ComplexPars,paramList[[3]][[i]]],
+				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[0][2] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"31\"]);"];
+			];
+			WriteLine[line, "    }"];
+			
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"32\") != params.end()) {"];
+			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[2][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"32\"];"];
+			If[
+				MemberQ[ComplexPars,paramList[[3]][[i]]],
+				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[1][2] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"32\"]);"];
+			];
+			WriteLine[line, "    }"];
+			
+			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"33\") != params.end()) {"];
+			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[2][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"33\"];"];
+			If[
+				MemberQ[ComplexPars,paramList[[3]][[i]]],
+				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[2][2] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"33\"]);"];
+			];
+			WriteLine[line, "    }"];
+			
+			
+		,{i,1,Length[paramList[[3]]]}]	
 	];
 	
 	WriteLine[line, "}"];
@@ -639,9 +751,10 @@ BuildFunctionWarsaw[modelName_,WCname_,expr_,ComplexPars_]:=Module[{returnExpr,f
 	];
 	
 	WriteLine[line, "#include \"OperatorImport.h\""];
+	WriteLine[line, "#include \"complex_math.h\""];
 	WriteLine[line, "#include \""<>modelName<>".h\""];
 	WriteLine[line,""];
-	WriteLine[line, "double "<>modelName<>"::"<>WCname<> " {"];		
+	WriteLine[line, "std::complex<double> "<>modelName<>"::"<>WCname<> " {"];		
 	WriteLine[line, "    return ("<>returnExpr<>");"];
 	WriteLine[line, "}"];
 	Close[line];
@@ -671,9 +784,8 @@ SourceFileBuilder[modelName_, paramList_, ComplexPars_, matchingOutput_]:=Module
 	line1 = OpenWrite[path<>"/"<>modelName<>".cpp"];
 	
 	BuildPreprocessorDirectives[modelName,line1];
-	BuildConstructor[modelName,paramList,line1];
-	BuildUpdater[modelName,paramList,line1];
-	BuildPrinter[modelName,paramList,line1];
+	BuildConstructor[modelName,paramList,ComplexPars,line1];
+	BuildUpdater[modelName,paramList,ComplexPars,line1];
 	
 	Close[line1];
 	
@@ -693,72 +805,72 @@ GeneratePythonDeclarations[modelName_]:= Module[{path,line},
 	path = FileNameJoin[{ParentDirectory[NotebookDirectory[]],"py"}];
 	line = OpenWrite[path<>"/"<>"match_to_py.pyi"];
 	WriteLine[line, "class "<>modelName<>":"];
-	WriteLine[line, "    def __init__(self, param_dict: dict[str, float]) -> None: ..."];
-	WriteLine[line, "    def updateParams(self, param_dict: dict[str, float]) -> None: ..."];
-	WriteLine[line, "    def cllHH(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cG(self, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cW(self, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cGt(self, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cWt(self, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cH(self, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cHBox(self, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cHD(self, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cHG(self, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cHW(self, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cHB(self, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cHWB(self, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cHGt(self, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cHWt(self, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cHBt(self, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cHWtB(self, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def ceH(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cuH(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cdH(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def ceW(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def ceB(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cuG(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cuW(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cuB(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cdG(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cdW(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cdB(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cHl1(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cHl3(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cHe(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cHq1(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cHq3(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cHu(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cHd(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cHud(self, i1: int, i2: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cll(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cqq1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cqq3(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def clq1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def clq3(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cee(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cuu(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cdd(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def ceu(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def ced(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cud1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cud8(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cle(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def clu(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cld(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cqe(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cqu1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cqu8(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cqd1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cqd8(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cledq(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cquqd1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cquqd8(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def clequ1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def clequ3(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cduq(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cqqu(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cqqq(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
-	WriteLine[line, "    def cduu(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> float: ..."];
+	WriteLine[line, "    def __init__(self, param_dict: dict[str, complex]) -> None: ..."];
+	WriteLine[line, "    def updateParams(self, param_dict: dict[str, complex]) -> None: ..."];
+	WriteLine[line, "    def cllHH(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cG(self, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cW(self, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cGt(self, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cWt(self, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cH(self, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cHBox(self, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cHD(self, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cHG(self, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cHW(self, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cHB(self, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cHWB(self, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cHGt(self, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cHWt(self, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cHBt(self, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cHWtB(self, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def ceH(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cuH(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cdH(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def ceW(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def ceB(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cuG(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cuW(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cuB(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cdG(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cdW(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cdB(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cHl1(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cHl3(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cHe(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cHq1(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cHq3(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cHu(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cHd(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cHud(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cll(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cqq1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cqq3(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def clq1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def clq3(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cee(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cuu(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cdd(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def ceu(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def ced(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cud1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cud8(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cle(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def clu(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cld(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cqe(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cqu1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cqu8(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cqd1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cqd8(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cledq(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cquqd1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cquqd8(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def clequ1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def clequ3(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cduq(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cqqu(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cqqq(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def cduu(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
 	Close[line];
 ]
 

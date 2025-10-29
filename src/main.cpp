@@ -1,7 +1,7 @@
 /**
  * @file main.cpp
  * @author Suraj Prakash
- * @date 2025-10-17
+ * @date 2025-10-29
  * @brief Code for estimating time performance of the Wilson coefficient functions in MSSM.h and MSSM.cpp
  */
 
@@ -14,8 +14,10 @@
 #include <chrono>
 #include <ratio>
 #include <cmath>
+#include <complex>
 
 using std::vector;
+using std::complex;
 using std::unordered_map;
 using std::string;
 
@@ -23,14 +25,13 @@ int main() {
 
     MSSM sb_model;
 
-    double yDM = 0.10;
     double gs = 1.1;
     double ytSM = 0.9;
     double mubarsq = 1.05*1.05;
 
-    std::unordered_map<string, double> param_dict;
+    std::unordered_map<string, complex<double> > param_dict;
 
-    param_dict.emplace("g1", yDM*3/(2*sqrt(2)));
+    param_dict.emplace("g1", 0.11);
     param_dict.emplace("g3", gs);
     param_dict.emplace("cgamma",0.01); // cos(\beta) should not be 0 or 1.
 
@@ -40,11 +41,10 @@ int main() {
     // (right-handed) stop mass (in units of TeV), this is m_\tilde{t} in Eq.(6.1)
     param_dict.emplace("mut3", 2.000);
 
-    // Higgs mass set to physical mass (units of TeV) (this does not factor into the results)
-    param_dict.emplace("mHsq", 0.125*0.125);
-
+    complex<double> yuC = {0.03,0.04};
+    
     // SM Yukawas
-    param_dict.emplace("yu11", 0.00001);
+    param_dict.emplace("yu11", yuC);
     param_dict.emplace("yu22", 0.007);
     param_dict.emplace("yu33", ytSM);
 
@@ -85,7 +85,7 @@ int main() {
 
     const auto tf = std::chrono::high_resolution_clock::now();
     const std::chrono::duration<double, std::milli> ms = tf - ti;
-    std::cout << "Execution time for 10 calls to cH with parallel EinsSum() and caching: " << ms.count() << " ms.\n\n";
+    std::cout << "Execution time for 10 calls to cH with parallel EinsSum() and no caching: " << ms.count() << " ms.\n\n";
 
     return 0;
 }

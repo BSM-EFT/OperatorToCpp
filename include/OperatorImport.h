@@ -1,40 +1,41 @@
 /**
  * @file OperatorImport.h
  * @author Suraj Prakash
- * @date 2025-10-17
+ * @date 2025-10-29
  * @brief Auxiliary classes and funtions to aid in the evaluation of expressions within the Wilson coefficient functions
  */
 
 #pragma once
 #include <vector>
 #include <string>
+#include <complex>
 #include <variant>
 #include <tuple>
 #include <utility>
 #include <functional>
 
 /// Type alias declaration for a (function object, double) tuple.
-typedef std::tuple<std::function<double(int, int, double)>, double> YF_tuple;
+typedef std::tuple<std::function<std::complex<double>(int, int, double)>, double> YF_tuple;
 
 /// Implemntation of a loop function class to faciliate calling and evaluating LoopFunc functors.
 class LoopFunc {
     public:
-        std::vector<std::variant<std::vector<double>, double> > masses;
+        std::vector<std::variant<std::vector<std::complex<double>>, std::complex<double>> > masses;
         int code;
         double mubarsq;
 
         LoopFunc() = delete;
-        LoopFunc(std::vector<std::variant<std::vector<double>, double> > list_of_masses, int code, double mubarsq);
+        LoopFunc(std::vector<std::variant<std::vector<std::complex<double>>, std::complex<double> > > list_of_masses, int code, double mubarsq);
 };
 
 /// Implemntation of a class to faciliate calling and evaluating MassPow functors.
 class MassPow {
     public:
-        std::variant<std::vector<double>, double> mass;
+        std::variant<std::vector<std::complex<double>>, std::complex<double>> mass;
         int exp;
 
         MassPow() = delete;
-        MassPow(std::variant<std::vector<double>, double> mass, int exp);
+        MassPow(std::variant<std::vector<std::complex<double>>, std::complex<double>> mass, int exp);
 
 };
 
@@ -45,46 +46,46 @@ class MassPow {
  * @param idx A vector of index values for the 1d "vector" masses within the LoopFunc mass list.
  * @return The evaluated numerical value.
  */
-double Eval(LoopFunc loopf, const std::vector<int>& idx);
+std::complex<double> Eval(LoopFunc loopf, const std::vector<int>& idx);
 
 /**
  * Evaluate a MassPow object given a set of indices.
  *
  * @overload
  */
-double Eval(MassPow masspw, const std::vector<int>& idx);
+std::complex<double> Eval(MassPow masspw, const std::vector<int>& idx);
 
 /**
  * Evaluate a 2d vector (matrix) given a set of indices.
  *
  * @overload
  */
-double Eval(const std::vector<std::vector<double> >& matrix, const std::vector<int>& idx);
+std::complex<double> Eval(const std::vector<std::vector<std::complex<double>> >& matrix, const std::vector<int>& idx);
 
 /**
  * Evaluate a (function object, mass scale) tuple given a set of indices.
  *
  * @overload
  */
-double Eval(YF_tuple x, std::vector<int> idx);
+std::complex<double> Eval(YF_tuple x, std::vector<int> idx);
 
 /// return the dimension of a 1d vector -> necessary for std::visit calls.
-int dim(std::vector<double>& m);
+int dim(std::vector<std::complex<double>>& m);
 
 /// return the dimension of a 0d vector -> necessary for std::visit calls.
-int dim(double& m);
+int dim(std::complex<double>& m);
 
 /// subscript a 1d vector with a specified index -> necessary for std::visit calls.
-double apply(std::vector<double>& m, int i);
+std::complex<double> apply(std::vector<std::complex<double>>& m, int i);
 
 /// overloaded apply function for double valued masses, simply returns the original value.
-double apply(double& m, int i);
+std::complex<double> apply(std::complex<double>& m, int i);
 
 /// exponentiate a specified element of a 1d vector by a specified power.
-double exponentiate(std::vector<double> m, const std::vector<int> idx, int pw);
+std::complex<double> exponentiate(std::vector<std::complex<double>> m, const std::vector<int> idx, int pw);
 
 /// overloaded exponentiate function for double valued masses, the index information is discarded.
-double exponentiate(double m, const std::vector<int> idx, int pw);
+std::complex<double> exponentiate(std::complex<double> m, const std::vector<int> idx, int pw);
 
 /// identify the maximum number of unique indices given a vector of vector of indices.
 int maxRepIdx(const std::vector<std::vector<int> >& v1);
@@ -117,7 +118,7 @@ std::vector<std::vector<int> > cartesianProduct(int num_flavours, int num_idx);
  * @param free_indices A vector storing the values of each free index.
  * @return The evaluated sum.
 */
-double EinsSum(std::vector<std::variant<LoopFunc, MassPow, std::vector<std::vector<double> >, YF_tuple> > tensor_objs, std::vector<std::vector<int> > index_order, std::vector<int> free_indices);
+std::complex<double> EinsSum(std::vector<std::variant<LoopFunc, MassPow, std::vector<std::vector<std::complex<double>> >, YF_tuple> > tensor_objs, std::vector<std::vector<int> > index_order, std::vector<int> free_indices);
 
 /// Evaluate the kronecker delta function for specified indices, returns 1 for a == b, 0 otherwise.
 int KronDelta(int a, int b);

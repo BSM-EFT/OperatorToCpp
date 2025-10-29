@@ -1,6 +1,7 @@
 #include "OperatorImport.h"
+#include "complex_math.h"
 #include "MSSM.h"
 
-double MSSM::cduu(int i1, int i2, int i3, int i4, double mubarsq, double hbar) {
+std::complex<double> MSSM::cduu(int i1, int i2, int i3, int i4, double mubarsq, double hbar) {
     return (0);
 }
