@@ -1,55 +1,43 @@
 /**
  * @file main.cpp
  * @author Suraj Prakash
- * @date 2025-10-29
- * @brief Code for estimating time performance of the Wilson coefficient functions in MSSM.h and MSSM.cpp
+ * @date 2026-01-29
+ * @brief Example C++ program that creates an instance of the MSSM class and evaluates Wilson coefficients 
  */
 
 #include "MSSM.h"
-#include <utility>
-#include <vector>
-#include <iostream>
-#include <string>
-#include <unordered_map>
-#include <chrono>
-#include <ratio>
-#include <cmath>
-#include <complex>
+  #include <vector>
+  #include <string>
+  #include <complex>
+  #include <unordered_map>
+  #include <iostream>
+  #include <cmath>
+  
+  int main() {
 
-using std::vector;
-using std::complex;
-using std::unordered_map;
-using std::string;
+    const double mubarsq = 1.0;
+    const double pi = 3.14159265358979323846;
+    const double hbar = 1/(16 * pow(pi,2));
 
-int main() {
-
+    // create an instance of the model and a parameter dictionary
     MSSM sb_model;
+    std::unordered_map<std::string, std::complex<double>> param_dict;
 
-    double gs = 1.1;
-    double ytSM = 0.9;
-    double mubarsq = 1.05*1.05;
+    param_dict.emplace("g1", 0.37);
+    param_dict.emplace("g3", 1.1);
+    param_dict.emplace("cgamma",0.01); 
 
-    std::unordered_map<string, complex<double> > param_dict;
-
-    param_dict.emplace("g1", 0.11);
-    param_dict.emplace("g3", gs);
-    param_dict.emplace("cgamma",0.01); // cos(\beta) should not be 0 or 1.
-
-    // Bino mass (in units of TeV), this is M_1 in Eq.(6.1)
+    // Bino mass and (right-handed) stop mass (in units of TeV)
     param_dict.emplace("m1", 1.200);
-
-    // (right-handed) stop mass (in units of TeV), this is m_\tilde{t} in Eq.(6.1)
     param_dict.emplace("mut3", 2.000);
-
-    complex<double> yuC = {0.03,0.04};
     
-    // SM Yukawas
-    param_dict.emplace("yu11", yuC);
-    param_dict.emplace("yu22", 0.007);
-    param_dict.emplace("yu33", ytSM);
+    // Yukawa couplings
+    param_dict.emplace("Yu11", 0.00001);
+    param_dict.emplace("Yu22", 0.007);
+    param_dict.emplace("Yu33", 0.9);
 
-    // We set the masses of all other superpartners to be very large, unspecified parmeters remain zero.
-    vector<string> heavy_masses = {
+    // We set the masses of all other super-partners to be very large, unspecified parmeters remain zero.
+    std::vector<std::string> heavy_masses = {
         "m3", "m2", "mPhi", "muTilde",
         "met1", "met2", "met3",
         "mlt1", "mlt2", "mlt3",
@@ -59,33 +47,20 @@ int main() {
     };
 
     double i = 0.0;
-    for(string mass: heavy_masses) {
+    for(std::string mass: heavy_masses) {
         param_dict.emplace(mass, 1'000'000.0 + i);
         i += 1000;
     }
 
+    // update the model parameters
     sb_model.updateParams(param_dict);
 
-    // evaluation time for given function
-    auto eval = [](auto func) {
-        const auto t1 = std::chrono::high_resolution_clock::now();
-        const auto [name, result] = func();
-        const auto t2 = std::chrono::high_resolution_clock::now();
-        const std::chrono::duration<double, std::milli> ms = t2 - t1;
-        std::cout << name << " = " << result << ", execution time = " << ms.count() << " ms.\n";
-    };
-
-    const auto ti = std::chrono::high_resolution_clock::now();
-
-    for (int i = 0; i < 10; i++) {
-        eval([&](){
-            return std::pair{"cH", sb_model.cH(mubarsq,0.006332574)};
-        });
-    }
-
-    const auto tf = std::chrono::high_resolution_clock::now();
-    const std::chrono::duration<double, std::milli> ms = tf - ti;
-    std::cout << "Execution time for 10 calls to cH with parallel EinsSum() and no caching: " << ms.count() << " ms.\n\n";
-
+    // compute and print Wilson coefficients values
+    std::cout << "cG: {Real = " << sb_model.cG(mubarsq, hbar).real() 
+              << ", Imag = " << sb_model.cG(mubarsq, hbar).imag() << "}\n";
+    std::cout << "cuB: {Real = " << sb_model.cuB(2,2,mubarsq, hbar).real() 
+              << ", Imag = " << sb_model.cuB(2,2,mubarsq, hbar).imag() << "}\n";
+    
+    return 0;
     return 0;
 }
