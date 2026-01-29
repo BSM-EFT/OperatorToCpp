@@ -28,12 +28,12 @@ class MSSM {
         std::vector<std::vector<std::complex<double> > > aec = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
         std::vector<std::vector<std::complex<double> > > au = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
         std::vector<std::vector<std::complex<double> > > auc = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
-        std::vector<std::vector<std::complex<double> > > yd = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
-        std::vector<std::vector<std::complex<double> > > ydc = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
-        std::vector<std::vector<std::complex<double> > > ye = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
-        std::vector<std::vector<std::complex<double> > > yec = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
-        std::vector<std::vector<std::complex<double> > > yu = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
-        std::vector<std::vector<std::complex<double> > > yuc = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
+        std::vector<std::vector<std::complex<double> > > Yd = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
+        std::vector<std::vector<std::complex<double> > > Ydc = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
+        std::vector<std::vector<std::complex<double> > > Ye = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
+        std::vector<std::vector<std::complex<double> > > Yec = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
+        std::vector<std::vector<std::complex<double> > > Yu = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
+        std::vector<std::vector<std::complex<double> > > Yuc = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
 
     public:
         MSSM() = default;

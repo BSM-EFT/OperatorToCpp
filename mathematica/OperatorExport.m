@@ -12,7 +12,7 @@ BeginPackage["OperatorExport`", {"Global`"}];
 
 
 SimplifyOutput::usage = "SimplifyOutput[matchedResult] creates a dictionary containing only Wilson coefficients and the corresponding matching conditions, while unwraping the Matchete API and converting the expressions to a lighter intermediate form.";
-SegregateParams::usage = "SegregateParams[SimplifiedOutput, ComlexParams] collects all unique parameters within the simpplified matching output and segregates them based on their dimensionality. Keeps track of the complex parameters to ensure that their conjugates are not counted as distinct parameters.";
+SegregateParams::usage = "SegregateParams[SimplifiedOutput, ComplexParams] collects all unique parameters within the simplified matching output and segregates them based on their dimensionality. Keeps track of the complex parameters to ensure that their conjugates are not counted as distinct parameters.";
 HeaderFileBuilder::usage = "HeaderFileBuilder[ModelName,ModelParams] creates a ModelName.h file that defines a ModelName class with the model parameters as member variables and Warsaw basis Wilson coefficients as methods. Also, declares methods for initalizing, updating and printing the parameters of a ModelName object.";
 SourceFileBuilder::usage = "SourceFileBuilder[ModelName,ModelParams,ComplexParams,SimplifiedOutput] creates a ModelName.cpp file with implementations for each Wilson coefficient method corresponding to the ModelName class. The method bodies are built by further manipulating the SimplifiedOutput.";
 GeneratePythonDeclarations::usage = "GeneratePythonDeclarations[ModelName] creates a ModelName.pyi file with declarations for the model class and each Wilson coefficient method.";
@@ -46,7 +46,7 @@ Print[
  Style[
   Column[{
     Row[{
-      "OperatorExport  v0.1 \[LongDash] by ",
+      "OperatorExport  v0.2 \[LongDash] by ",
       "Suraj Prakash",
       " (", 
       Style["suraj.prakash@ific.uv.es", "Hyperlink", FontColor -> Blue],
@@ -56,7 +56,7 @@ Print[
       "Affiliation: IFIC (Universitat de Valencia - CSIC)"
     }],
     Row[{
-      "GitHub: ", 
+      "Repository: ", 
       Style["https://github.com/BSM-EFT/OperatorToCpp", "Hyperlink", FontColor -> Blue]
     }],
     Style["Mathematica component of the OperatorToC++ code.", FontColor->Gray]
@@ -743,11 +743,11 @@ BuildFunctionWarsaw[modelName_,WCname_,expr_,ComplexPars_]:=Module[{returnExpr,f
 	fileName = First[StringSplit[WCname,"("]];
 	line = Which[
 		MemberQ[WCList[[1]],fileName],
-		OpenWrite[path<>"/bosonic/"<>fileName<>".cpp"],
+		OpenWrite[path<>"/0f/"<>fileName<>".cpp"],
 		MemberQ[WCList[[2]],fileName],
-		OpenWrite[path<>"/two_fermions/"<>fileName<>".cpp"],
+		OpenWrite[path<>"/2f/"<>fileName<>".cpp"],
 		MemberQ[WCList[[3]],fileName],
-		OpenWrite[path<>"/four_fermions/"<>fileName<>".cpp"]
+		OpenWrite[path<>"/4f/"<>fileName<>".cpp"]
 	];
 	
 	WriteLine[line, "#include \"OperatorImport.h\""];

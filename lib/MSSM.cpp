@@ -182,113 +182,113 @@ MSSM::MSSM(std::unordered_map<std::string, std::complex<double>> params) {
         this->au[2][2] = params["au33"];
         this->auc[2][2] = std::conj(params["au33"]);
     }
-    if (params.find("yd11") != params.end()) {
-        this->yd[0][0] = params["yd11"];
-        this->ydc[0][0] = std::conj(params["yd11"]);
+    if (params.find("Yd11") != params.end()) {
+        this->Yd[0][0] = params["Yd11"];
+        this->Ydc[0][0] = std::conj(params["Yd11"]);
     }
-    if (params.find("yd12") != params.end()) {
-        this->yd[0][1] = params["yd12"];
-        this->ydc[1][0] = std::conj(params["yd12"]);
+    if (params.find("Yd12") != params.end()) {
+        this->Yd[0][1] = params["Yd12"];
+        this->Ydc[1][0] = std::conj(params["Yd12"]);
     }
-    if (params.find("yd13") != params.end()) {
-        this->yd[0][2] = params["yd13"];
-        this->ydc[2][0] = std::conj(params["yd13"]);
+    if (params.find("Yd13") != params.end()) {
+        this->Yd[0][2] = params["Yd13"];
+        this->Ydc[2][0] = std::conj(params["Yd13"]);
     }
-    if (params.find("yd21") != params.end()) {
-        this->yd[1][0] = params["yd21"];
-        this->ydc[0][1] = std::conj(params["yd21"]);
+    if (params.find("Yd21") != params.end()) {
+        this->Yd[1][0] = params["Yd21"];
+        this->Ydc[0][1] = std::conj(params["Yd21"]);
     }
-    if (params.find("yd22") != params.end()) {
-        this->yd[1][1] = params["yd22"];
-        this->ydc[1][1] = std::conj(params["yd22"]);
+    if (params.find("Yd22") != params.end()) {
+        this->Yd[1][1] = params["Yd22"];
+        this->Ydc[1][1] = std::conj(params["Yd22"]);
     }
-    if (params.find("yd23") != params.end()) {
-        this->yd[1][2] = params["yd23"];
-        this->ydc[2][1] = std::conj(params["yd23"]);
+    if (params.find("Yd23") != params.end()) {
+        this->Yd[1][2] = params["Yd23"];
+        this->Ydc[2][1] = std::conj(params["Yd23"]);
     }
-    if (params.find("yd31") != params.end()) {
-        this->yd[2][0] = params["yd31"];
-        this->ydc[0][2] = std::conj(params["yd31"]);
+    if (params.find("Yd31") != params.end()) {
+        this->Yd[2][0] = params["Yd31"];
+        this->Ydc[0][2] = std::conj(params["Yd31"]);
     }
-    if (params.find("yd32") != params.end()) {
-        this->yd[2][1] = params["yd32"];
-        this->ydc[1][2] = std::conj(params["yd32"]);
+    if (params.find("Yd32") != params.end()) {
+        this->Yd[2][1] = params["Yd32"];
+        this->Ydc[1][2] = std::conj(params["Yd32"]);
     }
-    if (params.find("yd33") != params.end()) {
-        this->yd[2][2] = params["yd33"];
-        this->ydc[2][2] = std::conj(params["yd33"]);
+    if (params.find("Yd33") != params.end()) {
+        this->Yd[2][2] = params["Yd33"];
+        this->Ydc[2][2] = std::conj(params["Yd33"]);
     }
-    if (params.find("ye11") != params.end()) {
-        this->ye[0][0] = params["ye11"];
-        this->yec[0][0] = std::conj(params["ye11"]);
+    if (params.find("Ye11") != params.end()) {
+        this->Ye[0][0] = params["Ye11"];
+        this->Yec[0][0] = std::conj(params["Ye11"]);
     }
-    if (params.find("ye12") != params.end()) {
-        this->ye[0][1] = params["ye12"];
-        this->yec[1][0] = std::conj(params["ye12"]);
+    if (params.find("Ye12") != params.end()) {
+        this->Ye[0][1] = params["Ye12"];
+        this->Yec[1][0] = std::conj(params["Ye12"]);
     }
-    if (params.find("ye13") != params.end()) {
-        this->ye[0][2] = params["ye13"];
-        this->yec[2][0] = std::conj(params["ye13"]);
+    if (params.find("Ye13") != params.end()) {
+        this->Ye[0][2] = params["Ye13"];
+        this->Yec[2][0] = std::conj(params["Ye13"]);
     }
-    if (params.find("ye21") != params.end()) {
-        this->ye[1][0] = params["ye21"];
-        this->yec[0][1] = std::conj(params["ye21"]);
+    if (params.find("Ye21") != params.end()) {
+        this->Ye[1][0] = params["Ye21"];
+        this->Yec[0][1] = std::conj(params["Ye21"]);
     }
-    if (params.find("ye22") != params.end()) {
-        this->ye[1][1] = params["ye22"];
-        this->yec[1][1] = std::conj(params["ye22"]);
+    if (params.find("Ye22") != params.end()) {
+        this->Ye[1][1] = params["Ye22"];
+        this->Yec[1][1] = std::conj(params["Ye22"]);
     }
-    if (params.find("ye23") != params.end()) {
-        this->ye[1][2] = params["ye23"];
-        this->yec[2][1] = std::conj(params["ye23"]);
+    if (params.find("Ye23") != params.end()) {
+        this->Ye[1][2] = params["Ye23"];
+        this->Yec[2][1] = std::conj(params["Ye23"]);
     }
-    if (params.find("ye31") != params.end()) {
-        this->ye[2][0] = params["ye31"];
-        this->yec[0][2] = std::conj(params["ye31"]);
+    if (params.find("Ye31") != params.end()) {
+        this->Ye[2][0] = params["Ye31"];
+        this->Yec[0][2] = std::conj(params["Ye31"]);
     }
-    if (params.find("ye32") != params.end()) {
-        this->ye[2][1] = params["ye32"];
-        this->yec[1][2] = std::conj(params["ye32"]);
+    if (params.find("Ye32") != params.end()) {
+        this->Ye[2][1] = params["Ye32"];
+        this->Yec[1][2] = std::conj(params["Ye32"]);
     }
-    if (params.find("ye33") != params.end()) {
-        this->ye[2][2] = params["ye33"];
-        this->yec[2][2] = std::conj(params["ye33"]);
+    if (params.find("Ye33") != params.end()) {
+        this->Ye[2][2] = params["Ye33"];
+        this->Yec[2][2] = std::conj(params["Ye33"]);
     }
-    if (params.find("yu11") != params.end()) {
-        this->yu[0][0] = params["yu11"];
-        this->yuc[0][0] = std::conj(params["yu11"]);
+    if (params.find("Yu11") != params.end()) {
+        this->Yu[0][0] = params["Yu11"];
+        this->Yuc[0][0] = std::conj(params["Yu11"]);
     }
-    if (params.find("yu12") != params.end()) {
-        this->yu[0][1] = params["yu12"];
-        this->yuc[1][0] = std::conj(params["yu12"]);
+    if (params.find("Yu12") != params.end()) {
+        this->Yu[0][1] = params["Yu12"];
+        this->Yuc[1][0] = std::conj(params["Yu12"]);
     }
-    if (params.find("yu13") != params.end()) {
-        this->yu[0][2] = params["yu13"];
-        this->yuc[2][0] = std::conj(params["yu13"]);
+    if (params.find("Yu13") != params.end()) {
+        this->Yu[0][2] = params["Yu13"];
+        this->Yuc[2][0] = std::conj(params["Yu13"]);
     }
-    if (params.find("yu21") != params.end()) {
-        this->yu[1][0] = params["yu21"];
-        this->yuc[0][1] = std::conj(params["yu21"]);
+    if (params.find("Yu21") != params.end()) {
+        this->Yu[1][0] = params["Yu21"];
+        this->Yuc[0][1] = std::conj(params["Yu21"]);
     }
-    if (params.find("yu22") != params.end()) {
-        this->yu[1][1] = params["yu22"];
-        this->yuc[1][1] = std::conj(params["yu22"]);
+    if (params.find("Yu22") != params.end()) {
+        this->Yu[1][1] = params["Yu22"];
+        this->Yuc[1][1] = std::conj(params["Yu22"]);
     }
-    if (params.find("yu23") != params.end()) {
-        this->yu[1][2] = params["yu23"];
-        this->yuc[2][1] = std::conj(params["yu23"]);
+    if (params.find("Yu23") != params.end()) {
+        this->Yu[1][2] = params["Yu23"];
+        this->Yuc[2][1] = std::conj(params["Yu23"]);
     }
-    if (params.find("yu31") != params.end()) {
-        this->yu[2][0] = params["yu31"];
-        this->yuc[0][2] = std::conj(params["yu31"]);
+    if (params.find("Yu31") != params.end()) {
+        this->Yu[2][0] = params["Yu31"];
+        this->Yuc[0][2] = std::conj(params["Yu31"]);
     }
-    if (params.find("yu32") != params.end()) {
-        this->yu[2][1] = params["yu32"];
-        this->yuc[1][2] = std::conj(params["yu32"]);
+    if (params.find("Yu32") != params.end()) {
+        this->Yu[2][1] = params["Yu32"];
+        this->Yuc[1][2] = std::conj(params["Yu32"]);
     }
-    if (params.find("yu33") != params.end()) {
-        this->yu[2][2] = params["yu33"];
-        this->yuc[2][2] = std::conj(params["yu33"]);
+    if (params.find("Yu33") != params.end()) {
+        this->Yu[2][2] = params["Yu33"];
+        this->Yuc[2][2] = std::conj(params["Yu33"]);
     }
 }
 
@@ -473,112 +473,112 @@ void MSSM::updateParams(std::unordered_map<std::string, std::complex<double>> pa
         this->au[2][2] = params["au33"];
         this->auc[2][2] = std::conj(params["au33"]);
     }
-    if (params.find("yd11") != params.end()) {
-        this->yd[0][0] = params["yd11"];
-        this->ydc[0][0] = std::conj(params["yd11"]);
+    if (params.find("Yd11") != params.end()) {
+        this->Yd[0][0] = params["Yd11"];
+        this->Ydc[0][0] = std::conj(params["Yd11"]);
     }
-    if (params.find("yd12") != params.end()) {
-        this->yd[0][1] = params["yd12"];
-        this->ydc[1][0] = std::conj(params["yd12"]);
+    if (params.find("Yd12") != params.end()) {
+        this->Yd[0][1] = params["Yd12"];
+        this->Ydc[1][0] = std::conj(params["Yd12"]);
     }
-    if (params.find("yd13") != params.end()) {
-        this->yd[0][2] = params["yd13"];
-        this->ydc[2][0] = std::conj(params["yd13"]);
+    if (params.find("Yd13") != params.end()) {
+        this->Yd[0][2] = params["Yd13"];
+        this->Ydc[2][0] = std::conj(params["Yd13"]);
     }
-    if (params.find("yd21") != params.end()) {
-        this->yd[1][0] = params["yd21"];
-        this->ydc[0][1] = std::conj(params["yd21"]);
+    if (params.find("Yd21") != params.end()) {
+        this->Yd[1][0] = params["Yd21"];
+        this->Ydc[0][1] = std::conj(params["Yd21"]);
     }
-    if (params.find("yd22") != params.end()) {
-        this->yd[1][1] = params["yd22"];
-        this->ydc[1][1] = std::conj(params["yd22"]);
+    if (params.find("Yd22") != params.end()) {
+        this->Yd[1][1] = params["Yd22"];
+        this->Ydc[1][1] = std::conj(params["Yd22"]);
     }
-    if (params.find("yd23") != params.end()) {
-        this->yd[1][2] = params["yd23"];
-        this->ydc[2][1] = std::conj(params["yd23"]);
+    if (params.find("Yd23") != params.end()) {
+        this->Yd[1][2] = params["Yd23"];
+        this->Ydc[2][1] = std::conj(params["Yd23"]);
     }
-    if (params.find("yd31") != params.end()) {
-        this->yd[2][0] = params["yd31"];
-        this->ydc[0][2] = std::conj(params["yd31"]);
+    if (params.find("Yd31") != params.end()) {
+        this->Yd[2][0] = params["Yd31"];
+        this->Ydc[0][2] = std::conj(params["Yd31"]);
     }
-    if (params.find("yd32") != params.end()) {
-        this->yd[2][1] = params["yd32"];
-        this->ydc[1][2] = std::conj(params["yd32"]);
+    if (params.find("Yd32") != params.end()) {
+        this->Yd[2][1] = params["Yd32"];
+        this->Ydc[1][2] = std::conj(params["Yd32"]);
     }
-    if (params.find("yd33") != params.end()) {
-        this->yd[2][2] = params["yd33"];
-        this->ydc[2][2] = std::conj(params["yd33"]);
+    if (params.find("Yd33") != params.end()) {
+        this->Yd[2][2] = params["Yd33"];
+        this->Ydc[2][2] = std::conj(params["Yd33"]);
     }
-    if (params.find("ye11") != params.end()) {
-        this->ye[0][0] = params["ye11"];
-        this->yec[0][0] = std::conj(params["ye11"]);
+    if (params.find("Ye11") != params.end()) {
+        this->Ye[0][0] = params["Ye11"];
+        this->Yec[0][0] = std::conj(params["Ye11"]);
     }
-    if (params.find("ye12") != params.end()) {
-        this->ye[0][1] = params["ye12"];
-        this->yec[1][0] = std::conj(params["ye12"]);
+    if (params.find("Ye12") != params.end()) {
+        this->Ye[0][1] = params["Ye12"];
+        this->Yec[1][0] = std::conj(params["Ye12"]);
     }
-    if (params.find("ye13") != params.end()) {
-        this->ye[0][2] = params["ye13"];
-        this->yec[2][0] = std::conj(params["ye13"]);
+    if (params.find("Ye13") != params.end()) {
+        this->Ye[0][2] = params["Ye13"];
+        this->Yec[2][0] = std::conj(params["Ye13"]);
     }
-    if (params.find("ye21") != params.end()) {
-        this->ye[1][0] = params["ye21"];
-        this->yec[0][1] = std::conj(params["ye21"]);
+    if (params.find("Ye21") != params.end()) {
+        this->Ye[1][0] = params["Ye21"];
+        this->Yec[0][1] = std::conj(params["Ye21"]);
     }
-    if (params.find("ye22") != params.end()) {
-        this->ye[1][1] = params["ye22"];
-        this->yec[1][1] = std::conj(params["ye22"]);
+    if (params.find("Ye22") != params.end()) {
+        this->Ye[1][1] = params["Ye22"];
+        this->Yec[1][1] = std::conj(params["Ye22"]);
     }
-    if (params.find("ye23") != params.end()) {
-        this->ye[1][2] = params["ye23"];
-        this->yec[2][1] = std::conj(params["ye23"]);
+    if (params.find("Ye23") != params.end()) {
+        this->Ye[1][2] = params["Ye23"];
+        this->Yec[2][1] = std::conj(params["Ye23"]);
     }
-    if (params.find("ye31") != params.end()) {
-        this->ye[2][0] = params["ye31"];
-        this->yec[0][2] = std::conj(params["ye31"]);
+    if (params.find("Ye31") != params.end()) {
+        this->Ye[2][0] = params["Ye31"];
+        this->Yec[0][2] = std::conj(params["Ye31"]);
     }
-    if (params.find("ye32") != params.end()) {
-        this->ye[2][1] = params["ye32"];
-        this->yec[1][2] = std::conj(params["ye32"]);
+    if (params.find("Ye32") != params.end()) {
+        this->Ye[2][1] = params["Ye32"];
+        this->Yec[1][2] = std::conj(params["Ye32"]);
     }
-    if (params.find("ye33") != params.end()) {
-        this->ye[2][2] = params["ye33"];
-        this->yec[2][2] = std::conj(params["ye33"]);
+    if (params.find("Ye33") != params.end()) {
+        this->Ye[2][2] = params["Ye33"];
+        this->Yec[2][2] = std::conj(params["Ye33"]);
     }
-    if (params.find("yu11") != params.end()) {
-        this->yu[0][0] = params["yu11"];
-        this->yuc[0][0] = std::conj(params["yu11"]);
+    if (params.find("Yu11") != params.end()) {
+        this->Yu[0][0] = params["Yu11"];
+        this->Yuc[0][0] = std::conj(params["Yu11"]);
     }
-    if (params.find("yu12") != params.end()) {
-        this->yu[0][1] = params["yu12"];
-        this->yuc[1][0] = std::conj(params["yu12"]);
+    if (params.find("Yu12") != params.end()) {
+        this->Yu[0][1] = params["Yu12"];
+        this->Yuc[1][0] = std::conj(params["Yu12"]);
     }
-    if (params.find("yu13") != params.end()) {
-        this->yu[0][2] = params["yu13"];
-        this->yuc[2][0] = std::conj(params["yu13"]);
+    if (params.find("Yu13") != params.end()) {
+        this->Yu[0][2] = params["Yu13"];
+        this->Yuc[2][0] = std::conj(params["Yu13"]);
     }
-    if (params.find("yu21") != params.end()) {
-        this->yu[1][0] = params["yu21"];
-        this->yuc[0][1] = std::conj(params["yu21"]);
+    if (params.find("Yu21") != params.end()) {
+        this->Yu[1][0] = params["Yu21"];
+        this->Yuc[0][1] = std::conj(params["Yu21"]);
     }
-    if (params.find("yu22") != params.end()) {
-        this->yu[1][1] = params["yu22"];
-        this->yuc[1][1] = std::conj(params["yu22"]);
+    if (params.find("Yu22") != params.end()) {
+        this->Yu[1][1] = params["Yu22"];
+        this->Yuc[1][1] = std::conj(params["Yu22"]);
     }
-    if (params.find("yu23") != params.end()) {
-        this->yu[1][2] = params["yu23"];
-        this->yuc[2][1] = std::conj(params["yu23"]);
+    if (params.find("Yu23") != params.end()) {
+        this->Yu[1][2] = params["Yu23"];
+        this->Yuc[2][1] = std::conj(params["Yu23"]);
     }
-    if (params.find("yu31") != params.end()) {
-        this->yu[2][0] = params["yu31"];
-        this->yuc[0][2] = std::conj(params["yu31"]);
+    if (params.find("Yu31") != params.end()) {
+        this->Yu[2][0] = params["Yu31"];
+        this->Yuc[0][2] = std::conj(params["Yu31"]);
     }
-    if (params.find("yu32") != params.end()) {
-        this->yu[2][1] = params["yu32"];
-        this->yuc[1][2] = std::conj(params["yu32"]);
+    if (params.find("Yu32") != params.end()) {
+        this->Yu[2][1] = params["Yu32"];
+        this->Yuc[1][2] = std::conj(params["Yu32"]);
     }
-    if (params.find("yu33") != params.end()) {
-        this->yu[2][2] = params["yu33"];
-        this->yuc[2][2] = std::conj(params["yu33"]);
+    if (params.find("Yu33") != params.end()) {
+        this->Yu[2][2] = params["Yu33"];
+        this->Yuc[2][2] = std::conj(params["Yu33"]);
     }
 }
