@@ -142,10 +142,8 @@ def create_legend(bp):
 
     cmds = cmds[:-2]
     exprs = tuple(exprs)
-    
     legend = cmds%exprs
-
-    #legend = r'%s $= {\rm %s\, TeV}$, %s = ${\rm %s\, TeV}$'%(label_dict[param_names[0]], bp[param_names[0]], label_dict[param_names[1]], bp[param_names[1]])
+    
     return legend
 
 # function for making bar plots
