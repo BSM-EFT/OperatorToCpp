@@ -10,7 +10,9 @@ label_dict = {
 
 ## Functions to convert a given WC name into LaTeX
 
-def texify(wc_name):
+def texify(wc_name: str) -> str:
+    """Converts a given Wilson coefficient name in the cXYZ_abcd to latex format"""
+
     parts = wc_name.split("_")
     if len(parts) == 2:
         [name, idx] = parts
@@ -29,7 +31,7 @@ def texify(wc_name):
             name = "{" + name + "}"
         return [name]
 
-def texify_abs(wc_name):   
+def texify_abs(wc_name: str) -> str:   
     parts = texify(wc_name)
     if len(parts) == 2:
         [name, idx] = parts
@@ -39,7 +41,7 @@ def texify_abs(wc_name):
     
     return tex
 
-def texify_pos(wc_name):   
+def texify_pos(wc_name: str) -> str:   
     parts = texify(wc_name)
     if len(parts) == 2:
         [name, idx] = parts
@@ -49,7 +51,7 @@ def texify_pos(wc_name):
     
     return tex
 
-def texify_neg(wc_name):   
+def texify_neg(wc_name: str) -> str:   
     parts = texify(wc_name)
     if len(parts) == 2:
         [name, idx] = parts
@@ -59,7 +61,7 @@ def texify_neg(wc_name):
     
     return tex
 
-def texify_nounits(wc_name):   
+def texify_nounits(wc_name: str) -> str:   
     parts = texify(wc_name)
     if len(parts) == 2:
         [name, idx] = parts
@@ -69,7 +71,12 @@ def texify_nounits(wc_name):
     
     return tex
 
-def tex_label(data, wc_name):
+def tex_label(data: pd.DataFrame, wc_name: str) -> str:
+    """
+    Creates the appropriate latex label for a coefficient based on whether 
+    its values are always positive, always negative or a mix of both within 
+    the data object
+    """
     is_neg = [num < 0.0 for num in np.array(data[wc_name].array) ]
     is_pos = [num >= 0.0 for num in np.array(data[wc_name].array) ]
     if all(is_neg):
@@ -81,7 +88,24 @@ def tex_label(data, wc_name):
     
 # function for making 2d plots
 
-def plot_fn_2d(data, param_names, wc_name, filename):
+def plot_fn_2d(data: pd.DataFrame, param_names: list[str], wc_name: str, filename:str) -> None:
+    """
+    Generates a 2-dimensional plot for the specified combination of model parameters 
+    and Wilson coefficient.
+
+    Parameters
+    ----------
+        data : Dataframe
+            A pandas dataframe object containing the values of model parameters and evaluated Wilson coefficients
+            where the parameters vary over ranges
+        param_names : list[str]
+            A 2-component list of parameter names [x, y] specifying the x and y axes of the plot
+        wc_name :  str
+            The name of the Wilson coefficent to be plotted
+        filename : str
+            A string containing the path of the output file to save the plot
+
+    """
     assert len(param_names) == 2
 
     param_vals = []
@@ -118,7 +142,11 @@ def plot_fn_2d(data, param_names, wc_name, filename):
     plt.tight_layout()
     plt.savefig(filename)
 
-def collect_vals(data, bmk_pts, wc_names):
+def collect_vals(data: pd.DataFrame, bmk_pts: list[dict[str, float]], wc_names: list[str]) -> list[float | complex]:
+    """
+    Selects a specific row from the dataframe based on the (name, value) parameter combinations and then filters the columns
+    based on the provided list of wilson coefficient names
+    """
     values = []
     for bp in bmk_pts:
         cond = True
@@ -132,7 +160,8 @@ def collect_vals(data, bmk_pts, wc_names):
     
     return values
 
-def create_legend(bp):
+def create_legend(bp: dict[str, float]) -> str:
+    """Creates a rwa string to hold the latex commands to display the legends based on the specified parameter combination"""
     cmds = ""
     exprs = []
     for k in bp.keys():
@@ -148,7 +177,25 @@ def create_legend(bp):
 
 # function for making bar plots
 
-def plot_fn_bar(data, bmk_pts, wc_names, filename,**kwargs):
+def plot_fn_bar(data: pd.DataFrame, bmk_pts: list[dict[str, float]], wc_names: list[str], filename: str, **kwargs: dict) -> None:
+    """
+    Generates bar plots for the specified Wilson coefficients corresponding to given benchmark points and 
+    values stored in a dataframe object
+
+    Parameters
+    -----------
+        data : Dataframe
+            A pandas dataframe object containing the values of model parameters and evaluated Wilson coefficients
+            where the parameters vary over ranges
+        bmk_pts : list[dict]
+            A list whose individual elements are benchmark points stored as (name, value) pairs
+        wc_names :  list[str]
+            A list containing the names of the Wilson coefficent to be plotted
+        filename : str
+            A string containing the path of the output file to save the plot
+        kwargs : dict
+            A dictionary containing additional bar-plot attributes
+    """
     x_pos = np.arange(len(wc_names))
     fig, ax = plt.subplots(figsize=(15, 8))
 
