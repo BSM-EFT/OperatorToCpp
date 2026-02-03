@@ -99,16 +99,25 @@ def write_to_yaml(filename,model,param_dict,keys,**kw):
 
 
 # create a grid based on combinations of parameters that vary between min, max values
-def create_combs(arrays):
-    return np.array(np.meshgrid(*arrays)).T.reshape(-1,len(arrays))
+def create_combs(arrays, grid=True):
+    if grid:
+        return np.array(np.meshgrid(*arrays)).T.reshape(-1,len(arrays))
+    else:
+        combs = []
+        for i in range(len(arrays[0])):
+            comb = []
+            for array in arrays:
+                comb.append(array[i])
+            combs.append(comb)
+
+        return np.array(combs)
 
 # write WC values for each point on a parameter grid to a .csv file
-def write_to_csv(filename,model,param_info,wc_names,**kw):
-    ranges_dict = param_info[1]
+def write_to_csv(filename,model,ranges_dict,wc_names,grid=True,**kw):
     assert(len(ranges_dict)!=0)
     
     param_keys = list(ranges_dict.keys())
-    param_combs = create_combs(list(ranges_dict.values()))
+    param_combs = create_combs(list(ranges_dict.values()),grid)
 
     colNames = list(param_keys) + wc_names
 
@@ -122,22 +131,18 @@ def write_to_csv(filename,model,param_info,wc_names,**kw):
                 output_dict[param_keys[i]] = param_comb[i]
             
             model.updateParams(output_dict)
-            output_dict.update(
-                create_wc_dict(model,wc_names,**kw)
-            )
+            output_dict.update(create_wc_dict(model,wc_names,**kw))
             formatted_output = {
                 k: (f"{v.real:.1e}" if isinstance(v, complex) else f"{v:.1e}" if isinstance(v, float) else v) for k, v in output_dict.items()
             }
             writer.writerow(formatted_output)
 
 # create a dataframe containing WC values for each point on a parameter grid
-def create_dataframe(model,param_info,wc_names,**kw):
-    ranges_dict = param_info[1]
-    
+def create_dataframe(model,ranges_dict,wc_names,grid=True,**kw):
     assert(len(ranges_dict)!=0)
     
     param_keys = list(ranges_dict.keys())
-    param_combs = create_combs(list(ranges_dict.values()))
+    param_combs = create_combs(list(ranges_dict.values()),grid)
 
     colNames = list(param_keys) + wc_names
     df = pd.DataFrame(columns=colNames)
