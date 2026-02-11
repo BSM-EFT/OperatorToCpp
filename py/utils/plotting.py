@@ -4,11 +4,11 @@ import pandas as pd
 from matplotlib.colors import LogNorm
 
 label_dict = {
+    # this must be updated/extended based on the specific parameters being used as the plot axes
     'mut3': r'$m_{\tilde{t}_R}$',
     'm1': r'$m_1$'
     }
 
-## Functions to convert a given WC name into LaTeX
 
 def texify(wc_name: str) -> str:
     """Converts a given Wilson coefficient name in the cXYZ_abcd to latex format"""
@@ -31,6 +31,7 @@ def texify(wc_name: str) -> str:
             name = "{" + name + "}"
         return [name]
 
+
 def texify_abs(wc_name: str) -> str:   
     parts = texify(wc_name)
     if len(parts) == 2:
@@ -41,6 +42,7 @@ def texify_abs(wc_name: str) -> str:
     
     return tex
 
+
 def texify_pos(wc_name: str) -> str:   
     parts = texify(wc_name)
     if len(parts) == 2:
@@ -50,6 +52,7 @@ def texify_pos(wc_name: str) -> str:
         tex = r'$C_%s\,\, ({\rm TeV}^{-2})$'%(parts[0])
     
     return tex
+
 
 def texify_neg(wc_name: str) -> str:   
     parts = texify(wc_name)
@@ -71,6 +74,7 @@ def texify_nounits(wc_name: str) -> str:
     
     return tex
 
+
 def tex_label(data: pd.DataFrame, wc_name: str) -> str:
     """
     Creates the appropriate latex label for a coefficient based on whether 
@@ -86,7 +90,6 @@ def tex_label(data: pd.DataFrame, wc_name: str) -> str:
     else:
         return texify_abs(wc_name)
     
-# function for making 2d plots
 
 def plot_fn_2d(data: pd.DataFrame, param_names: list[str], wc_name: str, filename:str) -> None:
     """
@@ -142,6 +145,7 @@ def plot_fn_2d(data: pd.DataFrame, param_names: list[str], wc_name: str, filenam
     plt.tight_layout()
     plt.savefig(filename)
 
+
 def collect_vals(data: pd.DataFrame, bmk_pts: list[dict[str, float]], wc_names: list[str]) -> list[float | complex]:
     """
     Selects a specific row from the dataframe based on the (name, value) parameter combinations and then filters the columns
@@ -160,6 +164,7 @@ def collect_vals(data: pd.DataFrame, bmk_pts: list[dict[str, float]], wc_names: 
     
     return values
 
+
 def create_legend(bp: dict[str, float]) -> str:
     """Creates a rwa string to hold the latex commands to display the legends based on the specified parameter combination"""
     cmds = ""
@@ -175,7 +180,6 @@ def create_legend(bp: dict[str, float]) -> str:
     
     return legend
 
-# function for making bar plots
 
 def plot_fn_bar(data: pd.DataFrame, bmk_pts: list[dict[str, float]], wc_names: list[str], filename: str, **kwargs: dict) -> None:
     """
