@@ -29,14 +29,11 @@
 
 .DS_Store
 */.DS_Store
-mathematica/Matchete
 test*
 .clangd
 .vscode/
 .idea/
-/**/__pycache__/*
-cross-check.nb
+**/__pycache__
 build/
 .cache/
-py/__pycache__
 *.pdf
