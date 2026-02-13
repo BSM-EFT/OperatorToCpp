@@ -1,4 +1,5 @@
 from match_to_py import MSSM
+from utils.io import write_to_wcxf
 
 # define a parameter dictionary
 param_dict = {
@@ -22,8 +23,8 @@ model1 = MSSM(param_dict)
 print(model1.cG(**scale))
 print(model1.cuB(2,2,**scale))
 
-from utilities import eval_wc
+# evaluate coefficients using their names
+# and write to a file in wcxf format
 
-# evaluate Wilson coefficients by name
-print(eval_wc(model1, "cG", **scale))
-print(eval_wc(model1, "cuB_33", **scale))
+wcs = ["cuu_3113", "cG", "cHG", "cHD", "cuG_33"]
+write_to_wcxf("example_wcxf.yaml",model1,wcs,"matchete",**scale)
