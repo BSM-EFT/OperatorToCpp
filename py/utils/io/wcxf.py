@@ -84,7 +84,9 @@ def permute_and_compare(name: str, idx_seq: str, perms: list[list[int]]) -> str 
 
 
 def wcxf_name_val(model, wc_name: str, convention: str, **kw: dict) -> tuple[str, float | complex] | None:
-    """evaluates a Wilson coefficient given in Matchete or wcxf convention and returns a tuple containing
+    """
+    evaluates a Wilson coefficient given in Matchete or wcxf convention and returns a tuple containing
+    the coefficient name in wcxf format and the value 
     """
     name_idx = wc_name.split("_")
     name = name_idx[0]
@@ -128,6 +130,9 @@ def wcxf_name_val(model, wc_name: str, convention: str, **kw: dict) -> tuple[str
 
 
 def create_wcxf_dict(model, wc_names: list[str], convention: str, **kw: dict) -> dict[str, float | complex]:
+    """
+    creates a dictionary of Wilson coefficient name-value pairs for a specified model and a list of coefficient names
+    """
     wc_dict = dict()
     for wc in wc_names:
         k, v = wcxf_name_val(model,wc,convention,**kw)
@@ -136,7 +141,26 @@ def create_wcxf_dict(model, wc_names: list[str], convention: str, **kw: dict) ->
     return wc_dict
 
 
-def write_to_wcxf(filename: str, model, wc_names: str, convention: str, **kw:dict) -> None:
+def write_to_wcxf(filename: str, model, wc_names: list[str], convention: str, **kw:dict) -> None:
+    """
+    Writes the values of evaluated Wilson coefficients to a .yaml file in the wcxf convention
+
+    Parameters
+    ----------
+        filename : str
+            A string specifying the path of the output .yaml file
+        model
+            Instance of the UV model class defined in the match_to_py module
+        wc_names : list[str]
+            A list of Wilson coefficient names in Matchete or wcxf convention
+        convention : str, "matchete" | "wcxf"
+            A flag to specify if the the entries of wc_names is provided in Matchete 
+            or wcxf convention
+        kw : dict
+            Fixed global parameters such as "mubarsq" for renormalization scale and
+            "hbar" for the matching order, specified using a dictionary
+    
+    """
     output_dict = {
         "eft": "SMEFT", 
         "basis": "Warsaw", 
