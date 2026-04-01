@@ -24,7 +24,7 @@ def wcxf_to_matchete_name(name: str) -> str:
     """returns the counterpart in Matchete format of a Wilson coefficient defined in the wcxf convention"""
    
     if name in blv_ops["wcxf"].keys():
-        return blv_ops["matchete"][name]
+        return blv_ops["wcxf"][name]
     else:
         return "c" + name.replace("tilde", "t").replace("phi", "H") 
 
@@ -154,7 +154,43 @@ def write_to_wcxf(filename: str, model, wc_names: list[str], convention: str, **
         yaml.dump(output_dict, out_file, sort_keys=False)
 
 
+def write_to_wcxf_all(filename: str, model, **kw:dict) -> None:
+    """
+    Writes the values of all Wilson coefficients defined in the SMEFT wcxf basis to a .yaml file
+
+    Parameters
+    ----------
+        filename : str
+            A string specifying the path of the output .yaml file
+        model
+            Instance of the UV model class defined in the match_to_py module
+        kw : dict
+            Fixed global parameters such as "mubarsq" for renormalization scale and
+            "hbar" for the matching order, specified using a dictionary
+    
+    """
+    output_dict = {
+        "eft": "SMEFT", 
+        "basis": "Warsaw", 
+        "scale": sqrt(kw["mubarsq"])*1000
+        # convert scale from TeV to GeV
+    }
+
+    yaml.add_representer(float, float_representer)
+    yaml.add_representer(complex, complex_representer)
+
+    global wcs_wcxf
+    wc_names = wcs_wcxf
+    convention = "wcxf"
+    values_dict = create_wcxf_dict(model,wc_names,convention,**kw)
+    output_dict["values"] = values_dict
+
+    with open(filename,'w') as out_file:
+        yaml.dump(output_dict, out_file, sort_keys=False)
+
+
 wc_info = {
+    "cllHH": { "symm": [2,1] },
     "cuG": {},  
     "cuW": {},  
     "cuB": {},  
@@ -163,6 +199,9 @@ wc_info = {
     "cdB": {},  
     "ceW": {},  
     "ceB": {},  
+    "cuH": {},  
+    "cdH": {},  
+    "ceH": {},  
     "cHl1": { "conj": [2,1] }, 
     "cHl3": { "conj": [2,1] }, 
     "cHe": { "conj": [2,1] }, 

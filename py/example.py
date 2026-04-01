@@ -1,5 +1,5 @@
 from match_to_py import MSSM
-from utils.io import write_to_wcxf
+from utils.io import write_to_wcxf, write_to_wcxf_all
 
 # define a parameter dictionary
 param_dict = {
@@ -28,3 +28,4 @@ print(model1.cuB(2,2,**scale))
 
 wcs = ["cuu_1331", "cG", "cHG", "cHD", "cuG_33"]
 write_to_wcxf("example_wcxf.yaml",model1,wcs,"matchete",**scale)
+write_to_wcxf_all("example_wcxf_all.yaml",model1,**scale)
