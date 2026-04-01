@@ -26,5 +26,5 @@ print(model1.cuB(2,2,**scale))
 # evaluate coefficients using their names
 # and write to a file in wcxf format
 
-wcs = ["cuu_3113", "cG", "cHG", "cHD", "cuG_33"]
+wcs = ["cuu_1331", "cG", "cHG", "cHD", "cuG_33"]
 write_to_wcxf("example_wcxf.yaml",model1,wcs,"matchete",**scale)

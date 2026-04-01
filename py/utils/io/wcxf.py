@@ -1,3 +1,4 @@
+import sys
 import wcxf, yaml
 import numpy as np
 from math import sqrt
@@ -50,39 +51,6 @@ def collect_permutations(arr1: np.ndarray, arr2: np.ndarray) -> np.ndarray:
         return np.concatenate(([arr1], arr2))
     
 
-def permute_and_compare(name: str, idx_seq: str, perms: list[list[int]]) -> str | None:
-    """
-    Generates permutations of the flavour indices for a specified Wilson coefficient and
-    returns the one available in the wcxf SMEFT-Warsaw list
-    """
-    
-    global wcs_wcxf
-    try:
-        for idx in idx_seq:
-            assert (int(idx)>0 and int(idx)<4)
-    except AssertionError:
-        print(f"Invalid flavour index in {name}_{idx_seq}, skipping")
-        return
-        
-    if (name + "_" + idx_seq) in wcs_wcxf:
-        # if the given sequence itself is present in the list then permutations are not needed
-        return idx_seq 
-
-    all_seq = [idx_seq]
-    while True:
-        new_perm = False
-        for perm in perms:
-            new_seq = permute_chars(all_seq[-1], perm)
-            if (name + "_" + new_seq) in wcs_wcxf:
-                return new_seq
-            if new_seq != all_seq[-1]:
-                new_perm = True
-                all_seq.append(new_seq)
-    
-        if not new_perm:
-            return 
-
-
 def wcxf_name_val(model, wc_name: str, convention: str, **kw: dict) -> tuple[str, float | complex] | None:
     """
     evaluates a Wilson coefficient given in Matchete or wcxf convention and returns a tuple containing
@@ -119,14 +87,22 @@ def wcxf_name_val(model, wc_name: str, convention: str, **kw: dict) -> tuple[str
             case (x, y): 
                 perms = collect_permutations(x, y)
             
-        updated_seq = permute_and_compare(wcxf_name, idx_seq, perms)
-        if not updated_seq:
-            return
-        else:
+        global wcs_wcxf
+        try:
+            assert ((wcxf_name + "_" + idx_seq) in wcs_wcxf)
+            idx_perms = [permute_chars(idx_seq, perm) for perm in perms]
+            idx_perms.append(idx_seq)
+            unique_perms = list(set(idx_perms))
+            
             return (
-                wcxf_name + "_" + updated_seq, 
-                eval_wc(model, m_name + "_" + updated_seq, **kw) 
+                wcxf_name + "_" + idx_seq, 
+                sum([eval_wc(model, m_name + "_" + idx_perm, **kw) for idx_perm in unique_perms]) 
             )
+        except AssertionError:
+            print("Invalid input: Wilson Coefficient not found in the basis!")
+            print("Exiting.")
+            sys.exit()
+            return
 
 
 def create_wcxf_dict(model, wc_names: list[str], convention: str, **kw: dict) -> dict[str, float | complex]:
