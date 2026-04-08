@@ -140,8 +140,7 @@ def write_to_wcxf(filename: str, model, wc_names: list[str], convention: str, **
     output_dict = {
         "eft": "SMEFT", 
         "basis": "Warsaw", 
-        "scale": sqrt(kw["mubarsq"])*1000
-        # convert scale from TeV to GeV
+        "scale": sqrt(kw["mubarsq"])
     }
 
     yaml.add_representer(float, float_representer)
@@ -172,8 +171,7 @@ def write_to_wcxf_all(filename: str, model, **kw:dict) -> None:
     output_dict = {
         "eft": "SMEFT", 
         "basis": "Warsaw", 
-        "scale": sqrt(kw["mubarsq"])*1000
-        # convert scale from TeV to GeV
+        "scale": sqrt(kw["mubarsq"])
     }
 
     yaml.add_representer(float, float_representer)

@@ -37,3 +37,4 @@ test*
 build/
 .cache/
 *.pdf
+**/benchmark-points
