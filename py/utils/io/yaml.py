@@ -69,9 +69,7 @@ def write_to_yaml(filename:str, model, param_dict: dict[str, float | complex], k
 
     output_dict.update(create_wc_dict(model,wc_names,**kw))
     
-    yaml.add_representer(float,float_representer)
     yaml.add_representer(complex, complex_representer)
-
     with open(filename, 'w') as out_file:
         yaml.dump(output_dict,out_file,sort_keys=False)
 

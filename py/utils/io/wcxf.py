@@ -143,12 +143,10 @@ def write_to_wcxf(filename: str, model, wc_names: list[str], convention: str, **
         "scale": sqrt(kw["mubarsq"])
     }
 
-    yaml.add_representer(float, float_representer)
-    yaml.add_representer(complex, complex_representer)
-
     values_dict = create_wcxf_dict(model,wc_names,convention,**kw)
     output_dict["values"] = values_dict
 
+    yaml.add_representer(complex, complex_representer)
     with open(filename,'w') as out_file:
         yaml.dump(output_dict, out_file, sort_keys=False)
 
@@ -174,15 +172,13 @@ def write_to_wcxf_all(filename: str, model, **kw:dict) -> None:
         "scale": sqrt(kw["mubarsq"])
     }
 
-    yaml.add_representer(float, float_representer)
-    yaml.add_representer(complex, complex_representer)
-
     global wcs_wcxf
     wc_names = wcs_wcxf
     convention = "wcxf"
     values_dict = create_wcxf_dict(model,wc_names,convention,**kw)
     output_dict["values"] = values_dict
 
+    yaml.add_representer(complex, complex_representer)
     with open(filename,'w') as out_file:
         yaml.dump(output_dict, out_file, sort_keys=False)
 

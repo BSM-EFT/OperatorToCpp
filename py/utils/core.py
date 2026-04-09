@@ -60,10 +60,13 @@ def eval_wc(model, wc_name: str, **kw: dict) -> float | complex:
         kw.update(wc_tuple[1])
     
     res = call(wc,**kw)
-    if abs(res.imag) < 1e-18:
-        return res.real
+    if abs(res.real) < 1e-20:
+        ret = 0.0
+    elif abs(res.imag) < 1e-20:
+        ret = res.real
     else:
-        return res
+        ret = res
+    return ret
 
 
 def create_wc_dict(model, wc_names: list[str], **kw: dict) -> dict[str, float | complex]:
