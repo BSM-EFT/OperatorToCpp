@@ -1,4 +1,4 @@
-from ..core import create_combs, create_wc_dict
+from ..core import create_combs, create_wc_dict, generate_call_plan, build_dict, nworkers
 from typing import Iterable
 import pandas as pd
 import csv
@@ -99,3 +99,29 @@ def create_dataframe(model, ranges_dict: dict[str,Iterable], wc_names: list[str]
         df = pd.concat([df, pd.DataFrame(data=[output_dict.values()], columns=list(output_dict.keys()))], ignore_index=True)
 
     return df 
+
+
+def create_dataframe_par(model, ranges_dict: dict[str,Iterable], wc_names: list[str], grid=True, **kw: dict) -> pd.DataFrame:
+    """Same as create_dataframe() but with multithreading"""
+
+    assert(len(ranges_dict)!=0)
+    
+    param_keys = list(ranges_dict.keys())
+    param_combs = create_combs(list(ranges_dict.values()),grid)
+
+    colNames = list(param_keys) + wc_names
+    df = pd.DataFrame(columns=colNames)
+
+    output_dict = dict()
+    for param_comb in param_combs:
+        for i in range(len(param_keys)):
+            output_dict[param_keys[i]] = param_comb[i]
+        
+        model.updateParams(output_dict)
+
+        call_plan = generate_call_plan(model, wc_names)
+        output_dict.update(build_dict(call_plan,nworkers,**kw))
+   
+        df = pd.concat([df, pd.DataFrame(data=[output_dict.values()], columns=list(output_dict.keys()))], ignore_index=True)
+
+    return df

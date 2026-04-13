@@ -2,6 +2,10 @@ from operator import call
 from time import perf_counter
 from typing import Callable
 import numpy as np
+from concurrent.futures import ThreadPoolExecutor
+
+import subprocess
+nworkers = int(subprocess.check_output(['sysctl', '-n', 'hw.perflevel0.logicalcpu']))
 
 
 def split_wc_name(full_name: str) -> tuple[str,dict[str, int]]:
@@ -81,6 +85,40 @@ def create_wc_dict(model, wc_names: list[str], **kw: dict) -> dict[str, float | 
         result_dict[wc] = eval_wc(model,wc,**kw)
 
     return result_dict    
+
+
+def generate_call_plan(model, wc_names: list[str]) -> list[dict]:
+    plan = []
+    for wc_name in wc_names:
+        parsed = split_wc_name(wc_name)
+        method_name = parsed[0]
+        method = getattr(model, method_name)
+
+        indices = parsed[1] if len(parsed) > 1 else {}
+        weight = 3 if not indices else (2 if len(indices) == 2 else 1)
+
+        plan.append({
+            "weight": weight,
+            "name": wc_name,
+            "method": method,
+            "kwargs": indices
+        })
+
+    plan.sort(key=lambda x: x['weight'], reverse=True)
+    return plan
+
+
+def build_dict(plan, num_workers, **global_kw) -> dict[str, float | complex]:
+    result_dict: dict[str, float | complex] = {}
+
+    def worker(task) -> tuple[str, float | complex]:
+        return task['name'], task['method'](**{**global_kw, **task['kwargs']})
+
+    with ThreadPoolExecutor(max_workers=num_workers) as executor:
+        for name, val in executor.map(worker, plan, chunksize=20):
+            result_dict[name] = val
+
+    return result_dict
 
 
 def create_combs(arrays: list[list[float | complex]], grid=True) -> np.ndarray[np.ndarray]:

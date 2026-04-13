@@ -1,7 +1,8 @@
-from ..core import create_wc_dict
+from ..core import create_wc_dict, generate_call_plan, build_dict, nworkers
 import numpy as np
 import yaml
 from typing import Iterable
+import subprocess
 
 
 def read_param_values(filename: str) -> tuple[dict[str, float | complex], dict[str, Iterable]]:
@@ -68,6 +69,24 @@ def write_to_yaml(filename:str, model, param_dict: dict[str, float | complex], k
         output_dict[k] = param_dict[k]
 
     output_dict.update(create_wc_dict(model,wc_names,**kw))
+    
+    yaml.add_representer(complex, complex_representer)
+    with open(filename, 'w') as out_file:
+        yaml.dump(output_dict,out_file,sort_keys=False)
+
+
+def write_to_yaml_par(filename:str, model, param_dict: dict[str, float | complex], keys: list[list[str], list[str]], **kw: dict) -> None:
+    """Same as write_to_yaml() but with multithreading"""
+    
+    output_dict = dict()
+    p_keys = keys[0]
+    wc_names = keys[1]
+
+    for k in p_keys:
+        output_dict[k] = param_dict[k]
+
+    call_plan = generate_call_plan(model, wc_names)
+    output_dict.update(build_dict(call_plan,nworkers,**kw))
     
     yaml.add_representer(complex, complex_representer)
     with open(filename, 'w') as out_file:
