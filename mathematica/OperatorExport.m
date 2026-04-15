@@ -16,6 +16,7 @@ SegregateParams::usage = "SegregateParams[SimplifiedOutput, ComplexParams] colle
 HeaderFileBuilder::usage = "HeaderFileBuilder[ModelName,ModelParams] creates a ModelName.h file that defines a ModelName class with the model parameters as member variables and Warsaw basis Wilson coefficients as methods. Also, declares methods for initalizing, updating and printing the parameters of a ModelName object.";
 SourceFileBuilder::usage = "SourceFileBuilder[ModelName,ModelParams,ComplexParams,SimplifiedOutput] creates a ModelName.cpp file with implementations for each Wilson coefficient method corresponding to the ModelName class. The method bodies are built by further manipulating the SimplifiedOutput.";
 GeneratePythonDeclarations::usage = "GeneratePythonDeclarations[ModelName] creates a ModelName.pyi file with declarations for the model class and each Wilson coefficient method.";
+BuildFiles::usage = "BuildFiles[ModelName,SimplifiedOutput,ComplexParams] offers a single command to build C++ header (.h) and source (.cpp) files, along with Python declarations of the Model class and its methods.";
 
 
 (* ::Subsection:: *)
@@ -913,6 +914,21 @@ GeneratePythonDeclarations[modelName_]:= Module[{path,line},
 	WriteLine[line, "    def cqqq(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
 	WriteLine[line, "    def cduu(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
 	Close[line];
+]
+
+
+(* ::Subsection:: *)
+(*Single function to call all file builders*)
+
+
+BuildFiles[modelName_,simplifiedOutput_,complexPars_]:=Module[{modelPars},
+	modelPars=SegregateParams[simplifiedOutput,complexPars];
+	HeaderFileBuilder[modelName,modelPars,complexPars];
+	Print["C++ header (.h) files successfully created."];
+	SourceFileBuilder[modelName,modelPars,complexPars,simplifiedOutput];
+	Print["C++ source (.cpp) files successfully created."];
+	GeneratePythonDeclarations[modelName];
+	Print["Python class and method declarations generated."]
 ]
 
 
