@@ -3,17 +3,128 @@
 #include <pybind11/detail/common.h>
 #include <pybind11/stl.h>
 #include <pybind11/complex.h>
+#include <pybind11/functional.h>
+#include <stdexcept>
 #include <unordered_map>
 #include <string>
 #include <complex>
 #include "modelName.h"
+#include "pybind11/pytypes.h"
 
 namespace py = pybind11;
 
 PYBIND11_MODULE(match_to_py, m, py::mod_gil_not_used()) {
+    auto task = py::class_<Task>(m, "Task");
+
     py::class_<Model>(m, py_class)
         .def(py::init<std::unordered_map<std::string, std::complex<double> > >())
         .def("updateParams", &Model::updateParams, py::arg("param_dict"))
+
+        // batch evaluator
+        .def("batch_eval", &Model::batch_eval, py::arg("tasks"), py::call_guard<py::gil_scoped_release>())
+
+        // wrapper lambdas
+        .def("wrap_0f", [](Model& self, std::string name, std::string method_name, double m, double h) {
+            static const std::unordered_map<std::string, std::complex<double> (Model::*)(double, double)> map_0f = {
+                {"cG", &Model::cG},
+                {"cGt", &Model::cGt},
+                {"cW", &Model::cW},
+                {"cWt", &Model::cWt},
+                {"cH", &Model::cH},
+                {"cHD", &Model::cHD},
+                {"cHBox", &Model::cHBox},
+                {"cHG", &Model::cHG},
+                {"cHGt", &Model::cHGt},
+                {"cHW", &Model::cHW},
+                {"cHWt", &Model::cHWt},
+                {"cHB", &Model::cHB},
+                {"cHBt", &Model::cHBt},
+                {"cHWB", &Model::cHWB},
+                {"cHWtB", &Model::cHWtB},
+            };
+            auto it = map_0f.find(method_name);
+            if (it == map_0f.end()) throw std::runtime_error("Method not found: " + method_name);
+
+            auto fn_ptr = it->second;
+            return Task{name, [&self, fn_ptr, m, h](){
+                return (self.*fn_ptr)(m, h);
+            }};
+        }, py::arg("name"), py::arg("method_name"), py::arg("mubarsq"), py::arg("hbar"))
+
+        .def("wrap_2f", [](Model& self, std::string name, std::string method_name, int i1, int i2, double m, double h) {
+            static const std::unordered_map<std::string, std::complex<double> (Model::*)(int, int, double, double)> map_2f = {
+                {"cllHH", &Model::cllHH},
+                {"ceH", &Model::ceH},
+                {"cdH", &Model::cdH},
+                {"cuH", &Model::cuH},
+                {"ceB", &Model::ceB},
+                {"ceW", &Model::ceW},
+                {"cdB", &Model::cdB},
+                {"cdW", &Model::cdW},
+                {"cdG", &Model::cdG},
+                {"cuB", &Model::cuB},
+                {"cuW", &Model::cuW},
+                {"cuG", &Model::cuG},
+                {"cHe", &Model::cHe},
+                {"cHu", &Model::cHu},
+                {"cHd", &Model::cHd},
+                {"cHud", &Model::cHud},
+                {"cHl1", &Model::cHl1},
+                {"cHl3", &Model::cHl3},
+                {"cHq1", &Model::cHq1},
+                {"cHq3", &Model::cHq3}
+            };
+            auto it = map_2f.find(method_name);
+            if (it == map_2f.end()) throw std::runtime_error("Method not found: " + method_name);
+
+            auto fn_ptr = it->second;
+            return Task{name, [&self, fn_ptr, i1, i2, m, h](){
+                return (self.*fn_ptr)(i1, i2, m, h);
+            }};
+        }, py::arg("name"), py::arg("method_name"), py::arg("i1"), py::arg("i2"), py::arg("mubarsq"), py::arg("hbar"))
+
+        .def("wrap_4f", [](Model& self, std::string name, std::string method_name, int i1, int i2, int i3, int i4, double m, double h) {
+            static const std::unordered_map<std::string, std::complex<double> (Model::*)(int, int, int, int, double, double)> map_4f = {
+                {"cll", &Model::cll},
+                {"cqq1", &Model::cqq1},
+                {"cqq3", &Model::cqq3},
+                {"clq1", &Model::clq1},
+                {"clq3", &Model::clq3},
+                {"cee", &Model::cee},
+                {"cuu", &Model::cuu},
+                {"cdd", &Model::cdd},
+                {"ceu", &Model::ceu},
+                {"ced", &Model::ced},
+                {"cle", &Model::cle},
+                {"clu", &Model::clu},
+                {"cld", &Model::cld},
+                {"cqe", &Model::cqe},
+                {"cqu1", &Model::cqu1},
+                {"cqu8", &Model::cqu8},
+                {"cqd1", &Model::cqd1},
+                {"cqd8", &Model::cqd8},
+                {"cud1", &Model::cud1},
+                {"cud8", &Model::cud8},
+                {"cquqd1", &Model::cquqd1},
+                {"cquqd8", &Model::cquqd8},
+                {"clequ1", &Model::clequ1},
+                {"clequ3", &Model::clequ3},
+                {"cledq", &Model::cledq},
+                {"cqqq", &Model::cqqq},
+                {"cduq", &Model::cduq},
+                {"cduu", &Model::cduu},
+                {"cqqu", &Model::cqqu},
+            };
+            auto it = map_4f.find(method_name);
+            if (it == map_4f.end()) throw std::runtime_error("Method not found: " + method_name);
+
+            auto fn_ptr = it->second;
+            return Task{name, [&self, fn_ptr, i1, i2, i3, i4, m, h](){
+                return (self.*fn_ptr)(i1, i2, i3, i4, m, h);
+            }};
+        }, py::arg("name"), py::arg("method_name"), py::arg("i1"), py::arg("i2"), py::arg("i3"), py::arg("i4"), py::arg("mubarsq"), py::arg("hbar"))
+
+        // Wilson coefficient methods
         .def("cllHH", &Model::cllHH, py::arg("i1"), py::arg("i2"), py::arg("mubarsq"), py::arg("hbar"), py::call_guard<py::gil_scoped_release>())
         .def("cG", &Model::cG, py::arg("mubarsq"), py::arg("hbar"), py::call_guard<py::gil_scoped_release>())
         .def("cW", &Model::cW, py::arg("mubarsq"), py::arg("hbar"), py::call_guard<py::gil_scoped_release>())

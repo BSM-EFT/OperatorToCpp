@@ -3,6 +3,13 @@
 #include <string>
 #include <complex>
 #include <unordered_map>
+#include <map>
+#include <functional>
+
+struct Task {
+    std::string name;
+    std::function<std::complex<double>()> work;
+};
 
 class MSSM {
     private:
@@ -107,5 +114,6 @@ class MSSM {
         std::complex<double> cqqq(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
         std::complex<double> cduu(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
 
+        std::map<std::string, std::complex<double> > batch_eval(const std::vector<Task>& tasks);
 };
 

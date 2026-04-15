@@ -385,9 +385,18 @@ HeaderPreprocessorDirectives[line_] := Module[{},
 	WriteLine[line, "#include <string>"];
 	WriteLine[line, "#include <complex>"];
 	WriteLine[line, "#include <unordered_map>"];
+	WriteLine[line, "#include <map>"];
+	WriteLine[line, "#include <functional>"];
 ];
 
-HeaderModelClass[className_,paramList_,ComplexPars_,line_] := Module[{args},
+HeaderTaskStruct[line_] := Module[{},
+	WriteLine[line, "struct Task {"];
+	WriteLine[line, "    std::string name;"];
+	WriteLine[line, "    std::function<std::complex<double>()> work;"];
+	WriteLine[line, "};"];
+]
+
+HeaderModelClass[className_,paramList_,ComplexPars_,line_] := Module[{},
 	WriteLine[line, "class "<>className<>" {"];
 	WriteLine[line, "    private:"];
 	
@@ -445,6 +454,8 @@ HeaderModelClass[className_,paramList_,ComplexPars_,line_] := Module[{args},
 	
 	WriteLine[line, ""];
 	
+	(* declaration for the batch evaluator *)
+	WriteLine[line, "        std::map<std::string, std::complex<double> > batch_eval(const std::vector<Task>& tasks);"];
 	WriteLine[line, "};"];
 	WriteLine[line, ""];
 ];
@@ -459,6 +470,8 @@ HeaderFileBuilder[modelName_,paramList_,ComplexPars_]:=Module[{path,line1,line2}
 	
 	line1 = OpenWrite[path<>"/"<>modelName<>".h"];
 	HeaderPreprocessorDirectives[line1];
+	WriteLine[line1,""];
+	HeaderTaskStruct[line1];
 	WriteLine[line1,""];
 	HeaderModelClass[modelName,paramList,ComplexPars,line1];
 	Close[line1];
@@ -484,9 +497,10 @@ HeaderFileBuilder[modelName_,paramList_,ComplexPars_]:=Module[{path,line1,line2}
 BuildPreprocessorDirectives[modelName_,line_] := Module[{},
 	WriteLine[line, "#include \"pch.h\""];
 	WriteLine[line, "#include \""<>modelName<>".h\""];
+	WriteLine[line, "#include <omp.h>"];
 ];
 
-BuildConstructor[className_, paramList_, ComplexPars_, line_]:=Module[{args},
+BuildConstructor[className_, paramList_, ComplexPars_, line_]:=Module[{},
 	WriteLine[line, ""];
 	WriteLine[line, StringJoin[className, "::", className, "(std::unordered_map<std::string, std::complex<double>> params) {"]];
 	
@@ -732,6 +746,26 @@ BuildUpdater[className_, paramList_, ComplexPars_, line_]:=Module[{},
 	WriteLine[line, "}"];
 ];
 
+BuildBatchEvaluator[className_, line_]:=Module[{},
+	WriteLine[line, ""];
+	WriteLine[line, "std::map<std::string, std::complex<double> > "<>className<>"::batch_eval(const std::vector<Task>& tasks) {"];
+	WriteLine[line, "    int n = tasks.size();"];
+	WriteLine[line, "    std::vector<std::complex<double> > results_temp(n);"];
+	WriteLine[line, ""];
+	WriteLine[line, "    #pragma omp parallel for schedule(dynamic)"];
+	WriteLine[line, "    for (int i = 0; i < n; ++i) {"];
+	WriteLine[line, "        results_temp[i] = tasks[i].work();"];
+	WriteLine[line, "    }"];
+	WriteLine[line, ""];
+	WriteLine[line, "    std::map<std::string, std::complex<double> > results;"];
+	WriteLine[line, "    for (int i = 0; i < n; ++i) {"];
+	WriteLine[line, "        results[tasks[i].name] = results_temp[i];"];
+	WriteLine[line, "    }"];
+	WriteLine[line, ""];
+	WriteLine[line, "    return results;"];
+	WriteLine[line, "}"];
+]
+
 
 (* ::Subsubsection:: *)
 (*Builder for a single WC function (Warsaw Basis)*)
@@ -786,6 +820,7 @@ SourceFileBuilder[modelName_, paramList_, ComplexPars_, matchingOutput_]:=Module
 	BuildPreprocessorDirectives[modelName,line1];
 	BuildConstructor[modelName,paramList,ComplexPars,line1];
 	BuildUpdater[modelName,paramList,ComplexPars,line1];
+	BuildBatchEvaluator[modelName,line1];
 	
 	Close[line1];
 	
@@ -804,9 +839,15 @@ SourceFileBuilder[modelName_, paramList_, ComplexPars_, matchingOutput_]:=Module
 GeneratePythonDeclarations[modelName_]:= Module[{path,line},
 	path = FileNameJoin[{ParentDirectory[NotebookDirectory[]],"py"}];
 	line = OpenWrite[path<>"/"<>"match_to_py.pyi"];
+	WriteLine[line, "class Task: ..."];
+	WriteLine[line, ""];
 	WriteLine[line, "class "<>modelName<>":"];
 	WriteLine[line, "    def __init__(self, param_dict: dict[str, complex]) -> None: ..."];
 	WriteLine[line, "    def updateParams(self, param_dict: dict[str, complex]) -> None: ..."];
+	WriteLine[line, "    def batch_eval(self, tasks: list[Task]) -> dict[str, complex]: ..."];
+	WriteLine[line, "    def wrap_0f(self, name: str, method_name: str, mubarsq: float, hbar: float) -> Task: ..."];
+	WriteLine[line, "    def wrap_2f(self, name: str, method_name: str, i1: int, i2: int, mubarsq: float, hbar: float) -> Task: ..."];
+	WriteLine[line, "    def wrap_4f(self, name: str, method_name: str, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> Task: ..."];
 	WriteLine[line, "    def cllHH(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
 	WriteLine[line, "    def cG(self, mubarsq: float, hbar: float) -> complex: ..."];
 	WriteLine[line, "    def cW(self, mubarsq: float, hbar: float) -> complex: ..."];

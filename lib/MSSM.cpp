@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "MSSM.h"
+#include <omp.h>
 
 MSSM::MSSM(std::unordered_map<std::string, std::complex<double>> params) {
     if (params.find("cgamma") != params.end()) {
@@ -581,4 +582,21 @@ void MSSM::updateParams(std::unordered_map<std::string, std::complex<double>> pa
         this->Yu[2][2] = params["Yu33"];
         this->Yuc[2][2] = std::conj(params["Yu33"]);
     }
+}
+
+std::map<std::string, std::complex<double> > MSSM::batch_eval(const std::vector<Task>& tasks) {
+    int n = tasks.size();
+    std::vector<std::complex<double> > results_temp(n);
+
+    #pragma omp parallel for schedule(dynamic)
+    for (int i = 0; i < n; ++i) {
+        results_temp[i] = tasks[i].work();
+    }
+
+    std::map<std::string, std::complex<double> > results;
+    for (int i = 0; i < n; ++i) {
+        results[tasks[i].name] = results_temp[i];
+    }
+
+    return results;
 }

@@ -1,4 +1,4 @@
-from ..core import create_combs, create_wc_dict, generate_call_plan, build_dict, nworkers
+from ..core import create_combs, create_wc_dict, generate_call_plan, build_dict, nworkers, create_tasks
 from typing import Iterable
 import pandas as pd
 import csv
@@ -51,7 +51,7 @@ def write_to_csv(filename: str, model, ranges_dict: dict[str,Iterable], wc_names
             writer.writerow(formatted_output)
 
 
-def create_dataframe(model, ranges_dict: dict[str,Iterable], wc_names: list[str], grid=True, **kw: dict) -> pd.DataFrame:
+def create_dataframe(model, ranges_dict: dict[str,Iterable], wc_names: list[str], opt: str, grid=True, **kw: dict) -> pd.DataFrame:
     """
     Generates combinations for parameters that vary over specified ranges, evaluates the
     corresponding Wilson coefficents (for the UV model) and returns a pandas dataframe 
@@ -66,10 +66,13 @@ def create_dataframe(model, ranges_dict: dict[str,Iterable], wc_names: list[str]
             vary over specific ranges
         wc_names : list
             List of strings describing Wilson coefficient names
+        opt : str, "seq", "threadpool", "omp"
+            Option for specifying whether the operation should proceed sequentially, or 
+            in parallel either with Python Threadpools or with OpenMP at the C++ backend
         grid : bool, optional
             A flag used to specify whether the combinations should be created
             as Cartesian products (the default option) or by simply combining 
-            the corresponding entries of each array within the arrays list 
+            the corresponding entries of each array within the arrays list
         kw : dict
             Fixed global parameters such as "mubarsq" for renormalization scale and
             "hbar" for the matching order, specified using a dictionary
@@ -80,6 +83,19 @@ def create_dataframe(model, ranges_dict: dict[str,Iterable], wc_names: list[str]
         Wilson coefficient values 
     
     """
+    match opt:
+        case "seq":
+            create_dataframe_seq(model, ranges_dict, wc_names, grid, **kw)
+        case "threadpool":
+            create_dataframe_threadp(model, ranges_dict, wc_names, grid, **kw)
+        case "omp":
+            create_dataframe_omp(model, ranges_dict, wc_names, grid, **kw)
+
+
+
+def create_dataframe_seq(model, ranges_dict: dict[str,Iterable], wc_names: list[str], grid=True, **kw: dict) -> pd.DataFrame:
+    """Sequential version of create_dataframe()"""
+    
     assert(len(ranges_dict)!=0)
     
     param_keys = list(ranges_dict.keys())
@@ -100,8 +116,7 @@ def create_dataframe(model, ranges_dict: dict[str,Iterable], wc_names: list[str]
 
     return df 
 
-
-def create_dataframe_par(model, ranges_dict: dict[str,Iterable], wc_names: list[str], grid=True, **kw: dict) -> pd.DataFrame:
+def create_dataframe_threadp(model, ranges_dict: dict[str,Iterable], wc_names: list[str], grid=True, **kw: dict) -> pd.DataFrame:
     """Same as create_dataframe() but with multithreading"""
 
     assert(len(ranges_dict)!=0)
@@ -121,6 +136,32 @@ def create_dataframe_par(model, ranges_dict: dict[str,Iterable], wc_names: list[
 
         call_plan = generate_call_plan(model, wc_names)
         output_dict.update(build_dict(call_plan,nworkers,**kw))
+   
+        df = pd.concat([df, pd.DataFrame(data=[output_dict.values()], columns=list(output_dict.keys()))], ignore_index=True)
+
+    return df
+
+
+def create_dataframe_omp(model, ranges_dict: dict[str,Iterable], wc_names: list[str], grid=True, **kw: dict) -> pd.DataFrame:
+    """Same as create_dataframe() but with multithreading on the C++ side"""
+
+    assert(len(ranges_dict)!=0)
+    
+    param_keys = list(ranges_dict.keys())
+    param_combs = create_combs(list(ranges_dict.values()),grid)
+
+    colNames = list(param_keys) + wc_names
+    df = pd.DataFrame(columns=colNames)
+
+    output_dict = dict()
+    for param_comb in param_combs:
+        for i in range(len(param_keys)):
+            output_dict[param_keys[i]] = param_comb[i]
+        
+        model.updateParams(output_dict)
+
+        tasks = create_tasks(model, wc_names, **kw)
+        output_dict.update(model.batch_eval(tasks))
    
         df = pd.concat([df, pd.DataFrame(data=[output_dict.values()], columns=list(output_dict.keys()))], ignore_index=True)
 

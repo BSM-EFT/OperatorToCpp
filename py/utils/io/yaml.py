@@ -1,8 +1,7 @@
-from ..core import create_wc_dict, generate_call_plan, build_dict, nworkers
+from ..core import create_wc_dict, generate_call_plan, build_dict, nworkers, create_tasks
 import numpy as np
 import yaml
 from typing import Iterable
-import subprocess
 
 
 def read_param_values(filename: str) -> tuple[dict[str, float | complex], dict[str, Iterable]]:
@@ -41,7 +40,7 @@ def read_param_values(filename: str) -> tuple[dict[str, float | complex], dict[s
     return (param_dict, ranges_dict)
 
 
-def write_to_yaml(filename:str, model, param_dict: dict[str, float | complex], keys: list[list[str], list[str]], **kw: dict) -> None:
+def write_to_yaml(filename:str, model, param_dict: dict[str, float | complex], keys: list[list[str], list[str]], opt: str, **kw: dict) -> None:
     """
     Writes the values of specified parameters and evaluated Wilson coefficients
     to a .yaml file
@@ -56,10 +55,27 @@ def write_to_yaml(filename:str, model, param_dict: dict[str, float | complex], k
             Dictionary containing (name, value) pairs of model parameters
         keys : list[list, list]
             List containing a list of parameter names and a list of coefficient names
+        opt : str, "seq", "threadpool", "omp"
+            Option for specifying whether the operation should proceed sequentially, or 
+            in parallel either with Python Threadpools or with OpenMP at the C++ backend 
         kw : dict
             Fixed global parameters such as "mubarsq" for renormalization scale and
             "hbar" for the matching order, specified using a dictionary
     
+    """
+    match opt:
+        case "seq":
+            write_to_yaml_seq(filename, model, param_dict, keys, **kw)
+        case "threadpool":
+            write_to_yaml_threadp(filename, model, param_dict, keys, **kw)
+        case "omp":
+            write_to_yaml_omp(filename, model, param_dict, keys, **kw)
+
+
+def write_to_yaml_seq(filename:str, model, param_dict: dict[str, float | complex], keys: list[list[str], list[str]], **kw: dict) -> None:
+    """
+    Writes the values of specified parameters and evaluated Wilson coefficients
+    to a .yaml file, follows sequential execution during dictionary building
     """
     output_dict = dict()
     p_keys = keys[0]
@@ -75,8 +91,11 @@ def write_to_yaml(filename:str, model, param_dict: dict[str, float | complex], k
         yaml.dump(output_dict,out_file,sort_keys=False)
 
 
-def write_to_yaml_par(filename:str, model, param_dict: dict[str, float | complex], keys: list[list[str], list[str]], **kw: dict) -> None:
-    """Same as write_to_yaml() but with multithreading"""
+def write_to_yaml_threadp(filename:str, model, param_dict: dict[str, float | complex], keys: list[list[str], list[str]], **kw: dict) -> None:
+    """
+    Writes the values of specified parameters and evaluated Wilson coefficients
+    to a .yaml file, utilizes parallelisation through Python threadpools
+    """
     
     output_dict = dict()
     p_keys = keys[0]
@@ -87,6 +106,28 @@ def write_to_yaml_par(filename:str, model, param_dict: dict[str, float | complex
 
     call_plan = generate_call_plan(model, wc_names)
     output_dict.update(build_dict(call_plan,nworkers,**kw))
+    
+    yaml.add_representer(complex, complex_representer)
+    with open(filename, 'w') as out_file:
+        yaml.dump(output_dict,out_file,sort_keys=False)
+
+
+def write_to_yaml_omp(filename:str, model, param_dict: dict[str, float | complex], keys: list[list[str], list[str]], **kw: dict) -> None:
+    """
+    Writes the values of specified parameters and evaluated Wilson coefficients
+    to a .yaml file, utilizes parallelisation through OpenMP and batch processing at
+    the C++ end
+    """
+    
+    output_dict = dict()
+    p_keys = keys[0]
+    wc_names = keys[1]
+
+    for k in p_keys:
+        output_dict[k] = param_dict[k]
+
+    tasks = create_tasks(model, wc_names, **kw)
+    output_dict.update(model.batch_eval(tasks))
     
     yaml.add_representer(complex, complex_representer)
     with open(filename, 'w') as out_file:

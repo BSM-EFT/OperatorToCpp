@@ -121,6 +121,24 @@ def build_dict(plan, num_workers, **global_kw) -> dict[str, float | complex]:
     return result_dict
 
 
+def create_tasks(model, names, **kw):
+    plan = []
+    for name in names:
+        wc_tuple = split_wc_name(name)
+        method_name = wc_tuple[0]
+
+        if len(wc_tuple) == 1:
+            task = model.wrap_0f(name, method_name, **kw)
+        elif len(wc_tuple) == 2:
+            if len(wc_tuple[1]) == 2:
+                task = model.wrap_2f(name, method_name, **{**wc_tuple[1], **kw})
+            elif len(wc_tuple[1]) == 4:
+                task = model.wrap_4f(name, method_name, **{**wc_tuple[1], **kw})
+
+        plan.append(task)
+    return plan
+
+
 def create_combs(arrays: list[list[float | complex]], grid=True) -> np.ndarray[np.ndarray]:
     """
     Creates combinations of parameter values from individual lists
