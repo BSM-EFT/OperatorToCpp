@@ -1,7 +1,7 @@
 /**
  * @file OperatorImport.cpp
  * @author Suraj Prakash
- * @date 2025-10-29
+ * @date 2026-04-17
  * @brief Auxiliary classes and funtions to aid in the evaluation of expressions within the Wilson coefficient functions
  */
 
@@ -15,7 +15,6 @@
 
 using std::vector;
 using std::transform;
-using std::accumulate;
 using std::variant;
 using std::invalid_argument;
 using std::string;
@@ -105,7 +104,7 @@ int maxRepIdx(const vector<vector<int> >& v1) {
     for(vector<int> v : v1){
         if (v.size()==0) continue;
         else {
-            transform(v.begin(), v.end(), v.begin(), [](int i){return i>10 ? 0 : i%10;});
+            transform(v.begin(), v.end(), v.begin(), [](int i){return i>100 ? 0 : i%100;});
             v2.emplace_back(*max_element(v.begin(), v.end()));
         }
     };
@@ -122,9 +121,9 @@ vector<vector<int> > idx_seqs(const vector<vector<int> >& index_seqs, const vect
     for(vector<int> v : index_seqs) {
         vector<int> dest;
         for(int i : v) {
-            if (i>10 && (free_indices.size() > free_ind_pos)) {
+            if (i>100 && (free_indices.size() > free_ind_pos)) {
                 dest.emplace_back(free_indices[free_ind_pos++]);
-            } else if (i > 10) {
+            } else if (i > 100) {
                 throw invalid_argument {"Mismatch in the number of free indices across arguemnts of idx_seqs."};
             } else dest.emplace_back(rep_idx_vals[i-1]);
         }
@@ -141,8 +140,8 @@ vector<vector<int> > idx_seqs(const vector<vector<int> >& index_seqs, const vect
     for(vector<int> v : index_seqs) {
         vector<int> dest;
         for(int i : v) {
-            if (i>10 && (free_indices.size() > free_ind_pos)) dest.emplace_back(free_indices[free_ind_pos++]);
-            else if (i > 10) throw invalid_argument {"Mismatch in the number of free indices across arguemnts of idx_seqs."};
+            if (i>100 && (free_indices.size() > free_ind_pos)) dest.emplace_back(free_indices[free_ind_pos++]);
+            else if (i > 100) throw invalid_argument {"Mismatch in the number of free indices across arguemnts of idx_seqs."};
         }
         addrs.emplace_back(dest);
     }

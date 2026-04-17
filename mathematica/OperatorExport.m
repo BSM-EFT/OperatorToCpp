@@ -114,7 +114,7 @@ createMatchingDict[WarsawOutput_] := Module[{d6Dict, keyList, key1, key2},
 SimplifyOutput[output_]:=Module[{dict,newDict},
 	dict = createMatchingDict[output];
 	dict = dict /. {Index[i1,Flavor]->i1,Index[i2,Flavor]->i2,Index[i3,Flavor]->i3,Index[i4,Flavor]->i4 };
-	dict = dict /. {Index[x_,__]:>ToExpression[StringJoin["r",StringPart[ToString[x],-1]]]};
+	dict = dict /. {Index[x_,__]:>ToExpression[StringJoin["r",StringPart[ToString[x],4;;-1]]]};
 	dict = dict /. Bar[Coupling[x_,{y___},z_]] :> Coupling[ToExpression[ToString[x]<>"c"],{y},z];
 	dict = dict /. {Coupling[x_,{},__]:>x} /.{Coupling[x_,{a_},__]:>Mass[x,a]}/.{Coupling[x_,{p_,q_},__]:>TwoDim[x,p,q]};
 	dict = dict /. {FlavorSum[x_]:>1};
@@ -294,8 +294,8 @@ MatProdWrapper[expr_]:=Module[{nonMat,lst,symbList,idxList,freeIdxList},
 
 
 ReplIdxbyNum=Join[
-	Table[ToExpression["r"<>ToString[j]]->j,{j,1,6}], 
-	Table[ToExpression["i"<>ToString[j]]->10+j,{j,1,6}]
+	Table[ToExpression["r"<>ToString[j]]->j,{j,1,12}], (* this upper limit of 12 has been added manually *)
+	Table[ToExpression["i"<>ToString[j]]->100+j,{j,1,12}]
 ];
 
 
