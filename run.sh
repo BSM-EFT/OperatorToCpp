@@ -24,9 +24,10 @@ fi
 # -----------------------------
 # Configure
 # -----------------------------
+PYBIND_DIR=$($PYTHON_EXEC -m pybind11 --cmakedir)
 if [ ! -d "$BUILD_DIR" ]; then
     echo "Configuring project..."
-    cmake -B "$BUILD_DIR" -S . -DPython_EXECUTABLE="$PYTHON_EXEC"
+    cmake -B "$BUILD_DIR" -S . -DPython_EXECUTABLE="$PYTHON_EXEC" -DCMAKE_PREFIX_PATH="$PYBIND_DIR"
 fi
 
 # -----------------------------

@@ -58,8 +58,20 @@ endif()
 
 
 #  Pybind11 Integration
-set(PYBIND11_FINDPYTHON ON)
-find_package(pybind11 CONFIG REQUIRED)
+# set(PYBIND11_FINDPYTHON ON)
+# find_package(pybind11 CONFIG REQUIRED)
+include(FetchContent)
+find_package(pybind11 CONFIG)
+
+if(NOT pybind11_FOUND)
+    message(STATUS "pybind11 not found locally. Fetching from GitHub...")
+    FetchContent_Declare(
+      pybind11
+      GIT_REPOSITORY https://github.com/pybind/pybind11.git
+      GIT_TAG        v3.0.4
+    )
+    FetchContent_MakeAvailable(pybind11)
+endif()
 
 pybind11_add_module(match_to_py ${PROJECT_SOURCE_DIR}/src/pyBindings.cpp)
 target_link_libraries(match_to_py PRIVATE cpp_backend)
