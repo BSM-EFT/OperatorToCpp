@@ -32,7 +32,6 @@
 test*
 .clangd
 .vscode/
-.idea/
 **/__pycache__
 build/
 .cache/
