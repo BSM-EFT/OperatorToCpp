@@ -5,8 +5,14 @@ import numpy as np
 from concurrent.futures import ThreadPoolExecutor
 
 import subprocess
-nworkers = int(subprocess.check_output(['sysctl', '-n', 'hw.perflevel0.logicalcpu']))
+import platform
 
+if platform.system() == "Darwin":
+    cmd = ['sysctl', '-n', 'hw.perflevel0.logicalcpu']
+    nworkers = int(subprocess.check_output(cmd))
+elif platform.system() == "Linux":
+    cmd = ['nproc']
+    nworkers = int(subprocess.check_output(cmd))
 
 def split_wc_name(full_name: str) -> tuple[str,dict[str, int]]:
     """
