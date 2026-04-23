@@ -1,8 +1,8 @@
 /**
  * @file OperatorImport.cpp
  * @author Suraj Prakash
- * @date 2026-04-17
- * @brief Auxiliary classes and funtions to aid in the evaluation of expressions within the Wilson coefficient functions
+ * @date 2026-04-23
+ * @brief Auxiliary classes and functions to aid in the evaluation of expressions within the Wilson coefficient functions
  */
 
 #include "pch.h"
@@ -207,10 +207,15 @@ complex<double> EinsSum(vector<variant<LoopFunc, MassPow, vector<vector<complex<
                     res[i] *= r;                
             }
 
-            #pragma omp parallel for reduction(+:sum)
+            double re_sum = 0.0;
+            double im_sum = 0.0;
+            #pragma omp parallel for reduction(+:re_sum, im_sum)
             for(int i = 0; i < res.size(); i++) {
-                sum += res[i];
+                re_sum += res[i].real();
+                im_sum += res[i].imag();
             }
+
+            sum = complex<double>(re_sum, im_sum);
 
         #else
             transform(
