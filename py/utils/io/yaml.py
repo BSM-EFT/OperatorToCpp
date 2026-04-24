@@ -1,4 +1,4 @@
-from ..core import create_wc_dict, generate_call_plan, build_dict, nworkers, create_tasks
+from ..core import create_wc_dict, create_tasks
 import numpy as np
 import yaml
 from typing import Iterable
@@ -55,9 +55,9 @@ def write_to_yaml(filename:str, model, param_dict: dict[str, float | complex], k
             Dictionary containing (name, value) pairs of model parameters
         keys : list[list, list]
             List containing a list of parameter names and a list of coefficient names
-        opt : str, "seq", "threadpool", "omp"
+        opt : str, "seq" | "par"
             Option for specifying whether the operation should proceed sequentially, or 
-            in parallel either with Python Threadpools or with OpenMP at the C++ backend 
+            in parallel with OpenMP at the C++ backend 
         kw : dict
             Fixed global parameters such as "mubarsq" for renormalization scale and
             "hbar" for the matching order, specified using a dictionary
@@ -66,9 +66,7 @@ def write_to_yaml(filename:str, model, param_dict: dict[str, float | complex], k
     match opt:
         case "seq":
             write_to_yaml_seq(filename, model, param_dict, keys, **kw)
-        case "threadpool":
-            write_to_yaml_threadp(filename, model, param_dict, keys, **kw)
-        case "omp":
+        case "par":
             write_to_yaml_omp(filename, model, param_dict, keys, **kw)
 
 
@@ -85,27 +83,6 @@ def write_to_yaml_seq(filename:str, model, param_dict: dict[str, float | complex
         output_dict[k] = param_dict[k]
 
     output_dict.update(create_wc_dict(model,wc_names,**kw))
-    
-    yaml.add_representer(complex, complex_representer)
-    with open(filename, 'w') as out_file:
-        yaml.dump(output_dict,out_file,sort_keys=False)
-
-
-def write_to_yaml_threadp(filename:str, model, param_dict: dict[str, float | complex], keys: list[list[str], list[str]], **kw: dict) -> None:
-    """
-    Writes the values of specified parameters and evaluated Wilson coefficients
-    to a .yaml file, utilizes parallelisation through Python threadpools
-    """
-    
-    output_dict = dict()
-    p_keys = keys[0]
-    wc_names = keys[1]
-
-    for k in p_keys:
-        output_dict[k] = param_dict[k]
-
-    call_plan = generate_call_plan(model, wc_names)
-    output_dict.update(build_dict(call_plan,nworkers,**kw))
     
     yaml.add_representer(complex, complex_representer)
     with open(filename, 'w') as out_file:
