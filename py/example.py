@@ -1,5 +1,5 @@
 from match_to_py import MSSM
-from utils.io import write_to_wcxf, write_to_wcxf_all
+from utils.io import write_to_wcxf
 
 # define a parameter dictionary
 param_dict = {
@@ -23,9 +23,9 @@ model1 = MSSM(param_dict)
 print(model1.cG(**scale))
 print(model1.cuB(2,2,**scale))
 
-# evaluate coefficients using their names
-# and write to a file in wcxf format
+# evaluate coefficients and write to a file in wcxf format
 
-wcs = ["cuu_1331", "cG", "cHG", "cHD", "cuG_33"]
-write_to_wcxf("example_wcxf.yaml",model1,wcs,"matchete",**scale)
-write_to_wcxf_all("example_wcxf_all.yaml",model1,**scale)
+wcs = ["uu_1331", "G", "phiG", "phiD", "uG_33"]
+eft_info = { "eft": "SMEFT", "basis": "Warsaw" }
+write_to_wcxf("example_wcxf.yaml",model1,eft_info,wcs,**scale)
+write_to_wcxf("example_wcxf_all.yaml",model1,eft_info,**scale)

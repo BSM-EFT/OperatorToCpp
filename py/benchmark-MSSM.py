@@ -48,16 +48,16 @@ t4 = perf_counter()
 print(f"Initialized {len(models)} models in {t4 - t3:.2f}s.")
 
 scale = {"mubarsq": 1e6, "hbar": 0.006332574}
-
+eft_info = {"eft": "SMEFT", "basis": "Warsaw"}
 
 ###############################################################
-# Task-1: Total time for writing all operators, WCxf vs native 
+#     Total time for writing all operators, WCxf vs native 
 ###############################################################
 
 # the WCxf writer
 # f_name = "./benchmark-points/all_wcxf.yaml"
 # t_i = perf_counter() 
-# write_to_wcxf_all(f_name,models[0],**scale) 
+# write_to_wcxf(f_name,models[0],eft_info,**scale) 
 # t_f = perf_counter()
 # print(f"File written in WCxf format in {t_f - t_i:.2f}s.")
 
@@ -82,7 +82,7 @@ scale = {"mubarsq": 1e6, "hbar": 0.006332574}
 
 
 ########################################################################
-# Task-1b: Total time for writing all operators, parallel (C++) native 
+#     Total time for writing all operators, parallel (C++) native 
 ########################################################################
 
 # f_name = "./benchmark-points/all_native_par_c.yaml" 
@@ -94,7 +94,7 @@ scale = {"mubarsq": 1e6, "hbar": 0.006332574}
 
 
 # ###############################################################
-# # Task-2: Total time for writing 59 operators, WCxf vs native 
+#     Total time for writing 59 operators, WCxf vs native 
 # ###############################################################
 
 # # 59 Wilson coefficients in WCxf format
@@ -102,7 +102,7 @@ scale = {"mubarsq": 1e6, "hbar": 0.006332574}
 
 # f_name = "./benchmark-points/59_wcxf.yaml"
 # t_i = perf_counter() 
-# write_to_wcxf(f_name,models[0],wc_names_wcxf,"wcxf",**scale)
+# write_to_wcxf(f_name,models[0],eft_info,wc_names_wcxf,**scale)
 # t_f = perf_counter()
 # print(f"File written in WCxf format in {t_f - t_i:.2f}s.")
 
@@ -117,36 +117,8 @@ scale = {"mubarsq": 1e6, "hbar": 0.006332574}
 # print(f"File written in native format in {t_f - t_i:.2f}s.")
 
 
-###############################################################
-# Task-3: Time taken by individual operators, WCxf vs native 
-###############################################################
-
-# in this case the time of execution reported from done inside the functions
-# create_wcxf_dict() and create_wc_dict()
-
-# the WCxf writer
-# f_name = "./benchmark-points/all_wcxf.yaml"
-# write_to_wcxf_all(f_name,models[0],**scale) 
-
-# the native yaml writer for all operators defined in the WCxf basis
-# smeft_warsaw = wcxf.Basis["SMEFT","Warsaw"]
-# wcs_wcxf = smeft_warsaw.all_wcs
-# wc_names: list[str] = list()
-# for wc in wcs_wcxf:
-#     name = wc.split("_")
-#     new_name = wcxf_to_matchete_name(name[0])
-#     if len(name) == 1:
-#         wc_names.append(new_name)
-#     else:
-#         wc_names.append(new_name + "_" + name[1])   
-
-# f_name = "./benchmark-points/all_native.yaml" 
-# keys = [[],wc_names]
-# write_to_yaml(f_name,models[0],param_dicts[0],keys,"seq",**scale) 
-
-
 #############################################
-# Task-4: eval_wc() vs direct method call
+#    eval_wc() vs direct method call
 #############################################
 
 # exec(models[0], "cH", **scale)

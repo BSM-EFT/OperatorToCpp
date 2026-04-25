@@ -1,3 +1,4 @@
+from time import perf_counter
 import sys
 import wcxf, yaml
 import numpy as np
@@ -5,10 +6,6 @@ from math import sqrt
 from ..core import eval_wc
 from ..io.yaml import float_representer
 from ..io.yaml import complex_representer
-
-# globally loaded list of all Wilson coefficient names included in the wcxf SMEFT-Warsaw basis.
-smeft_warsaw = wcxf.Basis["SMEFT","Warsaw"]
-wcs_wcxf = smeft_warsaw.all_wcs
 
 
 def matchete_to_wcxf_name(name: str) -> str:
@@ -51,24 +48,15 @@ def collect_permutations(arr1: np.ndarray, arr2: np.ndarray) -> np.ndarray:
         return np.concatenate(([arr1], arr2))
     
 
-def wcxf_name_val(model, wc_name: str, convention: str, **kw: dict) -> tuple[str, float | complex] | None:
+def wcxf_name_val(model, wc_name: str, **kw: dict) -> tuple[str, float | complex] | None:
     """
-    evaluates a Wilson coefficient given in Matchete or wcxf convention and returns a tuple containing
-    the coefficient name in wcxf format and the value 
+    evaluates a Wilson coefficient given in wcxf convention and returns a tuple containing
+    the coefficient name and the value 
     """
     name_idx = wc_name.split("_")
-    name = name_idx[0]
+    wcxf_name = name_idx[0]
+    m_name = wcxf_to_matchete_name(wcxf_name)
 
-    if convention == "matchete":
-        m_name = name
-        wcxf_name = matchete_to_wcxf_name(name)
-    elif convention == "wcxf":
-        m_name = wcxf_to_matchete_name(name)
-        wcxf_name = name
-    else:
-        print("Invalid naming convention for Wilson coefficients")
-        return
-    
     if len(name_idx) == 1: # i.e., no flavour index (purely bosonic operators)
         return (wcxf_name, eval_wc(model,m_name,**kw))
     else:
@@ -87,37 +75,26 @@ def wcxf_name_val(model, wc_name: str, convention: str, **kw: dict) -> tuple[str
             case (x, y): 
                 perms = collect_permutations(x, y)
             
-        global wcs_wcxf
-        try:
-            assert ((wcxf_name + "_" + idx_seq) in wcs_wcxf)
-            idx_perms = [permute_chars(idx_seq, perm) for perm in perms]
-            idx_perms.append(idx_seq)
-            unique_perms = list(set(idx_perms))
+        idx_perms = [permute_chars(idx_seq, perm) for perm in perms]
+        idx_perms.append(idx_seq)
+        unique_perms = list(set(idx_perms))
             
-            return (
-                wcxf_name + "_" + idx_seq, 
-                sum([eval_wc(model, m_name + "_" + idx_perm, **kw) for idx_perm in unique_perms]) 
-            )
-        except AssertionError:
-            print("Invalid input: Wilson Coefficient not found in the basis!")
-            print("Exiting.")
-            sys.exit()
-            return
+        return (wc_name, sum([eval_wc(model, m_name + "_" + idx_perm, **kw) for idx_perm in unique_perms]) )
 
 
-def create_wcxf_dict(model, wc_names: list[str], convention: str, **kw: dict) -> dict[str, float | complex]:
+def create_wcxf_dict(model, wc_names: list[str], **kw: dict) -> dict[str, float | complex]:
     """
     creates a dictionary of Wilson coefficient name-value pairs for a specified model and a list of coefficient names
     """
     wc_dict = dict()
     for wc in wc_names:
-        k, v = wcxf_name_val(model,wc,convention,**kw)
+        k, v = wcxf_name_val(model,wc,**kw)
         wc_dict[k] = v
 
     return wc_dict
 
 
-def write_to_wcxf(filename: str, model, wc_names: list[str], convention: str, **kw:dict) -> None:
+def write_to_wcxf(filename: str, model, eft_info: dict[str, str], wc_names: list[str] | None = None, **kw:dict) -> None:
     """
     Writes the values of evaluated Wilson coefficients to a .yaml file in the wcxf convention
 
@@ -127,55 +104,39 @@ def write_to_wcxf(filename: str, model, wc_names: list[str], convention: str, **
             A string specifying the path of the output .yaml file
         model
             Instance of the UV model class defined in the match_to_py module
-        wc_names : list[str]
-            A list of Wilson coefficient names in Matchete or wcxf convention
-        convention : str, "matchete" | "wcxf"
-            A flag to specify if the the entries of wc_names is provided in Matchete 
-            or wcxf convention
+        eft_info : dict
+            A dictionary specifying the "eft" and "basis".
+        wc_names : list[str] | None, optional
+            A list of Wilson coefficient names the WCxf convention. The default option is 
+            to evaluate the entire list of coefficients in the specified EFT-basis. 
         kw : dict
             Fixed global parameters such as "mubarsq" for renormalization scale and
             "hbar" for the matching order, specified using a dictionary
     
     """
     output_dict = {
-        "eft": "SMEFT", 
-        "basis": "Warsaw", 
+        "eft": eft_info["eft"], 
+        "basis": eft_info["basis"], 
         "scale": sqrt(kw["mubarsq"])
     }
 
-    values_dict = create_wcxf_dict(model,wc_names,convention,**kw)
-    output_dict["values"] = values_dict
+    eft_basis = wcxf.Basis[eft_info["eft"], eft_info["basis"]]
+    wcs_wcxf = eft_basis.all_wcs
 
-    yaml.add_representer(complex, complex_representer)
-    with open(filename,'w') as out_file:
-        yaml.dump(output_dict, out_file, sort_keys=False)
-
-
-def write_to_wcxf_all(filename: str, model, **kw:dict) -> None:
-    """
-    Writes the values of all Wilson coefficients defined in the SMEFT wcxf basis to a .yaml file
-
-    Parameters
-    ----------
-        filename : str
-            A string specifying the path of the output .yaml file
-        model
-            Instance of the UV model class defined in the match_to_py module
-        kw : dict
-            Fixed global parameters such as "mubarsq" for renormalization scale and
-            "hbar" for the matching order, specified using a dictionary
+    if not wc_names:
+        wc_names = wcs_wcxf
+        values_dict = create_wcxf_dict(model,wc_names,**kw)
+    else:
+        for name in wc_names:
+            try:
+                assert name in wcs_wcxf
+            except AssertionError:
+                print(f"Invalid input: Wilson Coefficient '{name}' not found in the basis!")
+                print("Exiting.")
+                sys.exit()
+                return
+        values_dict = create_wcxf_dict(model,wc_names,**kw)
     
-    """
-    output_dict = {
-        "eft": "SMEFT", 
-        "basis": "Warsaw", 
-        "scale": sqrt(kw["mubarsq"])
-    }
-
-    global wcs_wcxf
-    wc_names = wcs_wcxf
-    convention = "wcxf"
-    values_dict = create_wcxf_dict(model,wc_names,convention,**kw)
     output_dict["values"] = values_dict
 
     yaml.add_representer(complex, complex_representer)
