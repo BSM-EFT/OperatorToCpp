@@ -23,9 +23,9 @@ model1 = MSSM(param_dict)
 print(model1.cG(**scale))
 print(model1.cuB(2,2,**scale))
 
-# evaluate coefficients and write to a file in wcxf format
+# evaluate coefficients and write to a WCxf file
 
 wcs = ["uu_1331", "G", "phiG", "phiD", "uG_33"]
 eft_info = { "eft": "SMEFT", "basis": "Warsaw" }
-write_to_wcxf("example_wcxf.yaml",model1,eft_info,wcs,**scale)
+write_to_wcxf("example_wcxf.yaml",model1,eft_info,wcs,opt="seq",**scale)
 write_to_wcxf("example_wcxf_all.yaml",model1,eft_info,**scale)

@@ -40,7 +40,7 @@ def read_param_values(filename: str) -> tuple[dict[str, float | complex], dict[s
     return (param_dict, ranges_dict)
 
 
-def write_to_yaml(filename:str, model, param_dict: dict[str, float | complex], keys: list[list[str], list[str]], opt: str, **kw: dict) -> None:
+def write_to_yaml(filename:str, model, param_dict: dict[str, float | complex], keys: list[list[str], list[str]], opt: str = "par", **kw: dict) -> None:
     """
     Writes the values of specified parameters and evaluated Wilson coefficients
     to a .yaml file

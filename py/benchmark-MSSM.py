@@ -54,18 +54,25 @@ eft_info = {"eft": "SMEFT", "basis": "Warsaw"}
 #################
 
 # Writing all operators, WCxf (seq) vs native yaml (seq) 
-# wcxf_vs_yaml_all_seq(eft_info, models[0], param_dicts[0], **scale)
+wcxf_vs_yaml_all_seq(eft_info, models[0], param_dicts[0], **scale)
+
+# Writing all operators, WCxf seq vs par 
+wcxf_seq_vs_par_all(eft_info, models[0], **scale)
 
 # Writing all operators, native yaml, seq vs par
-# yaml_seq_vs_par_all(eft_info, models[0], param_dicts[0], **scale) 
+yaml_seq_vs_par_all(eft_info, models[0], param_dicts[0], **scale) 
 
-# Writing 59 operators of the SMEFT-d6 Warsaw basis
-# wcxf_vs_yaml_SMEFTd6_59_seq(models[0], param_dicts[0], **scale)
+# Writing 59 operators of the SMEFT-d6 Warsaw basis, sequentially
+wcxf_vs_yaml_SMEFTd6_59_seq(models[0], param_dicts[0], **scale)
+
+# Writing 59 operators of the SMEFT-d6 Warsaw basis, in parallel
+wcxf_vs_yaml_SMEFTd6_59_par(models[0], param_dicts[0], **scale)
+
 
 # Single coefficient execution times
-# exec(models[0], "cH", **scale)
-# exec(models[0], "cuH_33", **scale)
-# exec(models[0], "cqd1_2213", **scale)
+exec(models[0], "cH", **scale)
+exec(models[0], "cuH_33", **scale)
+exec(models[0], "cqd1_2213", **scale)
 
 
 ####################
