@@ -449,7 +449,7 @@ HeaderModelClass[className_,paramList_,ComplexPars_,line_] := Module[{},
 	WriteLine[line, ""];
 	
 	(* declaration for the overloaded constructor*)
-	WriteLine[line, StringJoin["        ", className, "(std::unordered_map<std::string, std::complex<double> > params);"]];
+	WriteLine[line, StringJoin["        ", className, "(std::unordered_map<std::string, std::complex<double> > params, double scale, bool loop);"]];
 	WriteLine[line, ""];
 
 	(* declaration for the updater method *)
@@ -525,7 +525,14 @@ BuildPreprocessorDirectives[modelName_,line_] := Module[{},
 
 BuildConstructor[className_, paramList_, ComplexPars_, line_]:=Module[{},
 	WriteLine[line, ""];
-	WriteLine[line, StringJoin[className, "::", className, "(std::unordered_map<std::string, std::complex<double>> params) {"]];
+	WriteLine[line, StringJoin[className, "::", className, "(std::unordered_map<std::string, std::complex<double>> params, double scale, bool loop) {"]];
+	WriteLine[line, "    this->mubarsq = scale * scale;"];
+	WriteLine[line, "    if (!loop) {"];
+	WriteLine[line, "        this->hbar = 0.0;"];
+	WriteLine[line, "    } else {"];
+	WriteLine[line, "        this->hbar = 1/(16 * pow(pi,2));"];
+	WriteLine[line, "    }"];
+	WriteLine[line, ""];
 	
 	If[Length[paramList[[1]]]!=0,
 		Do[
@@ -922,7 +929,7 @@ GeneratePythonDeclarations[modelName_]:= Module[{path,line},
 	WriteLine[line, "class Task: ..."];
 	WriteLine[line, ""];
 	WriteLine[line, "class "<>modelName<>":"];
-	WriteLine[line, "    def __init__(self, param_dict: dict[str, complex]) -> None: ..."];
+	WriteLine[line, "    def __init__(self, param_dict: dict[str, complex], scale: float, loop: bool) -> None: ..."];
 	WriteLine[line, "    def updateParams(self, param_dict: dict[str, complex]) -> None: ..."];
 	WriteLine[line, "    def getScale(self) -> float: ..."];
 	WriteLine[line, "    def setScale(self, scale: float) -> None: ..."];

@@ -50,7 +50,7 @@ class MSSM {
     public:
         MSSM() = default;
 
-        MSSM(std::unordered_map<std::string, std::complex<double> > params);
+        MSSM(std::unordered_map<std::string, std::complex<double> > params, double scale, bool loop);
 
         void updateParams(std::unordered_map<std::string, std::complex<double> > params);
 

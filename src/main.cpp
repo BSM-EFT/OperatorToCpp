@@ -1,7 +1,7 @@
 /**
  * @file main.cpp
  * @author Suraj Prakash
- * @date 2026-06-04
+ * @date 2026-06-05
  * @brief Example C++ program that creates an instance of the MSSM class and evaluates Wilson coefficients
  */
 
@@ -11,14 +11,10 @@
 #include <complex>
 #include <unordered_map>
 #include <iostream>
-#include <cmath>
 
 int main() {
-
-    // create an instance of the model and a parameter dictionary
-    MSSM sb_model;
+    // create a parameter dictionary
     std::unordered_map<std::string, std::complex<double>> param_dict;
-
     param_dict.emplace("g1", 0.37);
     param_dict.emplace("g3", 1.1);
     param_dict.emplace("cgamma",0.01);
@@ -48,10 +44,9 @@ int main() {
         i += 1000;
     }
 
-    // update model parameters and set the renormalization scale
-    sb_model.updateParams(param_dict);
-    double scale = 1.0; // in units of TeV
-    sb_model.setScale(scale);
+    // initialize an instance of the MSSM model with the parameter dictionary,
+    // renormalization scale set to 1 TeV and loop contrbutions turned on
+    MSSM sb_model(param_dict, 1.0, true); 
 
     // compute and print Wilson coefficients values
     std::cout << "cG: {Real = " << sb_model.cG().real()

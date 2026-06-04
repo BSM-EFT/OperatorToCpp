@@ -2,7 +2,14 @@
 #include "MSSM.h"
 #include <omp.h>
 
-MSSM::MSSM(std::unordered_map<std::string, std::complex<double>> params) {
+MSSM::MSSM(std::unordered_map<std::string, std::complex<double>> params, double scale, bool loop) {
+    this->mubarsq = scale * scale;
+    if (!loop) {
+        this->hbar = 0.0;
+    } else {
+        this->hbar = 1/(16 * pow(pi,2));
+    }
+
     if (params.find("cgamma") != params.end()) {
         this->cgamma = params["cgamma"];
     }

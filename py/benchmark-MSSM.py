@@ -41,9 +41,7 @@ print("Initializing MSSM model instances.")
 t3 = perf_counter()
 models = list()
 for p_dict in param_dicts:
-    model = MSSM(p_dict)
-    model.setScale(1e3)
-    model.loopContributions(True)
+    model = MSSM(p_dict, 1e3, True)
     models.append(model)
 
 t4 = perf_counter()

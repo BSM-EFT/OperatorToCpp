@@ -17,7 +17,7 @@ PYBIND11_MODULE(match_to_py, m, py::mod_gil_not_used()) {
     auto task = py::class_<Task>(m, "Task");
 
     py::class_<Model>(m, py_class)
-        .def(py::init<std::unordered_map<std::string, std::complex<double> > >())
+        .def(py::init<std::unordered_map<std::string, std::complex<double> >, double, bool>())
         .def("updateParams", &Model::updateParams, py::arg("param_dict"))
         .def("getScale", &Model::getScale)
         .def("setScale", &Model::setScale, py::arg("scale"))

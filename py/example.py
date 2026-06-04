@@ -15,9 +15,7 @@ param_dict = {
 }
 
 # create an instance of the MSSM class
-model1 = MSSM(param_dict)
-model1.setScale(1.0)
-model1.loopContributions(True)
+model1 = MSSM(param_dict, 1.0, True)
 
 # evaluate Wilson coefficients as method calls
 print(model1.cG())

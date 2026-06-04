@@ -53,9 +53,7 @@ def write_to_csv(filename: str, model, ranges_dict: dict[str,Iterable], wc_names
 def create_row(p_comb, p_keys: list[str], wc_names, model, fixed_pars, **kw) -> dict[str, float | complex]:
     """Helper function for creating a single row with parameter and Wilson coefficient values"""
 
-    row_model = model(fixed_pars)
-    row_model.setScale(kw["scale"])
-    row_model.loopContributions(kw["loop"])
+    row_model = model(fixed_pars, kw["scale"], kw["loop"])
 
     row_dict = dict()
     for i in range(len(p_keys)):
