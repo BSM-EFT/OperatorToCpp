@@ -1,6 +1,5 @@
 import wcxf, yaml, json5
 import numpy as np
-from math import sqrt
 from ..core import eval_wc, create_tasks
 from ..io.yaml import complex_representer
 
@@ -97,7 +96,7 @@ def generate_evaluation_list(wcs_wcxf: list[str], wc_info: dict) -> tuple[dict[s
     return (unique_ops, wcs_matchete)
 
 
-def write_to_wcxf(filename: str, model, eft_info: dict[str, str], wc_names: list[str] | None = None, opt: str = "par", **kw:dict) -> None:
+def write_to_wcxf(filename: str, model, eft_info: dict[str, str], wc_names: list[str] | None = None, opt: str = "par") -> None:
     """
     Writes the values of evaluated Wilson coefficients to a .yaml file in the WCxf convention
 
@@ -122,19 +121,19 @@ def write_to_wcxf(filename: str, model, eft_info: dict[str, str], wc_names: list
     """
     match opt:
         case "seq":
-            write_to_wcxf_seq(filename, model, eft_info, wc_names, **kw)
+            write_to_wcxf_seq(filename, model, eft_info, wc_names)
         case "par":
-            write_to_wcxf_par(filename, model, eft_info, wc_names, **kw)
+            write_to_wcxf_par(filename, model, eft_info, wc_names)
 
 
-def write_to_wcxf_seq(filename: str, model, eft_info: dict[str, str], wc_names: list[str] | None = None, **kw:dict) -> None:
+def write_to_wcxf_seq(filename: str, model, eft_info: dict[str, str], wc_names: list[str] | None = None) -> None:
     """
     Writes the values of evaluated Wilson coefficients to a .yaml file in the WCxf convention, follows sequential evaluation.
     """
     output_dict = {
         "eft": eft_info["eft"], 
         "basis": eft_info["basis"], 
-        "scale": sqrt(kw["mubarsq"])
+        "scale": model.getScale()
     }
 
     eft_basis = wcxf.Basis[eft_info["eft"], eft_info["basis"]]
@@ -148,7 +147,7 @@ def write_to_wcxf_seq(filename: str, model, eft_info: dict[str, str], wc_names: 
         wc_names = wcs_wcxf
     
     unique_ops, wcs_matchete = generate_evaluation_list(wc_names, wc_info["permutations"])
-    values_1_wc = [eval_wc(model, wc, **kw) for wc in wcs_matchete]
+    values_1_wc = [eval_wc(model, wc) for wc in wcs_matchete]
 
     values = [unique_ops[wc_names[i]] * values_1_wc[i] for i in range(len(wc_names))]
     values_dict = dict(zip(wc_names, values))
@@ -160,7 +159,7 @@ def write_to_wcxf_seq(filename: str, model, eft_info: dict[str, str], wc_names: 
         yaml.dump(output_dict, out_file, sort_keys=False)
 
 
-def write_to_wcxf_par(filename: str, model, eft_info: dict[str, str], wc_names: list[str] | None = None, **kw:dict) -> None:
+def write_to_wcxf_par(filename: str, model, eft_info: dict[str, str], wc_names: list[str] | None = None) -> None:
     """
     Writes the values of evaluated Wilson coefficients to a .yaml file in the WCxf convention, utilizes parallelisation
     through OpenMP and batch processing at the C++ end
@@ -168,7 +167,7 @@ def write_to_wcxf_par(filename: str, model, eft_info: dict[str, str], wc_names: 
     output_dict = {
         "eft": eft_info["eft"], 
         "basis": eft_info["basis"], 
-        "scale": sqrt(kw["mubarsq"])
+        "scale": model.getScale()
     }
 
     eft_basis = wcxf.Basis[eft_info["eft"], eft_info["basis"]]
@@ -182,7 +181,7 @@ def write_to_wcxf_par(filename: str, model, eft_info: dict[str, str], wc_names: 
         wc_names = wcs_wcxf
     
     unique_ops, wcs_matchete = generate_evaluation_list(wc_names, wc_info["permutations"])
-    tasks = create_tasks(model, wcs_matchete, **kw)
+    tasks = create_tasks(model, wcs_matchete)
     res_dict = model.batch_eval(tasks)
 
     values_1_wc = list(res_dict.values())

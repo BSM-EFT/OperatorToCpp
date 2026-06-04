@@ -40,7 +40,7 @@ def read_param_values(filename: str) -> tuple[dict[str, float | complex], dict[s
     return (param_dict, ranges_dict)
 
 
-def write_to_yaml(filename:str, model, param_dict: dict[str, float | complex], keys: list[list[str], list[str]], opt: str = "par", **kw: dict) -> None:
+def write_to_yaml(filename:str, model, param_dict: dict[str, float | complex], keys: list[list[str], list[str]], opt: str = "par") -> None:
     """
     Writes the values of specified parameters and evaluated Wilson coefficients
     to a .yaml file
@@ -65,12 +65,12 @@ def write_to_yaml(filename:str, model, param_dict: dict[str, float | complex], k
     """
     match opt:
         case "seq":
-            write_to_yaml_seq(filename, model, param_dict, keys, **kw)
+            write_to_yaml_seq(filename, model, param_dict, keys)
         case "par":
-            write_to_yaml_omp(filename, model, param_dict, keys, **kw)
+            write_to_yaml_omp(filename, model, param_dict, keys)
 
 
-def write_to_yaml_seq(filename:str, model, param_dict: dict[str, float | complex], keys: list[list[str], list[str]], **kw: dict) -> None:
+def write_to_yaml_seq(filename:str, model, param_dict: dict[str, float | complex], keys: list[list[str], list[str]]) -> None:
     """
     Writes the values of specified parameters and evaluated Wilson coefficients
     to a .yaml file, follows sequential execution during dictionary building
@@ -82,14 +82,14 @@ def write_to_yaml_seq(filename:str, model, param_dict: dict[str, float | complex
     for k in p_keys:
         output_dict[k] = param_dict[k]
 
-    output_dict.update(create_wc_dict(model,wc_names,**kw))
+    output_dict.update(create_wc_dict(model,wc_names))
     
     yaml.add_representer(complex, complex_representer)
     with open(filename, 'w') as out_file:
         yaml.dump(output_dict,out_file,sort_keys=False)
 
 
-def write_to_yaml_omp(filename:str, model, param_dict: dict[str, float | complex], keys: list[list[str], list[str]], **kw: dict) -> None:
+def write_to_yaml_omp(filename:str, model, param_dict: dict[str, float | complex], keys: list[list[str], list[str]]) -> None:
     """
     Writes the values of specified parameters and evaluated Wilson coefficients
     to a .yaml file, utilizes parallelisation through OpenMP and batch processing at
@@ -103,7 +103,7 @@ def write_to_yaml_omp(filename:str, model, param_dict: dict[str, float | complex
     for k in p_keys:
         output_dict[k] = param_dict[k]
 
-    tasks = create_tasks(model, wc_names, **kw)
+    tasks = create_tasks(model, wc_names)
     output_dict.update(model.batch_eval(tasks))
     
     yaml.add_representer(complex, complex_representer)
@@ -120,11 +120,21 @@ def float_representer(dumper, value: float):
 
 def complex_representer(dumper, value: complex):
     """Format specifier for complex output when written to a .yaml file"""
-
-    return dumper.represent_mapping(
-        'tag:yaml.org,2002:map',
-        {
-            'Re': value.real,
-            'Im': value.imag
-        }
-    )
+    
+    # Case 1: Real part is effectively zero -> output 0.0 as a scalar
+    if abs(value.real) < 1e-18:
+        return dumper.represent_scalar('tag:yaml.org,2002:float', '0.0')
+    
+    # Case 2: Imaginary part is effectively zero -> output only the real part as a scalar
+    elif abs(value.imag) < 1e-18:
+        return dumper.represent_scalar('tag:yaml.org,2002:float', str(value.real))
+    
+    # Case 3: Both parts are significant -> output the standard Re/Im mapping
+    else:
+        return dumper.represent_mapping(
+            'tag:yaml.org,2002:map',
+            {
+                'Re': value.real,
+                'Im': value.imag
+            }
+        )

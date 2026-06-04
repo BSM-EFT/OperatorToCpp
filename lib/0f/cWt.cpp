@@ -2,6 +2,6 @@
 #include "complex_math.h"
 #include "MSSM.h"
 
-std::complex<double> MSSM::cWt(double mubarsq, double hbar) {
+std::complex<double> MSSM::cWt() {
     return (0);
 }

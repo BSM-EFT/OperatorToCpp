@@ -4,7 +4,7 @@ import pandas as pd
 import csv
 from concurrent.futures import ThreadPoolExecutor
 
-def write_to_csv(filename: str, model, ranges_dict: dict[str,Iterable], wc_names: list[str], grid=True, **kw: dict) -> None:
+def write_to_csv(filename: str, model, ranges_dict: dict[str,Iterable], wc_names: list[str], grid=True) -> None:
     """
     Writes the values of parameters that vary over a range and the evaluated 
     Wilson coefficients (for each parameter combination) to a .csv file
@@ -23,10 +23,7 @@ def write_to_csv(filename: str, model, ranges_dict: dict[str,Iterable], wc_names
         grid : bool, optional
             A flag used to specify whether the combinations should be created
             as Cartesian products (the default option) or by simply combining 
-            the corresponding entries of each array within the arrays list 
-        kw : dict
-            Fixed global parameters such as "mubarsq" for renormalization scale and
-            "hbar" for the matching order, specified using a dictionary
+            the corresponding entries of each array within the arrays list
     """
     assert(len(ranges_dict)!=0)
     
@@ -45,7 +42,7 @@ def write_to_csv(filename: str, model, ranges_dict: dict[str,Iterable], wc_names
                 output_dict[param_keys[i]] = param_comb[i]
             
             model.updateParams(output_dict)
-            output_dict.update(create_wc_dict(model,wc_names,**kw))
+            output_dict.update(create_wc_dict(model,wc_names))
             formatted_output = {
                 k: (f"{v.real:.1e}" if isinstance(v, complex) else f"{v:.1e}" if isinstance(v, float) else v) for k, v in output_dict.items()
             }
@@ -57,12 +54,15 @@ def create_row(p_comb, p_keys: list[str], wc_names, model, fixed_pars, **kw) -> 
     """Helper function for creating a single row with parameter and Wilson coefficient values"""
 
     row_model = model(fixed_pars)
+    row_model.setScale(kw["scale"])
+    row_model.loopContributions(kw["loop"])
+
     row_dict = dict()
     for i in range(len(p_keys)):
         row_dict[p_keys[i]] = p_comb[i]
 
     row_model.updateParams(row_dict)
-    row_dict.update(create_wc_dict(row_model, wc_names, **kw))
+    row_dict.update(create_wc_dict(row_model, wc_names))
 
     return row_dict
     
@@ -91,8 +91,8 @@ def create_dataframe(model, fixed_pars: dict[str, float|complex], ranges_dict: d
         max_workers : int, optional
             Number of cores over which the multi-threaded task will be distributed
         kw : dict
-            Fixed global parameters such as "mubarsq" for renormalization scale and
-            "hbar" for the matching order, specified using a dictionary
+            Fixed global parameters specifying (i) the renormalization scale and 
+            (ii) whether loop contributions are included or not 
 
     Returns
     --------

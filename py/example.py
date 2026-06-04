@@ -14,18 +14,18 @@ param_dict = {
     "mdt1": 1016000, "mdt2": 1017000, "mdt3": 1018000,
 }
 
-scale = {"mubarsq": 1.0, "hbar": 0.006332574}
-
 # create an instance of the MSSM class
 model1 = MSSM(param_dict)
+model1.setScale(1.0)
+model1.loopContributions(True)
 
 # evaluate Wilson coefficients as method calls
-print(model1.cG(**scale))
-print(model1.cuB(2,2,**scale))
+print(model1.cG())
+print(model1.cuB(2,2))
 
 # evaluate coefficients and write to a WCxf file
 
 wcs = ["uu_1331", "G", "phiG", "phiD", "uG_33"]
 eft_info = { "eft": "SMEFT", "basis": "Warsaw" }
-write_to_wcxf("example_wcxf.yaml",model1,eft_info,wcs,opt="seq",**scale)
-write_to_wcxf("example_wcxf_all.yaml",model1,eft_info,**scale)
+write_to_wcxf("example_wcxf.yaml",model1,eft_info,wcs,opt="seq")
+write_to_wcxf("example_wcxf_all.yaml",model1,eft_info)

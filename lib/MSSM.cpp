@@ -584,6 +584,88 @@ void MSSM::updateParams(std::unordered_map<std::string, std::complex<double>> pa
     }
 }
 
+double MSSM::getScale() {
+    return sqrt(this->mubarsq);
+}
+
+void MSSM::setScale(double scale) {
+    this->mubarsq = scale * scale;
+}
+
+void MSSM::loopContributions(bool loop) {
+    if (!loop) {
+        this->hbar = 0.0;
+    } else {
+        this->hbar = 1/(16 * pow(pi,2));
+    }
+}
+
+std::unordered_map<std::string, std::complex<double> > MSSM::getParams() {
+    std::unordered_map<std::string, std::complex<double> > param_dict = {
+        {"cgamma", this->cgamma},
+        {"g1", this->g1},
+        {"g2", this->g2},
+        {"g3", this->g3},
+        {"m1", this->m1},
+        {"m2", this->m2},
+        {"m3", this->m3},
+        {"mPhi", this->mPhi},
+        {"muTilde", this->muTilde},
+        {"mdt1", this->mdt[0]},
+        {"mdt2", this->mdt[1]},
+        {"mdt3", this->mdt[2]},
+        {"met1", this->met[0]},
+        {"met2", this->met[1]},
+        {"met3", this->met[2]},
+        {"mlt1", this->mlt[0]},
+        {"mlt2", this->mlt[1]},
+        {"mlt3", this->mlt[2]},
+        {"mqt1", this->mqt[0]},
+        {"mqt2", this->mqt[1]},
+        {"mqt3", this->mqt[2]},
+        {"mut1", this->mut[0]},
+        {"mut2", this->mut[1]},
+        {"mut3", this->mut[2]},
+        {"ad11", this->ad[0][0]},
+        {"ad12", this->ad[0][1]},
+        {"ad13", this->ad[0][2]},
+        {"ad22", this->ad[1][1]},
+        {"ad23", this->ad[1][2]},
+        {"ad33", this->ad[2][2]},
+        {"ae11", this->ae[0][0]},
+        {"ae12", this->ae[0][1]},
+        {"ae13", this->ae[0][2]},
+        {"ae22", this->ae[1][1]},
+        {"ae23", this->ae[1][2]},
+        {"ae33", this->ae[2][2]},
+        {"au11", this->au[0][0]},
+        {"au12", this->au[0][1]},
+        {"au13", this->au[0][2]},
+        {"au22", this->au[1][1]},
+        {"au23", this->au[1][2]},
+        {"au33", this->au[2][2]},
+        {"Yd11", this->Yd[0][0]},
+        {"Yd12", this->Yd[0][1]},
+        {"Yd13", this->Yd[0][2]},
+        {"Yd22", this->Yd[1][1]},
+        {"Yd23", this->Yd[1][2]},
+        {"Yd33", this->Yd[2][2]},
+        {"Ye11", this->Ye[0][0]},
+        {"Ye12", this->Ye[0][1]},
+        {"Ye13", this->Ye[0][2]},
+        {"Ye22", this->Ye[1][1]},
+        {"Ye23", this->Ye[1][2]},
+        {"Ye33", this->Ye[2][2]},
+        {"Yu11", this->Yu[0][0]},
+        {"Yu12", this->Yu[0][1]},
+        {"Yu13", this->Yu[0][2]},
+        {"Yu22", this->Yu[1][1]},
+        {"Yu23", this->Yu[1][2]},
+        {"Yu33", this->Yu[2][2]},
+    };
+    return param_dict;
+}
+
 std::map<std::string, std::complex<double> > MSSM::batch_eval(const std::vector<Task>& tasks) {
     int n = tasks.size();
     std::vector<std::complex<double> > results_temp(n);

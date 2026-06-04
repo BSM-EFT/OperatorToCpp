@@ -42,7 +42,7 @@ def split_wc_name(full_name: str) -> tuple[str,dict[str, int]]:
         return (full_name,)
 
 
-def eval_wc(model, wc_name: str, **kw: dict) -> float | complex:
+def eval_wc(model, wc_name: str) -> float | complex:
     """
     Evaluates the specified Wilson coeffcient method for a given model
     
@@ -52,9 +52,6 @@ def eval_wc(model, wc_name: str, **kw: dict) -> float | complex:
             Instance of the UV model class defined in the match_to_py module
         wc_name : str
             A string containing the coefficient name in "cXYZ_abcd" format
-        kw : dict
-            Fixed global parameters such as "mubarsq" for renormalization scale and
-            "hbar" for the matching order, specified using a dictionary
 
     Returns
     -------
@@ -66,20 +63,21 @@ def eval_wc(model, wc_name: str, **kw: dict) -> float | complex:
     wc_tuple = split_wc_name(wc_name)
     wc = getattr(model,wc_tuple[0])
 
+    kw = dict()
     if len(wc_tuple) == 2:
-        kw.update(wc_tuple[1])
+        kw = {**kw,**wc_tuple[1]}
     
     res = call(wc,**kw)
-    if abs(res.real) < 1e-20:
+    if abs(res.real) < 1e-18:
         ret = 0.0
-    elif abs(res.imag) < 1e-20:
+    elif abs(res.imag) < 1e-18:
         ret = res.real
     else:
         ret = res
     return ret
 
 
-def create_wc_dict(model, wc_names: list[str], **kw: dict) -> dict[str, float | complex]:
+def create_wc_dict(model, wc_names: list[str]) -> dict[str, float | complex]:
     """
     Creates a dictionary to store (name, value) pairs for the specified
     list of Wilson coefficients for a given model
@@ -88,7 +86,7 @@ def create_wc_dict(model, wc_names: list[str], **kw: dict) -> dict[str, float | 
     result_dict = dict()
     
     for wc in wc_names:
-        result_dict[wc] = eval_wc(model,wc,**kw)
+        result_dict[wc] = eval_wc(model,wc)
 
     return result_dict    
 
@@ -114,11 +112,11 @@ def generate_call_plan(model, wc_names: list[str]) -> list[dict]:
     return plan
 
 
-def build_dict(plan, num_workers, **global_kw) -> dict[str, float | complex]:
+def build_dict(plan, num_workers) -> dict[str, float | complex]:
     result_dict: dict[str, float | complex] = {}
 
     def worker(task) -> tuple[str, float | complex]:
-        return task['name'], task['method'](**{**global_kw, **task['kwargs']})
+        return task['name'], task['method'](**task['kwargs'])
 
     with ThreadPoolExecutor(max_workers=num_workers) as executor:
         for name, val in executor.map(worker, plan, chunksize=20):
@@ -127,19 +125,19 @@ def build_dict(plan, num_workers, **global_kw) -> dict[str, float | complex]:
     return result_dict
 
 
-def create_tasks(model, names, **kw):
+def create_tasks(model, names):
     plan = []
     for name in names:
         wc_tuple = split_wc_name(name)
         method_name = wc_tuple[0]
 
         if len(wc_tuple) == 1:
-            task = model.wrap_0f(name, method_name, **kw)
+            task = model.wrap_0f(name, method_name)
         elif len(wc_tuple) == 2:
             if len(wc_tuple[1]) == 2:
-                task = model.wrap_2f(name, method_name, **{**wc_tuple[1], **kw})
+                task = model.wrap_2f(name, method_name, **wc_tuple[1])
             elif len(wc_tuple[1]) == 4:
-                task = model.wrap_4f(name, method_name, **{**wc_tuple[1], **kw})
+                task = model.wrap_4f(name, method_name, **wc_tuple[1])
 
         plan.append(task)
     return plan

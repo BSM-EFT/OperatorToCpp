@@ -4,7 +4,7 @@ from time import perf_counter
 import wcxf
 
 
-def wcxf_vs_yaml_all_seq(eft_info, model, param_dict, **kw) -> None:
+def wcxf_vs_yaml_all_seq(eft_info, model, param_dict) -> None:
     """
         Compares the execution times for evaluating and writing to file all Wilson coefficients
         defined within a specifc EFT-basis in (i) native yaml (ii) WCxf format
@@ -13,7 +13,7 @@ def wcxf_vs_yaml_all_seq(eft_info, model, param_dict, **kw) -> None:
     # the WCxf writer
     f_name = "./benchmark-points/all_wcxf.yaml"
     t_i = perf_counter() 
-    write_to_wcxf(f_name,model,eft_info,opt="seq",**kw) 
+    write_to_wcxf(f_name,model,eft_info,opt="seq") 
     t_f = perf_counter()
     print(f"File written in WCxf format (using sequential process) in {t_f - t_i:.2f}s.")
 
@@ -32,12 +32,12 @@ def wcxf_vs_yaml_all_seq(eft_info, model, param_dict, **kw) -> None:
     f_name = "./benchmark-points/all_native.yaml" 
     t_i = perf_counter()
     keys = [[],wc_names]
-    write_to_yaml(f_name,model,param_dict,keys,"seq",**kw) 
+    write_to_yaml(f_name,model,param_dict,keys,"seq") 
     t_f = perf_counter()
     print(f"File written in native format (using sequential process) in {t_f - t_i:.2f}s.")
 
 
-def wcxf_vs_yaml_SMEFTd6_59_seq(model, param_dict, **kw) -> None:
+def wcxf_vs_yaml_SMEFTd6_59_seq(model, param_dict) -> None:
     """
         Compares the execution times for evaluating and writing to file the 59 Wilson coefficients
         of (single fermion generation) dimension 6 SMEFT Warsaw basis (i) native yaml (ii) WCxf format
@@ -51,7 +51,7 @@ def wcxf_vs_yaml_SMEFTd6_59_seq(model, param_dict, **kw) -> None:
     
     f_name = "./benchmark-points/59_wcxf.yaml"
     t_i = perf_counter() 
-    write_to_wcxf(f_name,model,eft_info,wc_names_wcxf,"seq",**kw)
+    write_to_wcxf(f_name,model,eft_info,wc_names_wcxf,"seq")
     t_f = perf_counter()
     print(f"File written in WCxf format in {t_f - t_i:.2f}s.")
 
@@ -61,12 +61,12 @@ def wcxf_vs_yaml_SMEFTd6_59_seq(model, param_dict, **kw) -> None:
     f_name = "./benchmark-points/59_native.yaml" 
     t_i = perf_counter()
     keys = [[],wc_names_matchete]
-    write_to_yaml(f_name,model,param_dict,keys,"seq",**kw) 
+    write_to_yaml(f_name,model,param_dict,keys,"seq") 
     t_f = perf_counter()
     print(f"File written in native format in {t_f - t_i:.2f}s.")
 
 
-def wcxf_vs_yaml_SMEFTd6_59_par(model, param_dict, **kw) -> None:
+def wcxf_vs_yaml_SMEFTd6_59_par(model, param_dict) -> None:
     """
         Compares the execution times for evaluating and writing to file the 59 Wilson coefficients
         of (single fermion generation) dimension 6 SMEFT Warsaw basis (i) native yaml (ii) WCxf format
@@ -80,7 +80,7 @@ def wcxf_vs_yaml_SMEFTd6_59_par(model, param_dict, **kw) -> None:
     
     f_name = "./benchmark-points/59_wcxf_par.yaml"
     t_i = perf_counter() 
-    write_to_wcxf(f_name,model,eft_info,wc_names_wcxf,**kw)
+    write_to_wcxf(f_name,model,eft_info,wc_names_wcxf)
     t_f = perf_counter()
     print(f"File written in WCxf format in {t_f - t_i:.2f}s.")
 
@@ -90,12 +90,12 @@ def wcxf_vs_yaml_SMEFTd6_59_par(model, param_dict, **kw) -> None:
     f_name = "./benchmark-points/59_native_par.yaml" 
     t_i = perf_counter()
     keys = [[],wc_names_matchete]
-    write_to_yaml(f_name,model,param_dict,keys,"par",**kw) 
+    write_to_yaml(f_name,model,param_dict,keys,"par") 
     t_f = perf_counter()
     print(f"File written in native format in {t_f - t_i:.2f}s.")
 
 
-def wcxf_seq_vs_par_all(eft_info, model, **kw) -> None:
+def wcxf_seq_vs_par_all(eft_info, model) -> None:
     """
         Compares the execution times for evaluating and writing to file all Wilson coefficients
         defined within a specifc EFT-basis in the native yaml format for (i) sequential and 
@@ -104,18 +104,18 @@ def wcxf_seq_vs_par_all(eft_info, model, **kw) -> None:
     
     f_name = "./benchmark-points/all_wcxf.yaml"
     t_i = perf_counter() 
-    write_to_wcxf(f_name,model,eft_info,opt="seq",**kw) 
+    write_to_wcxf(f_name,model,eft_info,opt="seq") 
     t_f = perf_counter()
     print(f"File written in WCxf format (using sequential process) in {t_f - t_i:.2f}s.")
 
     f_name = "./benchmark-points/all_wcxf_par.yaml"
     t_i = perf_counter() 
-    write_to_wcxf(f_name,model,eft_info,**kw) 
+    write_to_wcxf(f_name,model,eft_info) 
     t_f = perf_counter()
     print(f"File written in WCxf format (using parallel process) in {t_f - t_i:.2f}s.")
 
 
-def yaml_seq_vs_par_all(eft_info, model, param_dict, **kw) -> None:
+def yaml_seq_vs_par_all(eft_info, model, param_dict) -> None:
     """
         Compares the execution times for evaluating and writing to file all Wilson coefficients
         defined within a specifc EFT-basis in the native yaml format for (i) sequential and 
@@ -136,13 +136,13 @@ def yaml_seq_vs_par_all(eft_info, model, param_dict, **kw) -> None:
     f_name = "./benchmark-points/all_native.yaml" 
     t_i = perf_counter()
     keys = [[],wc_names]
-    write_to_yaml(f_name,model,param_dict,keys,"seq",**kw) 
+    write_to_yaml(f_name,model,param_dict,keys,"seq") 
     t_f = perf_counter()
     print(f"File written in native format (using sequential process) in {t_f - t_i:.2f}s.")
 
     f_name = "./benchmark-points/all_native_par.yaml" 
     t_i = perf_counter()
     keys = [[],wc_names]
-    write_to_yaml(f_name,model,param_dict,keys,"par",**kw) 
+    write_to_yaml(f_name,model,param_dict,keys,"par") 
     t_f = perf_counter()
     print(f"File written in native format (using parallel C++ process) in {t_f - t_i:.2f}s.")

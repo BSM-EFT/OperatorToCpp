@@ -388,6 +388,9 @@ HeaderPreprocessorDirectives[line_] := Module[{},
 	WriteLine[line, "#include <unordered_map>"];
 	WriteLine[line, "#include <map>"];
 	WriteLine[line, "#include <functional>"];
+	WriteLine[line, "#include <cmath>"];
+	WriteLine[line, ""];
+	WriteLine[line, "const double pi = 3.14159265;"];
 ];
 
 HeaderTaskStruct[line_] := Module[{},
@@ -401,6 +404,9 @@ HeaderModelClass[className_,paramList_,ComplexPars_,line_] := Module[{},
 	WriteLine[line, "class "<>className<>" {"];
 	WriteLine[line, "    private:"];
 	
+	(* define and initialize the scale and loop-order *)
+	WriteLine[line, "        double hbar = 1/(16 * pow(pi,2));"];
+	WriteLine[line, "        double mubarsq = 1.0;"];
 	(* define and initialize 0-dimensional parameters *)
 	If[Length[paramList[[1]]]!=0,
 		Do[
@@ -448,6 +454,22 @@ HeaderModelClass[className_,paramList_,ComplexPars_,line_] := Module[{},
 
 	(* declaration for the updater method *)
 	WriteLine[line, StringJoin["        void updateParams", "(std::unordered_map<std::string, std::complex<double> > params);"]];
+	WriteLine[line, ""];
+	
+	(* declaration for the scale getter method *)
+	WriteLine[line, StringJoin["        double getScale", "();"]];
+	WriteLine[line, ""];
+	
+	(* declaration for the scale updater method *)
+	WriteLine[line, StringJoin["        void setScale", "(double scale);"]];
+	WriteLine[line, ""];
+	
+	(* declaration for the loop-order updater method *)
+	WriteLine[line, StringJoin["        void loopContributions", "(bool loop);"]];
+	WriteLine[line, ""];
+	
+	(* declaration for a getter method for model parameters *)
+	WriteLine[line, StringJoin["        std::unordered_map<std::string, std::complex<double> > getParams", "();"]];
 	WriteLine[line, ""];
 		
 	(* declarations for WC methods (Warsaw) *)
@@ -747,6 +769,59 @@ BuildUpdater[className_, paramList_, ComplexPars_, line_]:=Module[{},
 	WriteLine[line, "}"];
 ];
 
+BuildScaleGetter[className_,line_]:=Module[{},
+	WriteLine[line, ""];
+	WriteLine[line, "double "<>className<>"::getScale() {"];
+	WriteLine[line, "    return sqrt(this->mubarsq);"];
+	WriteLine[line, "}"];
+]
+
+BuildScaleSetter[className_,line_]:=Module[{},
+	WriteLine[line, ""];
+	WriteLine[line, "void "<>className<>"::setScale(double scale) {"];
+	WriteLine[line, "    this->mubarsq = scale * scale;"];
+	WriteLine[line, "}"];
+]
+
+BuildLoopSwitch[className_,line_]:=Module[{},
+	WriteLine[line, ""];
+	WriteLine[line, "void "<>className<>"::loopContributions(bool loop) {"];
+	WriteLine[line, "    if (!loop) {"];
+	WriteLine[line, "        this->hbar = 0.0;"];
+	WriteLine[line, "    } else {"];
+	WriteLine[line, "        this->hbar = 1/(16 * pow(pi,2));"];
+	WriteLine[line, "    }"];
+	WriteLine[line, "}"];
+]
+
+BuildParamDictGetter[className_, paramList_, line_]:=Module[{},
+	WriteLine[line, ""];
+	WriteLine[line, "std::unordered_map<std::string, std::complex<double> > "<>className<>"::getParams() {"];
+	WriteLine[line, "    std::unordered_map<std::string, std::complex<double> > param_dict = {"];
+	If[Length[paramList[[1]]]!=0,
+		Do[WriteLine[line, "        {\""<>ToString[paramList[[1]][[i]]]<>"\", this->"<>ToString[paramList[[1]][[i]]]<>"},"], {i,1,Length[paramList[[1]]]}]	
+	];
+	If[Length[paramList[[2]]]!=0,
+		Do[
+			WriteLine[line, "        {\""<>ToString[paramList[[2]][[i]]]<>"1\", this->"<>ToString[paramList[[2]][[i]]]<>"[0]},"];
+			WriteLine[line, "        {\""<>ToString[paramList[[2]][[i]]]<>"2\", this->"<>ToString[paramList[[2]][[i]]]<>"[1]},"];
+			WriteLine[line, "        {\""<>ToString[paramList[[2]][[i]]]<>"3\", this->"<>ToString[paramList[[2]][[i]]]<>"[2]},"], {i,1,Length[paramList[[2]]]}]	
+	];
+	If[Length[paramList[[3]]]!=0,
+		Do[
+			WriteLine[line, "        {\""<>ToString[paramList[[3]][[i]]]<>"11\", this->"<>ToString[paramList[[3]][[i]]]<>"[0][0]},"];
+			WriteLine[line, "        {\""<>ToString[paramList[[3]][[i]]]<>"12\", this->"<>ToString[paramList[[3]][[i]]]<>"[0][1]},"];
+			WriteLine[line, "        {\""<>ToString[paramList[[3]][[i]]]<>"13\", this->"<>ToString[paramList[[3]][[i]]]<>"[0][2]},"];
+			WriteLine[line, "        {\""<>ToString[paramList[[3]][[i]]]<>"22\", this->"<>ToString[paramList[[3]][[i]]]<>"[1][1]},"];
+			WriteLine[line, "        {\""<>ToString[paramList[[3]][[i]]]<>"23\", this->"<>ToString[paramList[[3]][[i]]]<>"[1][2]},"];
+			WriteLine[line, "        {\""<>ToString[paramList[[3]][[i]]]<>"33\", this->"<>ToString[paramList[[3]][[i]]]<>"[2][2]},"], {i,1,Length[paramList[[3]]]}]	
+	];
+	WriteLine[line, "    };"];
+	WriteLine[line, "    return param_dict;"];
+	WriteLine[line, "}"];
+
+]
+
 BuildBatchEvaluator[className_, line_]:=Module[{},
 	WriteLine[line, ""];
 	WriteLine[line, "std::map<std::string, std::complex<double> > "<>className<>"::batch_eval(const std::vector<Task>& tasks) {"];
@@ -821,6 +896,10 @@ SourceFileBuilder[modelName_, paramList_, ComplexPars_, matchingOutput_]:=Module
 	BuildPreprocessorDirectives[modelName,line1];
 	BuildConstructor[modelName,paramList,ComplexPars,line1];
 	BuildUpdater[modelName,paramList,ComplexPars,line1];
+	BuildScaleGetter[modelName,line1];
+	BuildScaleSetter[modelName,line1];
+	BuildLoopSwitch[modelName,line1];
+	BuildParamDictGetter[modelName,paramList,line1];
 	BuildBatchEvaluator[modelName,line1];
 	
 	Close[line1];
@@ -845,74 +924,78 @@ GeneratePythonDeclarations[modelName_]:= Module[{path,line},
 	WriteLine[line, "class "<>modelName<>":"];
 	WriteLine[line, "    def __init__(self, param_dict: dict[str, complex]) -> None: ..."];
 	WriteLine[line, "    def updateParams(self, param_dict: dict[str, complex]) -> None: ..."];
+	WriteLine[line, "    def getScale(self) -> float: ..."];
+	WriteLine[line, "    def setScale(self, scale: float) -> None: ..."];
+	WriteLine[line, "    def loopContributions(self, loop: bool) -> None: ..."];
+	WriteLine[line, "    def getParams(self) -> dict[str, complex]: ..."];
 	WriteLine[line, "    def batch_eval(self, tasks: list[Task]) -> dict[str, complex]: ..."];
-	WriteLine[line, "    def wrap_0f(self, name: str, method_name: str, mubarsq: float, hbar: float) -> Task: ..."];
-	WriteLine[line, "    def wrap_2f(self, name: str, method_name: str, i1: int, i2: int, mubarsq: float, hbar: float) -> Task: ..."];
-	WriteLine[line, "    def wrap_4f(self, name: str, method_name: str, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> Task: ..."];
-	WriteLine[line, "    def cllHH(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cG(self, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cW(self, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cGt(self, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cWt(self, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cH(self, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cHBox(self, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cHD(self, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cHG(self, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cHW(self, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cHB(self, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cHWB(self, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cHGt(self, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cHWt(self, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cHBt(self, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cHWtB(self, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def ceH(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cuH(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cdH(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def ceW(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def ceB(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cuG(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cuW(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cuB(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cdG(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cdW(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cdB(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cHl1(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cHl3(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cHe(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cHq1(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cHq3(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cHu(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cHd(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cHud(self, i1: int, i2: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cll(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cqq1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cqq3(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def clq1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def clq3(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cee(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cuu(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cdd(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def ceu(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def ced(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cud1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cud8(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cle(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def clu(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cld(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cqe(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cqu1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cqu8(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cqd1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cqd8(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cledq(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cquqd1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cquqd8(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def clequ1(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def clequ3(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cduq(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cqqu(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cqqq(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
-	WriteLine[line, "    def cduu(self, i1: int, i2: int, i3: int, i4: int, mubarsq: float, hbar: float) -> complex: ..."];
+	WriteLine[line, "    def wrap_0f(self, name: str, method_name: str) -> Task: ..."];
+	WriteLine[line, "    def wrap_2f(self, name: str, method_name: str, i1: int, i2: int) -> Task: ..."];
+	WriteLine[line, "    def wrap_4f(self, name: str, method_name: str, i1: int, i2: int, i3: int, i4: int) -> Task: ..."];
+	WriteLine[line, "    def cllHH(self, i1: int, i2: int) -> complex: ..."];
+	WriteLine[line, "    def cG(self) -> complex: ..."];
+	WriteLine[line, "    def cW(self) -> complex: ..."];
+	WriteLine[line, "    def cGt(self) -> complex: ..."];
+	WriteLine[line, "    def cWt(self) -> complex: ..."];
+	WriteLine[line, "    def cH(self) -> complex: ..."];
+	WriteLine[line, "    def cHBox(self) -> complex: ..."];
+	WriteLine[line, "    def cHD(self) -> complex: ..."];
+	WriteLine[line, "    def cHG(self) -> complex: ..."];
+	WriteLine[line, "    def cHW(self) -> complex: ..."];
+	WriteLine[line, "    def cHB(self) -> complex: ..."];
+	WriteLine[line, "    def cHWB(self) -> complex: ..."];
+	WriteLine[line, "    def cHGt(self) -> complex: ..."];
+	WriteLine[line, "    def cHWt(self) -> complex: ..."];
+	WriteLine[line, "    def cHBt(self) -> complex: ..."];
+	WriteLine[line, "    def cHWtB(self) -> complex: ..."];
+	WriteLine[line, "    def ceH(self, i1: int, i2: int) -> complex: ..."];
+	WriteLine[line, "    def cuH(self, i1: int, i2: int) -> complex: ..."];
+	WriteLine[line, "    def cdH(self, i1: int, i2: int) -> complex: ..."];
+	WriteLine[line, "    def ceW(self, i1: int, i2: int) -> complex: ..."];
+	WriteLine[line, "    def ceB(self, i1: int, i2: int) -> complex: ..."];
+	WriteLine[line, "    def cuG(self, i1: int, i2: int) -> complex: ..."];
+	WriteLine[line, "    def cuW(self, i1: int, i2: int) -> complex: ..."];
+	WriteLine[line, "    def cuB(self, i1: int, i2: int) -> complex: ..."];
+	WriteLine[line, "    def cdG(self, i1: int, i2: int) -> complex: ..."];
+	WriteLine[line, "    def cdW(self, i1: int, i2: int) -> complex: ..."];
+	WriteLine[line, "    def cdB(self, i1: int, i2: int) -> complex: ..."];
+	WriteLine[line, "    def cHl1(self, i1: int, i2: int) -> complex: ..."];
+	WriteLine[line, "    def cHl3(self, i1: int, i2: int) -> complex: ..."];
+	WriteLine[line, "    def cHe(self, i1: int, i2: int) -> complex: ..."];
+	WriteLine[line, "    def cHq1(self, i1: int, i2: int) -> complex: ..."];
+	WriteLine[line, "    def cHq3(self, i1: int, i2: int) -> complex: ..."];
+	WriteLine[line, "    def cHu(self, i1: int, i2: int) -> complex: ..."];
+	WriteLine[line, "    def cHd(self, i1: int, i2: int) -> complex: ..."];
+	WriteLine[line, "    def cHud(self, i1: int, i2: int) -> complex: ..."];
+	WriteLine[line, "    def cll(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def cqq1(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def cqq3(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def clq1(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def clq3(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def cee(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def cuu(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def cdd(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def ceu(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def ced(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def cud1(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def cud8(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def cle(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def clu(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def cld(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def cqe(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def cqu1(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def cqu8(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def cqd1(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def cqd8(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def cledq(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def cquqd1(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def cquqd8(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def clequ1(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def clequ3(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def cduq(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def cqqu(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def cqqq(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+	WriteLine[line, "    def cduu(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
 	Close[line];
 ]
 
@@ -943,79 +1026,79 @@ BuildFiles[modelName_,simplifiedOutput_,complexPars_]:=Module[{modelPars},
 (* Here, we are treating all coefficients to be real*)
 
 WarsawAll = Association[
-	"cllHH" -> "cllHH(int i1, int i2, double mubarsq, double hbar)",
+	"cllHH" -> "cllHH(int i1, int i2)",
 	
-	"cG" -> "cG(double mubarsq, double hbar)",
-	"cW" -> "cW(double mubarsq, double hbar)",
-	"cGt" -> "cGt(double mubarsq, double hbar)",
-	"cWt" -> "cWt(double mubarsq, double hbar)",
+	"cG" -> "cG()",
+	"cW" -> "cW()",
+	"cGt" -> "cGt()",
+	"cWt" -> "cWt()",
 	
-	"cH" -> "cH(double mubarsq, double hbar)",
-	"cHBox" -> "cHBox(double mubarsq, double hbar)",
-	"cHD" -> "cHD(double mubarsq, double hbar)",
+	"cH" -> "cH()",
+	"cHBox" -> "cHBox()",
+	"cHD" -> "cHD()",
 	
-	"cHG" -> "cHG(double mubarsq, double hbar)",
-	"cHW" -> "cHW(double mubarsq, double hbar)",
-	"cHB" -> "cHB(double mubarsq, double hbar)",
-	"cHWB" -> "cHWB(double mubarsq, double hbar)",
-	"cHGt" -> "cHGt(double mubarsq, double hbar)",
-	"cHWt" -> "cHWt(double mubarsq, double hbar)",
-	"cHBt" -> "cHBt(double mubarsq, double hbar)",
-	"cHWtB" -> "cHWtB(double mubarsq, double hbar)",
+	"cHG" -> "cHG()",
+	"cHW" -> "cHW()",
+	"cHB" -> "cHB()",
+	"cHWB" -> "cHWB()",
+	"cHGt" -> "cHGt()",
+	"cHWt" -> "cHWt()",
+	"cHBt" -> "cHBt()",
+	"cHWtB" -> "cHWtB()",
 	
-	"ceH" -> "ceH(int i1, int i2, double mubarsq, double hbar)",
-	"cuH" -> "cuH(int i1, int i2, double mubarsq, double hbar)",
-	"cdH" -> "cdH(int i1, int i2, double mubarsq, double hbar)",
+	"ceH" -> "ceH(int i1, int i2)",
+	"cuH" -> "cuH(int i1, int i2)",
+	"cdH" -> "cdH(int i1, int i2)",
 	
-	"ceW" -> "ceW(int i1, int i2, double mubarsq, double hbar)",
-	"ceB" -> "ceB(int i1, int i2, double mubarsq, double hbar)",
-	"cuG" -> "cuG(int i1, int i2, double mubarsq, double hbar)",
-	"cuW" -> "cuW(int i1, int i2, double mubarsq, double hbar)",
-	"cuB" -> "cuB(int i1, int i2, double mubarsq, double hbar)",
-	"cdG" -> "cdG(int i1, int i2, double mubarsq, double hbar)",
-	"cdW" -> "cdW(int i1, int i2, double mubarsq, double hbar)",
-	"cdB" -> "cdB(int i1, int i2, double mubarsq, double hbar)",
+	"ceW" -> "ceW(int i1, int i2)",
+	"ceB" -> "ceB(int i1, int i2)",
+	"cuG" -> "cuG(int i1, int i2)",
+	"cuW" -> "cuW(int i1, int i2)",
+	"cuB" -> "cuB(int i1, int i2)",
+	"cdG" -> "cdG(int i1, int i2)",
+	"cdW" -> "cdW(int i1, int i2)",
+	"cdB" -> "cdB(int i1, int i2)",
 	
-	"cHl1" -> "cHl1(int i1, int i2, double mubarsq, double hbar)",
-	"cHl3" -> "cHl3(int i1, int i2, double mubarsq, double hbar)",
-	"cHe" -> "cHe(int i1, int i2, double mubarsq, double hbar)",
-	"cHq1" -> "cHq1(int i1, int i2, double mubarsq, double hbar)",
-	"cHq3" -> "cHq3(int i1, int i2, double mubarsq, double hbar)",
-	"cHu" -> "cHu(int i1, int i2, double mubarsq, double hbar)",
-	"cHd" -> "cHd(int i1, int i2, double mubarsq, double hbar)",
-	"cHud" -> "cHud(int i1, int i2, double mubarsq, double hbar)",
+	"cHl1" -> "cHl1(int i1, int i2)",
+	"cHl3" -> "cHl3(int i1, int i2)",
+	"cHe" -> "cHe(int i1, int i2)",
+	"cHq1" -> "cHq1(int i1, int i2)",
+	"cHq3" -> "cHq3(int i1, int i2)",
+	"cHu" -> "cHu(int i1, int i2)",
+	"cHd" -> "cHd(int i1, int i2)",
+	"cHud" -> "cHud(int i1, int i2)",
 	
-	"cll" -> "cll(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
-	"cqq1" -> "cqq1(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
-	"cqq3" -> "cqq3(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
-	"clq1" -> "clq1(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
-	"clq3" -> "clq3(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
-	"cee" -> "cee(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
-	"cuu" -> "cuu(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
-	"cdd" -> "cdd(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
-	"ceu" -> "ceu(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
-	"ced" -> "ced(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
-	"cud1" -> "cud1(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
-	"cud8" -> "cud8(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
-	"cle" -> "cle(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
-	"clu" -> "clu(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
-	"cld" -> "cld(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
-	"cqe" -> "cqe(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
-	"cqu1" -> "cqu1(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
-	"cqu8" -> "cqu8(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
-	"cqd1" -> "cqd1(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
-	"cqd8" -> "cqd8(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
+	"cll" -> "cll(int i1, int i2, int i3, int i4)",
+	"cqq1" -> "cqq1(int i1, int i2, int i3, int i4)",
+	"cqq3" -> "cqq3(int i1, int i2, int i3, int i4)",
+	"clq1" -> "clq1(int i1, int i2, int i3, int i4)",
+	"clq3" -> "clq3(int i1, int i2, int i3, int i4)",
+	"cee" -> "cee(int i1, int i2, int i3, int i4)",
+	"cuu" -> "cuu(int i1, int i2, int i3, int i4)",
+	"cdd" -> "cdd(int i1, int i2, int i3, int i4)",
+	"ceu" -> "ceu(int i1, int i2, int i3, int i4)",
+	"ced" -> "ced(int i1, int i2, int i3, int i4)",
+	"cud1" -> "cud1(int i1, int i2, int i3, int i4)",
+	"cud8" -> "cud8(int i1, int i2, int i3, int i4)",
+	"cle" -> "cle(int i1, int i2, int i3, int i4)",
+	"clu" -> "clu(int i1, int i2, int i3, int i4)",
+	"cld" -> "cld(int i1, int i2, int i3, int i4)",
+	"cqe" -> "cqe(int i1, int i2, int i3, int i4)",
+	"cqu1" -> "cqu1(int i1, int i2, int i3, int i4)",
+	"cqu8" -> "cqu8(int i1, int i2, int i3, int i4)",
+	"cqd1" -> "cqd1(int i1, int i2, int i3, int i4)",
+	"cqd8" -> "cqd8(int i1, int i2, int i3, int i4)",
 	
-	"cledq" -> "cledq(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
-	"cquqd1" -> "cquqd1(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
-	"cquqd8" -> "cquqd8(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
-	"clequ1" -> "clequ1(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
-	"clequ3" -> "clequ3(int i1, int i2, int i3, int i4, double mubarsq, double hbar)" ,
+	"cledq" -> "cledq(int i1, int i2, int i3, int i4)",
+	"cquqd1" -> "cquqd1(int i1, int i2, int i3, int i4)",
+	"cquqd8" -> "cquqd8(int i1, int i2, int i3, int i4)",
+	"clequ1" -> "clequ1(int i1, int i2, int i3, int i4)",
+	"clequ3" -> "clequ3(int i1, int i2, int i3, int i4)" ,
 	
-	"cduq" -> "cduq(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
-	"cqqu" -> "cqqu(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
-	"cqqq" -> "cqqq(int i1, int i2, int i3, int i4, double mubarsq, double hbar)",
-	"cduu" -> "cduu(int i1, int i2, int i3, int i4, double mubarsq, double hbar)"
+	"cduq" -> "cduq(int i1, int i2, int i3, int i4)",
+	"cqqu" -> "cqqu(int i1, int i2, int i3, int i4)",
+	"cqqq" -> "cqqq(int i1, int i2, int i3, int i4)",
+	"cduu" -> "cduu(int i1, int i2, int i3, int i4)"
 ];
 
 

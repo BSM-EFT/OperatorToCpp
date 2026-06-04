@@ -5,6 +5,9 @@
 #include <unordered_map>
 #include <map>
 #include <functional>
+#include <cmath>
+
+const double pi = 3.14159265;
 
 struct Task {
     std::string name;
@@ -13,6 +16,8 @@ struct Task {
 
 class MSSM {
     private:
+        double hbar = 1/(16 * pow(pi,2));
+        double mubarsq = 1.0;
         std::complex<double> cgamma = 0.0;
         std::complex<double> g1 = 0.0;
         std::complex<double> g2 = 0.0;
@@ -49,70 +54,78 @@ class MSSM {
 
         void updateParams(std::unordered_map<std::string, std::complex<double> > params);
 
-        std::complex<double> cllHH(int i1, int i2, double mubarsq, double hbar);
-        std::complex<double> cG(double mubarsq, double hbar);
-        std::complex<double> cW(double mubarsq, double hbar);
-        std::complex<double> cGt(double mubarsq, double hbar);
-        std::complex<double> cWt(double mubarsq, double hbar);
-        std::complex<double> cH(double mubarsq, double hbar);
-        std::complex<double> cHBox(double mubarsq, double hbar);
-        std::complex<double> cHD(double mubarsq, double hbar);
-        std::complex<double> cHG(double mubarsq, double hbar);
-        std::complex<double> cHW(double mubarsq, double hbar);
-        std::complex<double> cHB(double mubarsq, double hbar);
-        std::complex<double> cHWB(double mubarsq, double hbar);
-        std::complex<double> cHGt(double mubarsq, double hbar);
-        std::complex<double> cHWt(double mubarsq, double hbar);
-        std::complex<double> cHBt(double mubarsq, double hbar);
-        std::complex<double> cHWtB(double mubarsq, double hbar);
-        std::complex<double> ceH(int i1, int i2, double mubarsq, double hbar);
-        std::complex<double> cuH(int i1, int i2, double mubarsq, double hbar);
-        std::complex<double> cdH(int i1, int i2, double mubarsq, double hbar);
-        std::complex<double> ceW(int i1, int i2, double mubarsq, double hbar);
-        std::complex<double> ceB(int i1, int i2, double mubarsq, double hbar);
-        std::complex<double> cuG(int i1, int i2, double mubarsq, double hbar);
-        std::complex<double> cuW(int i1, int i2, double mubarsq, double hbar);
-        std::complex<double> cuB(int i1, int i2, double mubarsq, double hbar);
-        std::complex<double> cdG(int i1, int i2, double mubarsq, double hbar);
-        std::complex<double> cdW(int i1, int i2, double mubarsq, double hbar);
-        std::complex<double> cdB(int i1, int i2, double mubarsq, double hbar);
-        std::complex<double> cHl1(int i1, int i2, double mubarsq, double hbar);
-        std::complex<double> cHl3(int i1, int i2, double mubarsq, double hbar);
-        std::complex<double> cHe(int i1, int i2, double mubarsq, double hbar);
-        std::complex<double> cHq1(int i1, int i2, double mubarsq, double hbar);
-        std::complex<double> cHq3(int i1, int i2, double mubarsq, double hbar);
-        std::complex<double> cHu(int i1, int i2, double mubarsq, double hbar);
-        std::complex<double> cHd(int i1, int i2, double mubarsq, double hbar);
-        std::complex<double> cHud(int i1, int i2, double mubarsq, double hbar);
-        std::complex<double> cll(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> cqq1(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> cqq3(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> clq1(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> clq3(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> cee(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> cuu(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> cdd(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> ceu(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> ced(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> cud1(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> cud8(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> cle(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> clu(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> cld(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> cqe(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> cqu1(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> cqu8(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> cqd1(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> cqd8(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> cledq(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> cquqd1(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> cquqd8(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> clequ1(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> clequ3(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> cduq(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> cqqu(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> cqqq(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
-        std::complex<double> cduu(int i1, int i2, int i3, int i4, double mubarsq, double hbar);
+        double getScale();
+
+        void setScale(double scale);
+
+        void loopContributions(bool loop);
+
+        std::unordered_map<std::string, std::complex<double> > getParams();
+
+        std::complex<double> cllHH(int i1, int i2);
+        std::complex<double> cG();
+        std::complex<double> cW();
+        std::complex<double> cGt();
+        std::complex<double> cWt();
+        std::complex<double> cH();
+        std::complex<double> cHBox();
+        std::complex<double> cHD();
+        std::complex<double> cHG();
+        std::complex<double> cHW();
+        std::complex<double> cHB();
+        std::complex<double> cHWB();
+        std::complex<double> cHGt();
+        std::complex<double> cHWt();
+        std::complex<double> cHBt();
+        std::complex<double> cHWtB();
+        std::complex<double> ceH(int i1, int i2);
+        std::complex<double> cuH(int i1, int i2);
+        std::complex<double> cdH(int i1, int i2);
+        std::complex<double> ceW(int i1, int i2);
+        std::complex<double> ceB(int i1, int i2);
+        std::complex<double> cuG(int i1, int i2);
+        std::complex<double> cuW(int i1, int i2);
+        std::complex<double> cuB(int i1, int i2);
+        std::complex<double> cdG(int i1, int i2);
+        std::complex<double> cdW(int i1, int i2);
+        std::complex<double> cdB(int i1, int i2);
+        std::complex<double> cHl1(int i1, int i2);
+        std::complex<double> cHl3(int i1, int i2);
+        std::complex<double> cHe(int i1, int i2);
+        std::complex<double> cHq1(int i1, int i2);
+        std::complex<double> cHq3(int i1, int i2);
+        std::complex<double> cHu(int i1, int i2);
+        std::complex<double> cHd(int i1, int i2);
+        std::complex<double> cHud(int i1, int i2);
+        std::complex<double> cll(int i1, int i2, int i3, int i4);
+        std::complex<double> cqq1(int i1, int i2, int i3, int i4);
+        std::complex<double> cqq3(int i1, int i2, int i3, int i4);
+        std::complex<double> clq1(int i1, int i2, int i3, int i4);
+        std::complex<double> clq3(int i1, int i2, int i3, int i4);
+        std::complex<double> cee(int i1, int i2, int i3, int i4);
+        std::complex<double> cuu(int i1, int i2, int i3, int i4);
+        std::complex<double> cdd(int i1, int i2, int i3, int i4);
+        std::complex<double> ceu(int i1, int i2, int i3, int i4);
+        std::complex<double> ced(int i1, int i2, int i3, int i4);
+        std::complex<double> cud1(int i1, int i2, int i3, int i4);
+        std::complex<double> cud8(int i1, int i2, int i3, int i4);
+        std::complex<double> cle(int i1, int i2, int i3, int i4);
+        std::complex<double> clu(int i1, int i2, int i3, int i4);
+        std::complex<double> cld(int i1, int i2, int i3, int i4);
+        std::complex<double> cqe(int i1, int i2, int i3, int i4);
+        std::complex<double> cqu1(int i1, int i2, int i3, int i4);
+        std::complex<double> cqu8(int i1, int i2, int i3, int i4);
+        std::complex<double> cqd1(int i1, int i2, int i3, int i4);
+        std::complex<double> cqd8(int i1, int i2, int i3, int i4);
+        std::complex<double> cledq(int i1, int i2, int i3, int i4);
+        std::complex<double> cquqd1(int i1, int i2, int i3, int i4);
+        std::complex<double> cquqd8(int i1, int i2, int i3, int i4);
+        std::complex<double> clequ1(int i1, int i2, int i3, int i4);
+        std::complex<double> clequ3(int i1, int i2, int i3, int i4);
+        std::complex<double> cduq(int i1, int i2, int i3, int i4);
+        std::complex<double> cqqu(int i1, int i2, int i3, int i4);
+        std::complex<double> cqqq(int i1, int i2, int i3, int i4);
+        std::complex<double> cduu(int i1, int i2, int i3, int i4);
 
         std::map<std::string, std::complex<double> > batch_eval(const std::vector<Task>& tasks);
 };
