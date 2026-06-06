@@ -39,19 +39,6 @@ def permute_chars(seq: str, ordering: list[int]) -> str:
     return new_seq
 
 
-def collect_permutations(arr1: np.ndarray, arr2: np.ndarray) -> np.ndarray:
-    """returns an array containing all non-null arrays provided in the 2 input arrays"""
-
-    assert(len(arr1) and len(arr2)) 
-
-    if np.ndim(arr1) == np.ndim(arr2):
-        return np.array([arr1, arr2])
-    elif np.ndim(arr1) > np.ndim(arr2):
-        return np.concatenate((arr1, [arr2]))
-    else:
-        return np.concatenate(([arr1], arr2))    
-
-
 def generate_evaluation_list(wcs_wcxf: list[str], wc_info: dict) -> tuple[dict[str, int], list[str]]:
     """Given a list of Wilson coeffcient names (in the WCxf convention) and permutation symmetry information about 
     each coefficient, returns a tuple containing the list of unique index permutations for each case and a list of 
@@ -59,7 +46,6 @@ def generate_evaluation_list(wcs_wcxf: list[str], wc_info: dict) -> tuple[dict[s
 
     unique_ops = {}
     wcs_matchete = []
-    # duplicates = {}
 
     for wc in wcs_wcxf:
         name_idx = wc.split("_")
@@ -68,31 +54,19 @@ def generate_evaluation_list(wcs_wcxf: list[str], wc_info: dict) -> tuple[dict[s
         if len(name_idx) == 1: # i.e., no flavour index (purely bosonic operators)
             wcs_matchete.append(m_name)
             unique_ops[wc] = 1
-            # duplicates[wc] = [m_name]
 
         else:
             idx_seq = name_idx[1]
             wcs_matchete.append(m_name + "_" + idx_seq)
             
-            conj = wc_info[m_name].get("conj")
-            symm = wc_info[m_name].get("symm")
-            
-            match (conj, symm):
-                case (None, None): 
-                    perms = [] 
-                case (None, x) | (x, None): 
-                    perms = [x]
-                case (x, y): 
-                    perms = collect_permutations(x, y)
+            perms = wc_info[m_name].get("Permutations") 
                 
             idx_perms = [permute_chars(idx_seq, perm) for perm in perms]
             idx_perms = idx_perms + [permute_chars(idx_perm, perm) for perm in perms for idx_perm in idx_perms]
             
-            idx_perms.append(idx_seq)
             unique_perms = list(set(idx_perms))
             unique_ops[wc] = len(unique_perms)
-            # duplicates[wc] = [m_name + "_" + unique_perm for unique_perm in unique_perms]
-
+            
     return (unique_ops, wcs_matchete)
 
 
@@ -139,14 +113,14 @@ def write_to_wcxf_seq(filename: str, model, eft_info: dict[str, str], wc_names: 
     eft_basis = wcxf.Basis[eft_info["eft"], eft_info["basis"]]
     wcs_wcxf = eft_basis.all_wcs
 
-    wc_info_path = "EFT_db" + "/" + eft_info["eft"] + "/" + eft_info["basis"] + "/wc_info.json"
+    wc_info_path = "EFT_db" + "/" + eft_info["eft"] + "/" + eft_info["basis"] + "/WCInfo.json"
     with open(wc_info_path, "r") as f:
         wc_info = json5.load(f)
 
     if not wc_names:
         wc_names = wcs_wcxf
     
-    unique_ops, wcs_matchete = generate_evaluation_list(wc_names, wc_info["permutations"])
+    unique_ops, wcs_matchete = generate_evaluation_list(wc_names, wc_info)
     values_1_wc = [eval_wc(model, wc) for wc in wcs_matchete]
 
     values = [unique_ops[wc_names[i]] * values_1_wc[i] for i in range(len(wc_names))]
@@ -173,14 +147,14 @@ def write_to_wcxf_par(filename: str, model, eft_info: dict[str, str], wc_names: 
     eft_basis = wcxf.Basis[eft_info["eft"], eft_info["basis"]]
     wcs_wcxf = eft_basis.all_wcs
 
-    wc_info_path = "EFT_db" + "/" + eft_info["eft"] + "/" + eft_info["basis"] + "/wc_info.json"
+    wc_info_path = "EFT_db" + "/" + eft_info["eft"] + "/" + eft_info["basis"] + "/WCInfo.json"
     with open(wc_info_path, "r") as f:
         wc_info = json5.load(f)
 
     if not wc_names:
         wc_names = wcs_wcxf
     
-    unique_ops, wcs_matchete = generate_evaluation_list(wc_names, wc_info["permutations"])
+    unique_ops, wcs_matchete = generate_evaluation_list(wc_names, wc_info)
     tasks = create_tasks(model, wcs_matchete)
     res_dict = model.batch_eval(tasks)
 
