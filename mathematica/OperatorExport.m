@@ -11,12 +11,8 @@ BeginPackage["OperatorExport`", {"Global`"}];
 (*Description of public functions*)
 
 
-SimplifyOutput::usage = "SimplifyOutput[matchedResult] creates a dictionary containing only Wilson coefficients and the corresponding matching conditions, while unwraping the Matchete API and converting the expressions to a lighter intermediate form.";
-SegregateParams::usage = "SegregateParams[SimplifiedOutput, ComplexParams] collects all unique parameters within the simplified matching output and segregates them based on their dimensionality. Keeps track of the complex parameters to ensure that their conjugates are not counted as distinct parameters.";
-HeaderFileBuilder::usage = "HeaderFileBuilder[ModelName,ModelParams] creates a ModelName.h file that defines a ModelName class with the model parameters as member variables and Warsaw basis Wilson coefficients as methods. Also, declares methods for initalizing, updating and printing the parameters of a ModelName object.";
-SourceFileBuilder::usage = "SourceFileBuilder[ModelName,ModelParams,ComplexParams,SimplifiedOutput] creates a ModelName.cpp file with implementations for each Wilson coefficient method corresponding to the ModelName class. The method bodies are built by further manipulating the SimplifiedOutput.";
-GeneratePythonDeclarations::usage = "GeneratePythonDeclarations[ModelName] creates a ModelName.pyi file with declarations for the model class and each Wilson coefficient method.";
-BuildFiles::usage = "BuildFiles[ModelName,SimplifiedOutput,ComplexParams] offers a single command to build C++ header (.h) and source (.cpp) files, along with Python declarations of the Model class and its methods.";
+SimplifyOutput::usage = "SimplifyOutput[matchedResult,WCInfo] creates a dictionary containing only Wilson coefficients and the corresponding matching conditions, while unwraping the Matchete API and converting the expressions to a lighter intermediate form.";
+BuildFiles::usage = "BuildFiles[ModelName,SimplifiedOutput,ComplexParams,WCInfo] offers a single command to build C++ header (.h) and source (.cpp) files, and a `pyBindings.cpp` file to generate Python bindings, along with Python declarations of the Model class and its methods.";
 
 
 (* ::Subsection:: *)
@@ -47,7 +43,7 @@ Print[
  Style[
   Column[{
     Row[{
-      "OperatorExport  v0.2 \[LongDash] by ",
+      "OperatorExport  v1.0.0\[Beta] \[LongDash] by ",
       "Suraj Prakash",
       " (", 
       Style["suraj.prakash@ific.uv.es", "Hyperlink", FontColor -> Blue],
@@ -86,22 +82,22 @@ NotebookDirectory[];
 (*Create a dictionary mapping operator content and matched expressions*)
 
 
-createMatchingDict[WarsawOutput_] := Module[{d6Dict, keyList, key1, key2},
+createMatchingDict[Output_,WCInfo_] := Module[{d6Dict, keyList, key1, key2},
 	d6Dict= Association[];
-	keyList = Keys[WarsawOutput];
+	keyList = Keys[Output];
 	
 	Do[
 		key1=StringCases[ToString[keyList[[i]]], RegularExpression["(?<=Coupling\\[c)"]~~x:WordCharacter..:>"c"<>x];
-		(* this assumption is crucial - Matchete produces Warsaw basis Wilson Coefficients and their names start with "c" *)
-		If[Length[key1]==0,Continue[], AppendTo[d6Dict,key1[[1]]->Values[WarsawOutput][[i]]]],
+		(* this assumption is crucial - Matchete produced Wilson Coefficients have names starting with "c" *)
+		If[Length[key1]==0,Continue[], AppendTo[d6Dict,key1[[1]]->Values[Output][[i]]]],
 	{i,Length[keyList]}];
 	
 	Do[
-		key2=Keys[WarsawAll][[i]];
+		key2=Keys[WCInfo][[i]];
 		If[KeyExistsQ[d6Dict,key2],
 			Continue[],
 			AppendTo[d6Dict,key2->0.0]],
-		{i,Length[WarsawAll]}];
+		{i,Length[WCInfo]}];
 		
 	Return[d6Dict];
 ]
@@ -111,8 +107,8 @@ createMatchingDict[WarsawOutput_] := Module[{d6Dict, keyList, key1, key2},
 (*Simplify the output through suitable replacement of symbols*)
 
 
-SimplifyOutput[output_]:=Module[{dict,newDict},
-	dict = createMatchingDict[output];
+SimplifyOutput[output_,WCInfo_]:=Module[{dict,newDict},
+	dict = createMatchingDict[output,WCInfo];
 	dict = dict /. {Index[i1,Flavor]->i1,Index[i2,Flavor]->i2,Index[i3,Flavor]->i3,Index[i4,Flavor]->i4 };
 	dict = dict /. {Index[x_,__]:>ToExpression[StringJoin["r",StringPart[ToString[x],4;;-1]]]};
 	dict = dict /. Bar[Coupling[x_,{y___},z_]] :> Coupling[ToExpression[ToString[x]<>"c"],{y},z];
@@ -377,6 +373,22 @@ ConvertFullExpression[sumOfExprs_,ComplexPars_]:=Module[{exprList,str},
 
 
 (* ::Subsubsection:: *)
+(*Helper function to generate WC method declarations*)
+
+
+CppFnDeclaration[wc_,WCInfo_]:=Module[{nflav, decl},
+	nflav=WCInfo[wc]["Nf"];
+	decl=wc<>"(";
+	If[nflav>0,
+		Do[decl=StringJoin[decl,"int i",ToString[i],", "],{i,1,nflav}];
+		decl=StringDrop[decl,-2];
+	];
+	decl=decl<>")";
+	Return[decl];
+]
+
+
+(* ::Subsubsection:: *)
 (*Builder for preprocessor directives, model class with data members, constructor and updater declarations*)
 
 
@@ -400,7 +412,7 @@ HeaderTaskStruct[line_] := Module[{},
 	WriteLine[line, "};"];
 ]
 
-HeaderModelClass[className_,paramList_,ComplexPars_,line_] := Module[{},
+HeaderModelClass[className_,paramList_,ComplexPars_,WCInfo_,line_] := Module[{},
 	WriteLine[line, "class "<>className<>" {"];
 	WriteLine[line, "    private:"];
 	
@@ -473,8 +485,7 @@ HeaderModelClass[className_,paramList_,ComplexPars_,line_] := Module[{},
 	WriteLine[line, ""];
 		
 	(* declarations for WC methods (Warsaw) *)
-	Do[WriteLine[line,"        std::complex<double> "<>Values[WarsawAll][[i]]<>";"],{i,1,Length[WarsawAll]}];
-	
+	Do[WriteLine[line,"        std::complex<double> "<>CppFnDeclaration[Keys[WCInfo][[i]],WCInfo]<>";"],{i,1,Length[Keys[WCInfo]]}];	
 	WriteLine[line, ""];
 	
 	(* declaration for the batch evaluator *)
@@ -488,23 +499,15 @@ HeaderModelClass[className_,paramList_,ComplexPars_,line_] := Module[{},
 (*Master builder*)
 
 
-HeaderFileBuilder[modelName_,paramList_,ComplexPars_]:=Module[{path,line1,line2},
+HeaderFileBuilder[modelName_,paramList_,ComplexPars_,WCInfo_]:=Module[{path,line1},
 	path = FileNameJoin[{ParentDirectory[NotebookDirectory[]],"include"}];
-	
 	line1 = OpenWrite[path<>"/"<>modelName<>".h"];
 	HeaderPreprocessorDirectives[line1];
 	WriteLine[line1,""];
 	HeaderTaskStruct[line1];
 	WriteLine[line1,""];
-	HeaderModelClass[modelName,paramList,ComplexPars,line1];
+	HeaderModelClass[modelName,paramList,ComplexPars,WCInfo,line1];
 	Close[line1];
-	
-	line2 = OpenWrite[path<>"/"<>"modelName.h"];
-	WriteLine[line2, "#pragma once"];
-	WriteLine[line2, "#include \""<>modelName<>".h\""];
-	WriteLine[line2, "using Model = "<>modelName<>";"];
-	WriteLine[line2, "const char py_class[] = \""<>modelName<>"\";"];
-	Close[line2];	
 ];
 
 
@@ -854,24 +857,16 @@ BuildBatchEvaluator[className_, line_]:=Module[{},
 (*Builder for a single WC function (Warsaw Basis)*)
 
 
-BuildFunctionWarsaw[modelName_,WCname_,expr_,ComplexPars_]:=Module[{returnExpr,fileName,path,line},
+BuildFunction[modelName_,WCname_,expr_,ComplexPars_,WCInfo_]:=Module[{returnExpr,path,line},
 	returnExpr = ConvertFullExpression[expr,ComplexPars];
 	path = FileNameJoin[{ParentDirectory[NotebookDirectory[]],"lib"}];
-	fileName = First[StringSplit[WCname,"("]];
-	line = Which[
-		MemberQ[WCList[[1]],fileName],
-		OpenWrite[path<>"/0f/"<>fileName<>".cpp"],
-		MemberQ[WCList[[2]],fileName],
-		OpenWrite[path<>"/2f/"<>fileName<>".cpp"],
-		MemberQ[WCList[[3]],fileName],
-		OpenWrite[path<>"/4f/"<>fileName<>".cpp"]
-	];
-	
+	line = OpenWrite[path<>"/"<>ToString[WCInfo[WCname]["Nf"]]<>"f/"<>WCname<>".cpp"];
+		
 	WriteLine[line, "#include \"OperatorImport.h\""];
 	WriteLine[line, "#include \"complex_math.h\""];
 	WriteLine[line, "#include \""<>modelName<>".h\""];
 	WriteLine[line,""];
-	WriteLine[line, "std::complex<double> "<>modelName<>"::"<>WCname<> " {"];		
+	WriteLine[line, "std::complex<double> "<>modelName<>"::"<>CppFnDeclaration[WCname,WCInfo]<> " {"];		
 	WriteLine[line, "    return ("<>returnExpr<>");"];
 	WriteLine[line, "}"];
 	Close[line];
@@ -893,7 +888,7 @@ ReplaceVarName[list_,str_] := Module[{rules},
 ];
 
 
-SourceFileBuilder[modelName_, paramList_, ComplexPars_, matchingOutput_]:=Module[{keyList, exprList, path,line1},
+SourceFileBuilder[modelName_, paramList_, ComplexPars_, matchingOutput_,WCInfo_]:=Module[{keyList, exprList, path,line1},
 	keyList=Keys[matchingOutput];
 	exprList=Values[matchingOutput];
 	
@@ -912,7 +907,7 @@ SourceFileBuilder[modelName_, paramList_, ComplexPars_, matchingOutput_]:=Module
 	Close[line1];
 	
 	Do[
-		BuildFunctionWarsaw[modelName,WarsawAll[keyList[[k]]],exprList[[k]],ComplexPars],
+		BuildFunction[modelName,keyList[[k]],exprList[[k]],ComplexPars,WCInfo],
 	{k,1,Length[matchingOutput]}];
 	
 ]
@@ -920,89 +915,147 @@ SourceFileBuilder[modelName_, paramList_, ComplexPars_, matchingOutput_]:=Module
 
 
 (* ::Subsection:: *)
+(*Builder for pyBindings.cpp*)
+
+
+(* ::Input::Initialization:: *)
+(* to generate py::arg("i1") py::arg("i1") *)
+PyArgs[nflav_]:=Module[{args},
+args ="";
+Do[args=args<>"py::arg(\"i"<>ToString[i]<>"\"), ",{i,1,nflav}];
+args=StringDrop[args,-2];	
+Return[args];
+]
+
+
+(* ::Input::Initialization:: *)
+(*to generate i1, i2, i3, i4 *)
+SimpleArgs[nflav_]:=Module[{args},
+args ="";
+Do[args=args<>"i"<>ToString[i]<>", ",{i,1,nflav}];
+args=StringDrop[args,-2];	
+Return[args];
+]
+
+
+(* ::Input::Initialization:: *)
+(*to generate int i1, int i2, int i3, int i4 *)
+TypedArgs[nflav_]:=Module[{args},
+args ="";
+Do[args=args<>"int i"<>ToString[i]<>", ",{i,1,nflav}];
+args=StringDrop[args,-2];	
+Return[args];
+]
+
+
+(* ::Input::Initialization:: *)
+AddWrapperLambdas[modelName_,WCInfo_,line_]:=Module[{NfUniq,wcs,wc,nf,lambdaArg},  
+NfUniq=DeleteDuplicates[Table[WCInfo[[i]]["Nf"],{i,1,Length[WCInfo]}]];
+wcs=Table[Select[WCInfo,#["Nf"]===NfUniq[[j]]&],{j,1,Length[NfUniq]}];
+WriteLine[line, "        // wrapper lambdas"];
+Do[
+nf=NfUniq[[k]];
+lambdaArg="[]("<>modelName<>"& self, std::string name, std::string method_name"<>If[nf>0,", "<>TypedArgs[nf],""]<>")";
+WriteLine[line, "        .def(\"wrap_"<>ToString[nf]<>"f\", " <>lambdaArg<>" {" ];
+WriteLine[line, "            static const std::unordered_map<std::string, std::complex<double> ("<>modelName<>"::*)("<>If[nf>0,StringDrop[StringRepeat["int, ",nf],-2],""]<>")> map_"<>ToString[nf]<>"f = {"];
+Do[
+wc=Keys[wcs[[k]]][[l]];
+WriteLine[line, "                {\""<>wc<>"\", &"<>modelName<>"::"<>wc<>"},"],{l,1,Length[wcs[[k]]]}];
+WriteLine[line, "            };"];
+WriteLine[line, "            auto it = map_"<>ToString[nf]<>"f.find(method_name);"];
+WriteLine[line, "            if (it == map_"<>ToString[nf]<>"f.end()) throw std::runtime_error(\"Method not found: \" + method_name);"];
+WriteLine[line, ""];
+WriteLine[line, "            auto fn_ptr = it->second;"];
+WriteLine[line, "            return Task{name, [&self, fn_ptr"<>If[nf>0,", "<>SimpleArgs[nf],""]<>"](){ return (self.*fn_ptr)("<>If[nf>0,SimpleArgs[nf],""]<>"); }};"];
+WriteLine[line, "        }, py::arg(\"name\"), py::arg(\"method_name\")"<>If[nf>0,", "<>PyArgs[nf],""]<>")"];
+WriteLine[line, ""];
+,{k,1,Length[NfUniq]}];
+]
+
+
+(* ::Input::Initialization:: *)
+AddWCMethods[modelName_,WCInfo_,line_]:=Module[{wc,wcLast},
+WriteLine[line, "        // Wilson coefficient methods"];
+Do[
+wc=Keys[WCInfo][[i]];
+WriteLine[line, "        .def(\""<>wc<>"\", &"<>modelName<>"::"<>wc<>If[WCInfo[wc]["Nf"]>0, ", "<>PyArgs[WCInfo[wc]["Nf"]], ""]<>", py::call_guard<py::gil_scoped_release>())"];,{i,1,Length[Keys[WCInfo]]-1}];
+wcLast=Keys[WCInfo][[-1]];
+WriteLine[line, "        .def(\""<>wcLast<>"\", &"<>modelName<>"::"<>wcLast<>If[WCInfo[wcLast]["Nf"]>0, ", "<>PyArgs[WCInfo[wcLast]["Nf"]], ""]<>", py::call_guard<py::gil_scoped_release>());"];
+]
+
+
+(* ::Input::Initialization:: *)
+GeneratePyBindings[modelName_,WCInfo_]:=Module[{path, line1},
+path = FileNameJoin[{ParentDirectory[NotebookDirectory[]],"src"}];
+    line1 = OpenWrite[path<>"/"<>"pyBindings.cpp"];
+WriteLine[line1, "#include <pybind11/pybind11.h>"];
+WriteLine[line1, "#include <pybind11/cast.h>"];
+WriteLine[line1, "#include <pybind11/detail/common.h>"];
+WriteLine[line1, "#include <pybind11/stl.h>"];
+WriteLine[line1, "#include <pybind11/complex.h>"];
+WriteLine[line1, "#include <pybind11/functional.h>"];
+WriteLine[line1, "#include <pybind11/pytypes.h>"];
+WriteLine[line1, "#include <stdexcept>"];
+WriteLine[line1, "#include <unordered_map>"];
+WriteLine[line1, "#include <string>"];
+WriteLine[line1, "#include <complex>"];
+WriteLine[line1, "#include \""<>modelName<>".h\""];
+WriteLine[line1, ""];
+WriteLine[line1, "namespace py = pybind11;"];
+WriteLine[line1, ""];
+WriteLine[line1, "PYBIND11_MODULE(match_to_py, m, py::mod_gil_not_used()) {"];
+WriteLine[line1, "    auto task = py::class_<Task>(m, \"Task\");"];
+WriteLine[line1, ""];
+WriteLine[line1, "    py::class_<"<>modelName<>">(m, \""<>modelName<>"\")"];
+WriteLine[line1, "        .def(py::init<std::unordered_map<std::string, std::complex<double> >, double, bool>())"];
+WriteLine[line1, "        .def(\"updateParams\", &"<>modelName<>"::updateParams, py::arg(\"param_dict\"))"];
+WriteLine[line1, "        .def(\"getScale\", &"<>modelName<>"::getScale)"];
+WriteLine[line1, "        .def(\"setScale\", &"<>modelName<>"::setScale, py::arg(\"scale\"))"];
+WriteLine[line1, "        .def(\"loopContributions\", &"<>modelName<>"::loopContributions, py::arg(\"loop\"))"];
+WriteLine[line1, "        .def(\"getParams\", &"<>modelName<>"::getParams)"];
+WriteLine[line1, ""];
+WriteLine[line1, "        // batch evaluator"];
+WriteLine[line1, "        .def(\"batch_eval\", &"<>modelName<>"::batch_eval, py::arg(\"tasks\"), py::call_guard<py::gil_scoped_release>())"];
+WriteLine[line1, ""];
+AddWrapperLambdas[modelName,WCInfo,line1];
+AddWCMethods[modelName,WCInfo,line1];
+WriteLine[line1, "}"];
+Close[line1];
+]
+
+
+(* ::Subsection:: *)
 (*Builder for .pyi file with python type information for all WC functions*)
 
 
-GeneratePythonDeclarations[modelName_]:= Module[{path,line},
+PyFnDeclaration[wc_,WCInfo_]:=Module[{nflav, decl},
+	nflav=WCInfo[wc]["Nf"];
+	decl="def "<>wc<>"(self, ";
+	If[nflav>0,
+		Do[decl=StringJoin[decl,"i",ToString[i],": int, "],{i,1,nflav}];
+	];
+	decl=StringDrop[decl,-2];
+	decl=decl<>") -> complex: ...";
+	Return[decl];
+]
+
+GeneratePythonDeclarations[modelName_,WCInfo_]:= Module[{path,line},
 	path = FileNameJoin[{ParentDirectory[NotebookDirectory[]],"py"}];
-	line = OpenWrite[path<>"/"<>"match_to_py.pyi"];
-	WriteLine[line, "class Task: ..."];
-	WriteLine[line, ""];
-	WriteLine[line, "class "<>modelName<>":"];
+    line = OpenWrite[path<>"/"<>"match_to_py.pyi"];
+    WriteLine[line, "class Task: ..."];
+    WriteLine[line, ""];
+    WriteLine[line, "class "<>modelName<>":"];
 	WriteLine[line, "    def __init__(self, param_dict: dict[str, complex], scale: float, loop: bool) -> None: ..."];
-	WriteLine[line, "    def updateParams(self, param_dict: dict[str, complex]) -> None: ..."];
-	WriteLine[line, "    def getScale(self) -> float: ..."];
-	WriteLine[line, "    def setScale(self, scale: float) -> None: ..."];
-	WriteLine[line, "    def loopContributions(self, loop: bool) -> None: ..."];
-	WriteLine[line, "    def getParams(self) -> dict[str, complex]: ..."];
-	WriteLine[line, "    def batch_eval(self, tasks: list[Task]) -> dict[str, complex]: ..."];
-	WriteLine[line, "    def wrap_0f(self, name: str, method_name: str) -> Task: ..."];
-	WriteLine[line, "    def wrap_2f(self, name: str, method_name: str, i1: int, i2: int) -> Task: ..."];
-	WriteLine[line, "    def wrap_4f(self, name: str, method_name: str, i1: int, i2: int, i3: int, i4: int) -> Task: ..."];
-	WriteLine[line, "    def cllHH(self, i1: int, i2: int) -> complex: ..."];
-	WriteLine[line, "    def cG(self) -> complex: ..."];
-	WriteLine[line, "    def cW(self) -> complex: ..."];
-	WriteLine[line, "    def cGt(self) -> complex: ..."];
-	WriteLine[line, "    def cWt(self) -> complex: ..."];
-	WriteLine[line, "    def cH(self) -> complex: ..."];
-	WriteLine[line, "    def cHBox(self) -> complex: ..."];
-	WriteLine[line, "    def cHD(self) -> complex: ..."];
-	WriteLine[line, "    def cHG(self) -> complex: ..."];
-	WriteLine[line, "    def cHW(self) -> complex: ..."];
-	WriteLine[line, "    def cHB(self) -> complex: ..."];
-	WriteLine[line, "    def cHWB(self) -> complex: ..."];
-	WriteLine[line, "    def cHGt(self) -> complex: ..."];
-	WriteLine[line, "    def cHWt(self) -> complex: ..."];
-	WriteLine[line, "    def cHBt(self) -> complex: ..."];
-	WriteLine[line, "    def cHWtB(self) -> complex: ..."];
-	WriteLine[line, "    def ceH(self, i1: int, i2: int) -> complex: ..."];
-	WriteLine[line, "    def cuH(self, i1: int, i2: int) -> complex: ..."];
-	WriteLine[line, "    def cdH(self, i1: int, i2: int) -> complex: ..."];
-	WriteLine[line, "    def ceW(self, i1: int, i2: int) -> complex: ..."];
-	WriteLine[line, "    def ceB(self, i1: int, i2: int) -> complex: ..."];
-	WriteLine[line, "    def cuG(self, i1: int, i2: int) -> complex: ..."];
-	WriteLine[line, "    def cuW(self, i1: int, i2: int) -> complex: ..."];
-	WriteLine[line, "    def cuB(self, i1: int, i2: int) -> complex: ..."];
-	WriteLine[line, "    def cdG(self, i1: int, i2: int) -> complex: ..."];
-	WriteLine[line, "    def cdW(self, i1: int, i2: int) -> complex: ..."];
-	WriteLine[line, "    def cdB(self, i1: int, i2: int) -> complex: ..."];
-	WriteLine[line, "    def cHl1(self, i1: int, i2: int) -> complex: ..."];
-	WriteLine[line, "    def cHl3(self, i1: int, i2: int) -> complex: ..."];
-	WriteLine[line, "    def cHe(self, i1: int, i2: int) -> complex: ..."];
-	WriteLine[line, "    def cHq1(self, i1: int, i2: int) -> complex: ..."];
-	WriteLine[line, "    def cHq3(self, i1: int, i2: int) -> complex: ..."];
-	WriteLine[line, "    def cHu(self, i1: int, i2: int) -> complex: ..."];
-	WriteLine[line, "    def cHd(self, i1: int, i2: int) -> complex: ..."];
-	WriteLine[line, "    def cHud(self, i1: int, i2: int) -> complex: ..."];
-	WriteLine[line, "    def cll(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def cqq1(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def cqq3(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def clq1(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def clq3(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def cee(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def cuu(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def cdd(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def ceu(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def ced(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def cud1(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def cud8(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def cle(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def clu(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def cld(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def cqe(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def cqu1(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def cqu8(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def cqd1(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def cqd8(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def cledq(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def cquqd1(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def cquqd8(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def clequ1(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def clequ3(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def cduq(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def cqqu(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def cqqq(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
-	WriteLine[line, "    def cduu(self, i1: int, i2: int, i3: int, i4: int) -> complex: ..."];
+    WriteLine[line, "    def updateParams(self, param_dict: dict[str, complex]) -> None: ..."];
+    WriteLine[line, "    def getScale(self) -> float: ..."];
+    WriteLine[line, "    def setScale(self, scale: float) -> None: ..."];
+    WriteLine[line, "    def loopContributions(self, loop: bool) -> None: ..."];
+    WriteLine[line, "    def getParams(self) -> dict[str, complex]: ..."];
+    WriteLine[line, "    def batch_eval(self, tasks: list[Task]) -> dict[str, complex]: ..."];
+    WriteLine[line, "    def wrap_0f(self, name: str, method_name: str) -> Task: ..."];
+    WriteLine[line, "    def wrap_2f(self, name: str, method_name: str, i1: int, i2: int) -> Task: ..."];
+    WriteLine[line, "    def wrap_4f(self, name: str, method_name: str, i1: int, i2: int, i3: int, i4: int) -> Task: ..."];
+	Do[WriteLine[line, "    "<>PyFnDeclaration[Keys[WCInfo][[i]],WCInfo]],{i,1,Length[WCInfo]}];
 	Close[line];
 ]
 
@@ -1011,115 +1064,17 @@ GeneratePythonDeclarations[modelName_]:= Module[{path,line},
 (*Single function to call all file builders*)
 
 
-BuildFiles[modelName_,simplifiedOutput_,complexPars_]:=Module[{modelPars},
+BuildFiles[modelName_,simplifiedOutput_,complexPars_,WCInfo_]:=Module[{modelPars},
 	modelPars=SegregateParams[simplifiedOutput,complexPars];
-	HeaderFileBuilder[modelName,modelPars,complexPars];
-	Print["C++ header (.h) files successfully created."];
-	SourceFileBuilder[modelName,modelPars,complexPars,simplifiedOutput];
-	Print["C++ source (.cpp) files successfully created."];
-	GeneratePythonDeclarations[modelName];
-	Print["Python class and method declarations generated."]
+	HeaderFileBuilder[modelName,modelPars,complexPars,WCInfo];
+	Print["C++ header (.h) files successfully created and placed in the ../include/ subdirectory."];
+	SourceFileBuilder[modelName,modelPars,complexPars,simplifiedOutput,WCInfo];
+	Print["C++ source (.cpp) files successfully created and placed in the ../lib/ subdirectory."];
+	GeneratePyBindings[modelName,WCInfo];
+	Print["pyBindings.cpp successfully created and placed in the ../src/ subdirectory"];
+	GeneratePythonDeclarations[modelName,WCInfo];
+	Print["match_to_py.pyi successfully created and placed in the ../py/ subdirectory"]
 ]
-
-
-(* ::Section:: *)
-(*Dictionaries (WCs and Miscellaneous) *)
-
-
-(* ::Subsection:: *)
-(*A dictionary containing all Warsaw basis operator names and the corresponding C++ function prototype*)
-
-
-(* Here, we are treating all coefficients to be real*)
-
-WarsawAll = Association[
-	"cllHH" -> "cllHH(int i1, int i2)",
-	
-	"cG" -> "cG()",
-	"cW" -> "cW()",
-	"cGt" -> "cGt()",
-	"cWt" -> "cWt()",
-	
-	"cH" -> "cH()",
-	"cHBox" -> "cHBox()",
-	"cHD" -> "cHD()",
-	
-	"cHG" -> "cHG()",
-	"cHW" -> "cHW()",
-	"cHB" -> "cHB()",
-	"cHWB" -> "cHWB()",
-	"cHGt" -> "cHGt()",
-	"cHWt" -> "cHWt()",
-	"cHBt" -> "cHBt()",
-	"cHWtB" -> "cHWtB()",
-	
-	"ceH" -> "ceH(int i1, int i2)",
-	"cuH" -> "cuH(int i1, int i2)",
-	"cdH" -> "cdH(int i1, int i2)",
-	
-	"ceW" -> "ceW(int i1, int i2)",
-	"ceB" -> "ceB(int i1, int i2)",
-	"cuG" -> "cuG(int i1, int i2)",
-	"cuW" -> "cuW(int i1, int i2)",
-	"cuB" -> "cuB(int i1, int i2)",
-	"cdG" -> "cdG(int i1, int i2)",
-	"cdW" -> "cdW(int i1, int i2)",
-	"cdB" -> "cdB(int i1, int i2)",
-	
-	"cHl1" -> "cHl1(int i1, int i2)",
-	"cHl3" -> "cHl3(int i1, int i2)",
-	"cHe" -> "cHe(int i1, int i2)",
-	"cHq1" -> "cHq1(int i1, int i2)",
-	"cHq3" -> "cHq3(int i1, int i2)",
-	"cHu" -> "cHu(int i1, int i2)",
-	"cHd" -> "cHd(int i1, int i2)",
-	"cHud" -> "cHud(int i1, int i2)",
-	
-	"cll" -> "cll(int i1, int i2, int i3, int i4)",
-	"cqq1" -> "cqq1(int i1, int i2, int i3, int i4)",
-	"cqq3" -> "cqq3(int i1, int i2, int i3, int i4)",
-	"clq1" -> "clq1(int i1, int i2, int i3, int i4)",
-	"clq3" -> "clq3(int i1, int i2, int i3, int i4)",
-	"cee" -> "cee(int i1, int i2, int i3, int i4)",
-	"cuu" -> "cuu(int i1, int i2, int i3, int i4)",
-	"cdd" -> "cdd(int i1, int i2, int i3, int i4)",
-	"ceu" -> "ceu(int i1, int i2, int i3, int i4)",
-	"ced" -> "ced(int i1, int i2, int i3, int i4)",
-	"cud1" -> "cud1(int i1, int i2, int i3, int i4)",
-	"cud8" -> "cud8(int i1, int i2, int i3, int i4)",
-	"cle" -> "cle(int i1, int i2, int i3, int i4)",
-	"clu" -> "clu(int i1, int i2, int i3, int i4)",
-	"cld" -> "cld(int i1, int i2, int i3, int i4)",
-	"cqe" -> "cqe(int i1, int i2, int i3, int i4)",
-	"cqu1" -> "cqu1(int i1, int i2, int i3, int i4)",
-	"cqu8" -> "cqu8(int i1, int i2, int i3, int i4)",
-	"cqd1" -> "cqd1(int i1, int i2, int i3, int i4)",
-	"cqd8" -> "cqd8(int i1, int i2, int i3, int i4)",
-	
-	"cledq" -> "cledq(int i1, int i2, int i3, int i4)",
-	"cquqd1" -> "cquqd1(int i1, int i2, int i3, int i4)",
-	"cquqd8" -> "cquqd8(int i1, int i2, int i3, int i4)",
-	"clequ1" -> "clequ1(int i1, int i2, int i3, int i4)",
-	"clequ3" -> "clequ3(int i1, int i2, int i3, int i4)" ,
-	
-	"cduq" -> "cduq(int i1, int i2, int i3, int i4)",
-	"cqqu" -> "cqqu(int i1, int i2, int i3, int i4)",
-	"cqqq" -> "cqqq(int i1, int i2, int i3, int i4)",
-	"cduu" -> "cduu(int i1, int i2, int i3, int i4)"
-];
-
-
-(* ::Subsection:: *)
-(*List of Wilson Coefficients segregated based on the number of fermions*)
-
-
-WCList = { 
-	{"cG","cW","cGt","cWt","cH","cHBox","cHD","cHG","cHW","cHB","cHWB","cHGt","cHWt","cHBt","cHWtB"},
-	{"cllHH","ceH","cuH","cdH","ceW","ceB","cuG","cuW","cuB","cdG","cdW","cdB","cHl1","cHl3","cHe","cHq1","cHq3","cHu","cHd","cHud"},
-	{"cll","cqq1","cqq3","clq1","clq3","cee","cuu","cdd","ceu","ced","cud1","cud8",
-	 "cle","clu","cld","cqe","cqu1","cqu8","cqd1","cqd8","cledq","cquqd1","cquqd8",
-	 "clequ1","clequ3","cduq","cqqu","cqqq","cduu"}
-};
 
 
 (* ::Chapter:: *)

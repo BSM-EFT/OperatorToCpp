@@ -1,69 +1,4 @@
 {
-	"cdB":{
-		"Nf":2,
-		"SelfConjugate":false,
-		"Permutations":[[1,2]]
-	},
-	"cdd":{
-		"Nf":4,
-		"SelfConjugate":false,
-		"Permutations":[[2,1,4,3],[1,2,3,4],[3,4,1,2]]
-	},
-	"cdG":{
-		"Nf":2,
-		"SelfConjugate":false,
-		"Permutations":[[1,2]]
-	},
-	"cdH":{
-		"Nf":2,
-		"SelfConjugate":false,
-		"Permutations":[[1,2]]
-	},
-	"cduq":{
-		"Nf":4,
-		"SelfConjugate":false,
-		"Permutations":[[1,2,3,4]]
-	},
-	"cduu":{
-		"Nf":4,
-		"SelfConjugate":false,
-		"Permutations":[[1,2,3,4]]
-	},
-	"cdW":{
-		"Nf":2,
-		"SelfConjugate":false,
-		"Permutations":[[1,2]]
-	},
-	"ceB":{
-		"Nf":2,
-		"SelfConjugate":false,
-		"Permutations":[[1,2]]
-	},
-	"ced":{
-		"Nf":4,
-		"SelfConjugate":false,
-		"Permutations":[[2,1,4,3],[1,2,3,4]]
-	},
-	"cee":{
-		"Nf":4,
-		"SelfConjugate":false,
-		"Permutations":[[2,1,4,3],[1,2,3,4],[3,4,1,2],[1,4,3,2],[3,2,1,4]]
-	},
-	"ceH":{
-		"Nf":2,
-		"SelfConjugate":false,
-		"Permutations":[[1,2]]
-	},
-	"ceu":{
-		"Nf":4,
-		"SelfConjugate":false,
-		"Permutations":[[2,1,4,3],[1,2,3,4]]
-	},
-	"ceW":{
-		"Nf":2,
-		"SelfConjugate":false,
-		"Permutations":[[1,2]]
-	},
 	"cG":{
 		"Nf":0,
 		"SelfConjugate":true,
@@ -94,20 +29,10 @@
 		"SelfConjugate":true,
 		"Permutations":[]
 	},
-	"cHd":{
-		"Nf":2,
-		"SelfConjugate":false,
-		"Permutations":[[2,1],[1,2]]
-	},
 	"cHD":{
 		"Nf":0,
 		"SelfConjugate":true,
 		"Permutations":[]
-	},
-	"cHe":{
-		"Nf":2,
-		"SelfConjugate":false,
-		"Permutations":[[2,1],[1,2]]
 	},
 	"cHG":{
 		"Nf":0,
@@ -118,6 +43,81 @@
 		"Nf":0,
 		"SelfConjugate":true,
 		"Permutations":[]
+	},
+	"cHW":{
+		"Nf":0,
+		"SelfConjugate":true,
+		"Permutations":[]
+	},
+	"cHWB":{
+		"Nf":0,
+		"SelfConjugate":true,
+		"Permutations":[]
+	},
+	"cHWt":{
+		"Nf":0,
+		"SelfConjugate":true,
+		"Permutations":[]
+	},
+	"cHWtB":{
+		"Nf":0,
+		"SelfConjugate":true,
+		"Permutations":[]
+	},
+	"cW":{
+		"Nf":0,
+		"SelfConjugate":true,
+		"Permutations":[]
+	},
+	"cWt":{
+		"Nf":0,
+		"SelfConjugate":true,
+		"Permutations":[]
+	},
+	"cdB":{
+		"Nf":2,
+		"SelfConjugate":false,
+		"Permutations":[[1,2]]
+	},
+	"cdG":{
+		"Nf":2,
+		"SelfConjugate":false,
+		"Permutations":[[1,2]]
+	},
+	"cdH":{
+		"Nf":2,
+		"SelfConjugate":false,
+		"Permutations":[[1,2]]
+	},
+	"cdW":{
+		"Nf":2,
+		"SelfConjugate":false,
+		"Permutations":[[1,2]]
+	},
+	"ceB":{
+		"Nf":2,
+		"SelfConjugate":false,
+		"Permutations":[[1,2]]
+	},
+	"ceH":{
+		"Nf":2,
+		"SelfConjugate":false,
+		"Permutations":[[1,2]]
+	},
+	"ceW":{
+		"Nf":2,
+		"SelfConjugate":false,
+		"Permutations":[[1,2]]
+	},
+	"cHd":{
+		"Nf":2,
+		"SelfConjugate":false,
+		"Permutations":[[2,1],[1,2]]
+	},
+	"cHe":{
+		"Nf":2,
+		"SelfConjugate":false,
+		"Permutations":[[2,1],[1,2]]
 	},
 	"cHl1":{
 		"Nf":2,
@@ -149,25 +149,60 @@
 		"SelfConjugate":false,
 		"Permutations":[[1,2]]
 	},
-	"cHW":{
-		"Nf":0,
-		"SelfConjugate":true,
-		"Permutations":[]
+	"cllHH":{
+		"Nf":2,
+		"SelfConjugate":false,
+		"Permutations":[[1,2],[2,1]]
 	},
-	"cHWB":{
-		"Nf":0,
-		"SelfConjugate":true,
-		"Permutations":[]
+	"cuB":{
+		"Nf":2,
+		"SelfConjugate":false,
+		"Permutations":[[1,2]]
 	},
-	"cHWt":{
-		"Nf":0,
-		"SelfConjugate":true,
-		"Permutations":[]
+	"cuG":{
+		"Nf":2,
+		"SelfConjugate":false,
+		"Permutations":[[1,2]]
 	},
-	"cHWtB":{
-		"Nf":0,
-		"SelfConjugate":true,
-		"Permutations":[]
+	"cuH":{
+		"Nf":2,
+		"SelfConjugate":false,
+		"Permutations":[[1,2]]
+	},
+	"cuW":{
+		"Nf":2,
+		"SelfConjugate":false,
+		"Permutations":[[1,2]]
+	},
+	"cdd":{
+		"Nf":4,
+		"SelfConjugate":false,
+		"Permutations":[[2,1,4,3],[1,2,3,4],[3,4,1,2]]
+	},
+	"cduq":{
+		"Nf":4,
+		"SelfConjugate":false,
+		"Permutations":[[1,2,3,4]]
+	},
+	"cduu":{
+		"Nf":4,
+		"SelfConjugate":false,
+		"Permutations":[[1,2,3,4]]
+	},
+	"ced":{
+		"Nf":4,
+		"SelfConjugate":false,
+		"Permutations":[[2,1,4,3],[1,2,3,4]]
+	},
+	"cee":{
+		"Nf":4,
+		"SelfConjugate":false,
+		"Permutations":[[2,1,4,3],[1,2,3,4],[3,4,1,2],[1,4,3,2],[3,2,1,4]]
+	},
+	"ceu":{
+		"Nf":4,
+		"SelfConjugate":false,
+		"Permutations":[[2,1,4,3],[1,2,3,4]]
 	},
 	"cld":{
 		"Nf":4,
@@ -198,11 +233,6 @@
 		"Nf":4,
 		"SelfConjugate":false,
 		"Permutations":[[2,1,4,3],[1,2,3,4],[3,4,1,2]]
-	},
-	"cllHH":{
-		"Nf":2,
-		"SelfConjugate":false,
-		"Permutations":[[1,2],[2,1]]
 	},
 	"clq1":{
 		"Nf":4,
@@ -274,11 +304,6 @@
 		"SelfConjugate":false,
 		"Permutations":[[1,2,3,4]]
 	},
-	"cuB":{
-		"Nf":2,
-		"SelfConjugate":false,
-		"Permutations":[[1,2]]
-	},
 	"cud1":{
 		"Nf":4,
 		"SelfConjugate":false,
@@ -289,34 +314,9 @@
 		"SelfConjugate":false,
 		"Permutations":[[2,1,4,3],[1,2,3,4]]
 	},
-	"cuG":{
-		"Nf":2,
-		"SelfConjugate":false,
-		"Permutations":[[1,2]]
-	},
-	"cuH":{
-		"Nf":2,
-		"SelfConjugate":false,
-		"Permutations":[[1,2]]
-	},
 	"cuu":{
 		"Nf":4,
 		"SelfConjugate":false,
 		"Permutations":[[2,1,4,3],[1,2,3,4],[3,4,1,2]]
-	},
-	"cuW":{
-		"Nf":2,
-		"SelfConjugate":false,
-		"Permutations":[[1,2]]
-	},
-	"cW":{
-		"Nf":0,
-		"SelfConjugate":true,
-		"Permutations":[]
-	},
-	"cWt":{
-		"Nf":0,
-		"SelfConjugate":true,
-		"Permutations":[]
 	}
 }
