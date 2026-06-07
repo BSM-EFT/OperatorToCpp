@@ -1,4 +1,4 @@
-In this subdirectory the model class and its methods, generated using the matched results, are stored within [MSSM.cpp](./MSSM.cpp). We store the definitions for the constructor and updater methods within [MSSM.h](./MSSM.cpp). However, for ease of compilation we segregate the method definitions across individual _cXX.cpp_ files, organised across the [0f](./0f/), [2f](./2f/), [4f](./4f/) subdirectories based on the number of fermions.
+In this subdirectory the model class and its methods, generated using the matched results, are stored within [MSSM.cpp](./MSSM.cpp). We store the definitions for the constructor and updater methods within [MSSM.cpp](./MSSM.cpp). However, for ease of compilation we segregate the method definitions across individual _cXX.cpp_ files, organised across the [0f](./0f/), [2f](./2f/), [4f](./4f/) subdirectories based on the number of fermions.
 
 Additionally, this folder also contains
 1. [OperatorImport.cpp](./OperatorImport.cpp) - which provides a suite of C++ helper functions that enable computations such as loop-function evaluation, Einstein-summation et cetera within the exported methods.

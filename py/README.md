@@ -4,7 +4,7 @@ It contains the following scripts and modules:
 
 1. match_to_py.<...>.so - This is a shared object (.so) file not available in the repository by default but generated after compiling and building the match_to_py Python module by running the [run.sh](../run.sh) script. This module contains the UV model class and Wilson coefficient methods. 
 
-2. [match_to_py.pyi](./match_to_py.pyi) -  This file is generated from the Mathematica frontend [OpExp_MSSM.nb](../mathematica/OpExp_MSSM.nb) and it stores Python-declarations for the MSSM class, the constructor, the updater and the Wilson coefficient methods.
+2. [match_to_py.pyi](./match_to_py.pyi) -  This file is generated from the Mathematica frontend [OpExp_MSSM.nb](../mathematica/OpExp_MSSM.nb) and it stores Python-declarations for the UV model class, the constructor, the updater and the Wilson coefficient methods.
 
 3. [utils](./utils/) - This is a Python module designed to provide file input-output facilities and to interface with popular formats such as csv, yaml, wcxf etc.
 

@@ -2,11 +2,12 @@
 
 ### Added
 
-1. A new Python front-end and the interop with Python libraries through the [utils](./py/utils) module.
-2. New dependencies: `libomp` and `pybind11`.
-3. Automated extraction of loop-functions and their degeneracy limits using the [CollectLoopFunctions.wl](./mathematica/CollectLoopFunctions.wl) script.
-4. The facility to deal with complex quantities, previously all variables and parameters were assumed to be real.
-5. Build system based on `meson` and `ninja`.
+1. Automated parsing of EFT / Wilson Coefficient metadata. This extends the utility of the code beyond the SMEFT-Warsaw basis.
+2. A new Python front-end and the interop with Python libraries through the [utils](./py/utils) module.
+3. New dependencies: `libomp` and `pybind11`.
+4. Automated extraction of loop-functions and their degeneracy limits using the [CollectLoopFunctions.wl](./mathematica/CollectLoopFunctions.wl) script.
+5. The facility to deal with complex quantities, previously all variables and parameters were assumed to be real.
+6. Build system based on `meson` and `ninja`.
 
 ### Updated
 
@@ -14,5 +15,6 @@
 
 ### Removed
 
+1. Hardcoded SMEFT-Warsaw basis information within [OperatorExport.m](./mathematica/OperatorExport.m)
 1. FileIO.h and FileIO.cpp that facilitated reading and writing to files using native C++ code.
 2. Build system based on a single `Makefile`.
