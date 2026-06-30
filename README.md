@@ -21,7 +21,7 @@ To utilise the functionality of OperatorToC++, the following dependencies must b
 
 1. [Matchete](https://gitlab.com/matchete/matchete/) (>= v0.3.0).
 
-2. A C++ compiler that abides by the C++17 standard or newer, e.g. [GCC](https://gcc.gnu.org/) >= v7.1 and [Clang](https://clang.llvm.org/) >= v4.
+2. A C++ compiler that abides by the C++17 standard or newer, e.g. [GCC](https://gcc.gnu.org/) >= v7.1 and [Clang](https://clang.llvm.org/) >= v4. The use of Clang as the compiler is recommended, on account of the notably faster compile times in comparison to GCC.
 
 3. OpenMP: This is needed to ensure that repetitive operations such Einstein Summations across a large number of repeated indices benefit from parallelization. If one uses Clang as the compiler (default on MacOS) one would need to install `libomp`, while GCC comes bundled with `libgomp`. 
 
@@ -35,9 +35,11 @@ The development and testing of OperatorToC++ was largely done on a MacOS-based s
 
 > brew install libomp pybind11 meson ninja
 
-While these can be installed on Linux distributions through the respective package managers, this may sometimes lead to older versions being installed. So, we recommend using the brew based approach for Linux users as well. Although this would need brew itself to be pre-installed by the user. 
+Similarly, one can use package managers to install the dependencies on Linux distributions. For instance, on Ubuntu, one can use
 
-For truly cross-platform use, we recommend installing the `pybind11`, `meson`and `ninja` within a Python virtual environment, along with the Python dependencies, simply through,
+> sudo apt install libomp-dev meson ninja-build pybind11-dev
+
+However, this can sometimes lead to older package versions, e.g. pybind11 v2.x instead of v3.x. Therefore, for truly cross-platform use, we recommend installing `pybind11`, `meson`and `ninja` within a Python virtual environment, along with the Python dependencies, simply through,
 
 > pip install pybind11 meson ninja wcxf yaml numpy pandas
 

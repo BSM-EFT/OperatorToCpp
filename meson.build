@@ -1,19 +1,11 @@
 project('OpToCpp', 'cpp',
-  version : '0.2',
+  version : '1.0',
   default_options : ['cpp_std=c++17', 'buildtype=debug']
 )
 
 # --- 1. OpenMP: The Smart Detection ---
 # Meson 1.5+ handles the Apple Clang /usr/local vs /opt/homebrew search
 omp_dep = dependency('openmp', required : false)
-
-if not omp_dep.found()
-  error('\n' +
-        '\nOpenMP NOT FOUND!' +
-        '\nMacOS: Run "brew install libomp"' +
-        '\nLinux: Run "sudo apt install libomp-dev" (or equivalent)' +
-        '\n' + '')
-endif
 
 if host_machine.system() == 'darwin'
     # This dependency ONLY contains the compiler flags (-Xpreprocessor -fopenmp)
