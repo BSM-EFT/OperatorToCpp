@@ -857,10 +857,12 @@ BuildBatchEvaluator[className_, line_]:=Module[{},
 (*Builder for a single WC function (Warsaw Basis)*)
 
 
-BuildFunction[modelName_,WCname_,expr_,ComplexPars_,WCInfo_]:=Module[{returnExpr,path,line},
+BuildFunction[modelName_,WCname_,expr_,ComplexPars_,WCInfo_]:=Module[{returnExpr,path,fullPath,line},
 	returnExpr = ConvertFullExpression[expr,ComplexPars];
-	path = FileNameJoin[{ParentDirectory[NotebookDirectory[]],"lib"}];
-	line = OpenWrite[path<>"/"<>ToString[WCInfo[WCname]["Nf"]]<>"f/"<>WCname<>".cpp"];
+	path = FileNameJoin[{ParentDirectory[NotebookDirectory[]],"lib",ToString[WCInfo[WCname]["Nf"]]<>"f"}];
+	If[!DirectoryQ[path], CreateDirectory[path]];
+	fullPath = FileNameJoin[{path,WCname<>".cpp"}];
+	line = OpenWrite[fullPath];
 		
 	WriteLine[line, "#include \"OperatorImport.h\""];
 	WriteLine[line, "#include \"complex_math.h\""];
