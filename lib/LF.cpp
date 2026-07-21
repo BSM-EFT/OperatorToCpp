@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "LF.h"
 #include "complex_math.h"
 using std::vector;

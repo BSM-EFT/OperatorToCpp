@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "MSSM.h"
 #include <omp.h>
 

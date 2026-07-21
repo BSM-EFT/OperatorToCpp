@@ -5,7 +5,6 @@
  * @brief Auxiliary classes and functions to aid in the evaluation of expressions within the Wilson coefficient functions
  */
 
-#include "pch.h"
 #include "OperatorImport.h"
 #include "LF.h"
 
