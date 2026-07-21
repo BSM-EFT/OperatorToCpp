@@ -499,9 +499,11 @@ HeaderModelClass[className_,paramList_,ComplexPars_,WCInfo_,line_] := Module[{},
 (*Master builder*)
 
 
-HeaderFileBuilder[modelName_,paramList_,ComplexPars_,WCInfo_]:=Module[{path,line1},
+HeaderFileBuilder[modelName_,paramList_,ComplexPars_,WCInfo_]:=Module[{path,fullPath,line1},
 	path = FileNameJoin[{ParentDirectory[NotebookDirectory[]],"include"}];
-	line1 = OpenWrite[path<>"/"<>modelName<>".h"];
+	If[!DirectoryQ[path], CreateDirectory[path]];
+	fullPath = FileNameJoin[{path,modelName<>".h"}];
+	line1 = OpenWrite[fullPath];
 	HeaderPreprocessorDirectives[line1];
 	WriteLine[line1,""];
 	HeaderTaskStruct[line1];
@@ -890,12 +892,14 @@ ReplaceVarName[list_,str_] := Module[{rules},
 ];
 
 
-SourceFileBuilder[modelName_, paramList_, ComplexPars_, matchingOutput_,WCInfo_]:=Module[{keyList, exprList, path,line1},
+SourceFileBuilder[modelName_, paramList_, ComplexPars_, matchingOutput_,WCInfo_]:=Module[{keyList,exprList,path,fullPath,line1},
 	keyList=Keys[matchingOutput];
 	exprList=Values[matchingOutput];
 	
 	path = FileNameJoin[{ParentDirectory[NotebookDirectory[]],"lib"}];
-	line1 = OpenWrite[path<>"/"<>modelName<>".cpp"];
+	If[!DirectoryQ[path], CreateDirectory[path]];
+	fullPath = FileNameJoin[{path,modelName<>".cpp"}];
+	line1 = OpenWrite[fullPath];
 	
 	BuildPreprocessorDirectives[modelName,line1];
 	BuildConstructor[modelName,paramList,ComplexPars,line1];
@@ -970,8 +974,7 @@ WriteLine[line, ""];
 WriteLine[line, "            auto fn_ptr = it->second;"];
 WriteLine[line, "            return Task{name, [&self, fn_ptr"<>If[nf>0,", "<>SimpleArgs[nf],""]<>"](){ return (self.*fn_ptr)("<>If[nf>0,SimpleArgs[nf],""]<>"); }};"];
 WriteLine[line, "        }, py::arg(\"name\"), py::arg(\"method_name\")"<>If[nf>0,", "<>PyArgs[nf],""]<>")"];
-WriteLine[line, ""];
-,{k,1,Length[NfUniq]}];
+WriteLine[line, ""];,{k,1,Length[NfUniq]}];
 ]
 
 
@@ -987,9 +990,11 @@ WriteLine[line, "        .def(\""<>wcLast<>"\", &"<>modelName<>"::"<>wcLast<>If[
 
 
 (* ::Input::Initialization:: *)
-GeneratePyBindings[modelName_,WCInfo_]:=Module[{path, line1},
+GeneratePyBindings[modelName_,WCInfo_]:=Module[{path,fullPath,line1},
 path = FileNameJoin[{ParentDirectory[NotebookDirectory[]],"src"}];
-    line1 = OpenWrite[path<>"/"<>"pyBindings.cpp"];
+If[!DirectoryQ[path], CreateDirectory[path]];
+fullPath = FileNameJoin[{path,"pyBindings.cpp"}];
+line1 = OpenWrite[fullPath];
 WriteLine[line1, "#include <pybind11/pybind11.h>"];
 WriteLine[line1, "#include <pybind11/cast.h>"];
 WriteLine[line1, "#include <pybind11/detail/common.h>"];
@@ -1041,10 +1046,12 @@ PyFnDeclaration[wc_,WCInfo_]:=Module[{nflav, decl},
 	Return[decl];
 ]
 
-GeneratePythonDeclarations[modelName_,WCInfo_]:= Module[{path,line},
+GeneratePythonDeclarations[modelName_,WCInfo_]:= Module[{path,fullPath,line},
 	path = FileNameJoin[{ParentDirectory[NotebookDirectory[]],"py"}];
-    line = OpenWrite[path<>"/"<>"match_to_py.pyi"];
-    WriteLine[line, "class Task: ..."];
+	If[!DirectoryQ[path], CreateDirectory[path]];
+	fullPath = FileNameJoin[{path,"match_to_py.pyi"}];
+	line = OpenWrite[fullPath];
+	WriteLine[line, "class Task: ..."];
     WriteLine[line, ""];
     WriteLine[line, "class "<>modelName<>":"];
 	WriteLine[line, "    def __init__(self, param_dict: dict[str, complex], scale: float, loop: bool) -> None: ..."];

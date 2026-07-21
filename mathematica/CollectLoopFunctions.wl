@@ -178,8 +178,11 @@ AppendTo[dict1,ToString[i]->strList],{i,1,Length[AllExpCombs]}]
 declaration="std::complex<double> LF(std::vector<std::complex<double> > masses, int code, double mubarsq);";
 
 
-CreateLFHeaderFile[]:=Module[{line},
-	line = OpenWrite[ParentDirectory[NotebookDirectory[]]<>"/include/LF.h"];
+CreateLFHeaderFile[]:=Module[{path,fullPath,line},
+	path = FileNameJoin[{ParentDirectory[NotebookDirectory[]],"include"}];
+	If[!DirectoryQ[path], CreateDirectory[path]];
+	fullPath = FileNameJoin[{path,"LF.h"}];
+	line = OpenWrite[fullPath];
 	WriteLine[line, "#pragma once"];
 	WriteLine[line, "#include <vector>"];
 	WriteLine[line, "#include <complex>"];
@@ -213,8 +216,11 @@ defClosingBraceSwitch = "    }";
 defClosingBrace = "}";
 
 
-CreateLFSourceFile[]:=Module[{line,ifElseBranches},
-	line = OpenWrite[ParentDirectory[NotebookDirectory[]]<>"/lib/LF.cpp"];
+CreateLFSourceFile[]:=Module[{path,fullPath,line,ifElseBranches},
+	path = FileNameJoin[{ParentDirectory[NotebookDirectory[]],"lib"}];
+	If[!DirectoryQ[path], CreateDirectory[path]];
+	fullPath = FileNameJoin[{path,"LF.cpp"}];
+	line = OpenWrite[fullPath];
 	WriteLine[line, declL1];
 	WriteLine[line, declL2];
 	WriteLine[line, declL3];
