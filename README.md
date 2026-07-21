@@ -10,8 +10,9 @@ It admits [Matchete](https://gitlab.com/matchete/matchete/) (>= v0.3.0) output, 
 
 The code can be downloaded by cloning this repository to a local folder.
 
-> git clone https://github.com/BSM-EFT/OperatorToCpp.git
-
+```
+git clone https://github.com/BSM-EFT/OperatorToCpp.git
+```
 It is possible to interact with the code at 3 distinct levels, i.e. [Mathematica](./mathematica/README.md), [C++](./src/README.md) and [Python](./py/README.md). More details on the C++ class generated after translating the Matchete results and the provided helper functions can be found [here](./lib/README.md).
 
 
@@ -33,16 +34,19 @@ To utilise the functionality of OperatorToC++, the following dependencies must b
 
 The development and testing of OperatorToC++ was largely done on a MacOS-based setup. For users working with a similar setup, the C++ dependencies can be installed using the [Homebrew](https://brew.sh/) package manager, using the command,
 
-> brew install libomp pybind11 meson ninja
-
+```
+brew install libomp pybind11 meson ninja
+```
 Similarly, one can use package managers to install the dependencies on Linux distributions. For instance, on Ubuntu, one can use
 
-> sudo apt install libomp-dev meson ninja-build pybind11-dev
-
+```
+sudo apt install libomp-dev meson ninja-build pybind11-dev
+```
 However, this can sometimes lead to older package versions, e.g. pybind11 v2.x instead of v3.x. Therefore, for truly cross-platform use, we recommend installing `pybind11`, `meson`and `ninja` within a Python virtual environment, along with the Python dependencies, simply through,
 
-> pip install pybind11 meson ninja wcxf yaml numpy pandas
-
+```
+pip install pybind11 meson ninja wcxf yaml numpy pandas
+```
 
 ## Citation
 
