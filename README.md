@@ -45,7 +45,7 @@ sudo apt install libomp-dev meson ninja-build pybind11-dev
 However, this can sometimes lead to older package versions, e.g. pybind11 v2.x instead of v3.x. Therefore, for truly cross-platform use, we recommend installing `pybind11`, `meson`and `ninja` within a Python virtual environment, along with the Python dependencies, simply through,
 
 ```
-pip install pybind11 meson ninja wcxf yaml numpy pandas
+pip install pybind11 meson ninja wcxf pyyaml numpy pandas
 ```
 
 ## Citation
