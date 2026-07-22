@@ -551,108 +551,28 @@ BuildConstructor[className_, paramList_, ComplexPars_, line_]:=Module[{},
 	
 	If[Length[paramList[[2]]]!=0,
 		Do[
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>"1\") != params.end()) {"];
-			WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"[0] = params[\""<>ToString[paramList[[2]][[i]]]<>"1\"];"];
-			If[
-				MemberQ[ComplexPars,paramList[[2]][[i]]],
-				WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"c[0] = std::conj(params[\""<>ToString[paramList[[2]][[i]]]<>"1\"]);"];
-			];
-			WriteLine[line, "    }"];
-			
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>"2\") != params.end()) {"];
-			WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"[1] = params[\""<>ToString[paramList[[2]][[i]]]<>"2\"];"];
-			If[
-				MemberQ[ComplexPars,paramList[[2]][[i]]],
-				WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"c[1] = std::conj(params[\""<>ToString[paramList[[2]][[i]]]<>"2\"]);"];
-			];
-			WriteLine[line, "    }"];
-			
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>"3\") != params.end()) {"];
-			WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"[2] = params[\""<>ToString[paramList[[2]][[i]]]<>"3\"];"];
-			If[
-				MemberQ[ComplexPars,paramList[[2]][[i]]],
-				WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"c[2] = std::conj(params[\""<>ToString[paramList[[2]][[i]]]<>"3\"]);"];
-			];
-			WriteLine[line, "    }"], 
-			{i,1,Length[paramList[[2]]]}]	
+			Do[
+				WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>ToString[j]<>"\") != params.end()) {"];
+				WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"["<>ToString[j-1]<>"] = params[\""<>ToString[paramList[[2]][[i]]]<>ToString[j]<>"\"];"];
+				If[MemberQ[ComplexPars,paramList[[2]][[i]]],
+					WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"c["<>ToString[j-1]<>"] = std::conj(params[\""<>ToString[paramList[[2]][[i]]]<>ToString[j]<>"\"]);"];
+				];
+				WriteLine[line, "    }"];,
+			{j,1,3}], 
+		{i,1,Length[paramList[[2]]]}]
 	];
 	
 	If[Length[paramList[[3]]]!=0,
 		Do[
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"11\") != params.end()) {"];
-			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[0][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"11\"];"];
-			If[
-				MemberQ[ComplexPars,paramList[[3]][[i]]],
-				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[0][0] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"11\"]);"];
-			];
-			WriteLine[line, "    }"];
-			
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"12\") != params.end()) {"];
-			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[0][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"12\"];"];
-			If[
-				MemberQ[ComplexPars,paramList[[3]][[i]]],
-				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[1][0] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"12\"]);"];
-			];
-			WriteLine[line, "    }"];
-			
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"13\") != params.end()) {"];
-			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[0][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"13\"];"];
-			If[
-				MemberQ[ComplexPars,paramList[[3]][[i]]],
-				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[2][0] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"13\"]);"];
-			];
-			WriteLine[line, "    }"];
-			
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"21\") != params.end()) {"];
-			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[1][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"21\"];"];
-			If[
-				MemberQ[ComplexPars,paramList[[3]][[i]]],
-				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[0][1] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"21\"]);"];
-			];
-			WriteLine[line, "    }"];
-			
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"22\") != params.end()) {"];
-			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[1][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"22\"];"];
-			If[
-				MemberQ[ComplexPars,paramList[[3]][[i]]],
-				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[1][1] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"22\"]);"];
-			];
-			WriteLine[line, "    }"];
-			
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"23\") != params.end()) {"];
-			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[1][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"23\"];"];
-			If[
-				MemberQ[ComplexPars,paramList[[3]][[i]]],
-				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[2][1] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"23\"]);"];
-			];
-			WriteLine[line, "    }"];
-			
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"31\") != params.end()) {"];
-			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[2][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"31\"];"];
-			If[
-				MemberQ[ComplexPars,paramList[[3]][[i]]],
-				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[0][2] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"31\"]);"];
-			];
-			WriteLine[line, "    }"];
-			
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"32\") != params.end()) {"];
-			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[2][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"32\"];"];
-			If[
-				MemberQ[ComplexPars,paramList[[3]][[i]]],
-				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[1][2] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"32\"]);"];
-			];
-			WriteLine[line, "    }"];
-			
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"33\") != params.end()) {"];
-			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[2][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"33\"];"];
-			If[
-				MemberQ[ComplexPars,paramList[[3]][[i]]],
-				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[2][2] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"33\"]);"];
-			];
-			WriteLine[line, "    }"];
-			
-			
-		,{i,1,Length[paramList[[3]]]}]	
+			Do[
+				WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>ToString[j]<>ToString[k]<>"\") != params.end()) {"];
+				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"["<>ToString[j-1]<>"]["<>ToString[k-1]<>"] = params[\""<>ToString[paramList[[3]][[i]]]<>ToString[j]<>ToString[k]<>"\"];"];
+				If[MemberQ[ComplexPars,paramList[[3]][[i]]],
+					WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c["<>ToString[k-1]<>"]["<>ToString[j-1]<>"] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>ToString[j]<>ToString[k]<>"\"]);"];
+				];
+				WriteLine[line, "    }"];,
+			{j,1,3},{k,1,3}],
+		{i,1,Length[paramList[[3]]]}]	
 	];
 	
 	WriteLine[line, StringJoin["}"]];
@@ -674,108 +594,28 @@ BuildUpdater[className_, paramList_, ComplexPars_, line_]:=Module[{},
 	
 	If[Length[paramList[[2]]]!=0,
 		Do[
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>"1\") != params.end()) {"];
-			WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"[0] = params[\""<>ToString[paramList[[2]][[i]]]<>"1\"];"];
-			If[
-				MemberQ[ComplexPars,paramList[[2]][[i]]],
-				WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"c[0] = std::conj(params[\""<>ToString[paramList[[2]][[i]]]<>"1\"]);"];
-			];
-			WriteLine[line, "    }"];
-			
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>"2\") != params.end()) {"];
-			WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"[1] = params[\""<>ToString[paramList[[2]][[i]]]<>"2\"];"];
-			If[
-				MemberQ[ComplexPars,paramList[[2]][[i]]],
-				WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"c[1] = std::conj(params[\""<>ToString[paramList[[2]][[i]]]<>"2\"]);"];
-			];
-			WriteLine[line, "    }"];
-			
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>"3\") != params.end()) {"];
-			WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"[2] = params[\""<>ToString[paramList[[2]][[i]]]<>"3\"];"];
-			If[
-				MemberQ[ComplexPars,paramList[[2]][[i]]],
-				WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"c[2] = std::conj(params[\""<>ToString[paramList[[2]][[i]]]<>"3\"]);"];
-			];
-			WriteLine[line, "    }"], 
-			{i,1,Length[paramList[[2]]]}]	
+			Do[
+				WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>ToString[j]<>"\") != params.end()) {"];
+				WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"["<>ToString[j-1]<>"] = params[\""<>ToString[paramList[[2]][[i]]]<>ToString[j]<>"\"];"];
+				If[MemberQ[ComplexPars,paramList[[2]][[i]]],
+					WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"c["<>ToString[j-1]<>"] = std::conj(params[\""<>ToString[paramList[[2]][[i]]]<>ToString[j]<>"\"]);"];
+				];
+				WriteLine[line, "    }"];,
+			{j,1,3}], 
+		{i,1,Length[paramList[[2]]]}]
 	];
 	
 	If[Length[paramList[[3]]]!=0,
 		Do[
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"11\") != params.end()) {"];
-			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[0][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"11\"];"];
-			If[
-				MemberQ[ComplexPars,paramList[[3]][[i]]],
-				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[0][0] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"11\"]);"];
-			];
-			WriteLine[line, "    }"];
-			
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"12\") != params.end()) {"];
-			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[0][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"12\"];"];
-			If[
-				MemberQ[ComplexPars,paramList[[3]][[i]]],
-				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[1][0] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"12\"]);"];
-			];
-			WriteLine[line, "    }"];
-			
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"13\") != params.end()) {"];
-			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[0][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"13\"];"];
-			If[
-				MemberQ[ComplexPars,paramList[[3]][[i]]],
-				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[2][0] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"13\"]);"];
-			];
-			WriteLine[line, "    }"];
-			
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"21\") != params.end()) {"];
-			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[1][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"21\"];"];
-			If[
-				MemberQ[ComplexPars,paramList[[3]][[i]]],
-				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[0][1] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"21\"]);"];
-			];
-			WriteLine[line, "    }"];
-			
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"22\") != params.end()) {"];
-			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[1][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"22\"];"];
-			If[
-				MemberQ[ComplexPars,paramList[[3]][[i]]],
-				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[1][1] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"22\"]);"];
-			];
-			WriteLine[line, "    }"];
-			
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"23\") != params.end()) {"];
-			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[1][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"23\"];"];
-			If[
-				MemberQ[ComplexPars,paramList[[3]][[i]]],
-				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[2][1] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"23\"]);"];
-			];
-			WriteLine[line, "    }"];
-			
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"31\") != params.end()) {"];
-			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[2][0] = params[\""<>ToString[paramList[[3]][[i]]]<>"31\"];"];
-			If[
-				MemberQ[ComplexPars,paramList[[3]][[i]]],
-				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[0][2] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"31\"]);"];
-			];
-			WriteLine[line, "    }"];
-			
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"32\") != params.end()) {"];
-			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[2][1] = params[\""<>ToString[paramList[[3]][[i]]]<>"32\"];"];
-			If[
-				MemberQ[ComplexPars,paramList[[3]][[i]]],
-				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[1][2] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"32\"]);"];
-			];
-			WriteLine[line, "    }"];
-			
-			WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>"33\") != params.end()) {"];
-			WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"[2][2] = params[\""<>ToString[paramList[[3]][[i]]]<>"33\"];"];
-			If[
-				MemberQ[ComplexPars,paramList[[3]][[i]]],
-				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c[2][2] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>"33\"]);"];
-			];
-			WriteLine[line, "    }"];
-			
-			
-		,{i,1,Length[paramList[[3]]]}]	
+			Do[
+				WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>ToString[j]<>ToString[k]<>"\") != params.end()) {"];
+				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"["<>ToString[j-1]<>"]["<>ToString[k-1]<>"] = params[\""<>ToString[paramList[[3]][[i]]]<>ToString[j]<>ToString[k]<>"\"];"];
+				If[MemberQ[ComplexPars,paramList[[3]][[i]]],
+					WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c["<>ToString[k-1]<>"]["<>ToString[j-1]<>"] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>ToString[j]<>ToString[k]<>"\"]);"];
+				];
+				WriteLine[line, "    }"];,
+			{j,1,3},{k,1,3}],
+		{i,1,Length[paramList[[3]]]}]	
 	];
 	
 	WriteLine[line, "}"];
