@@ -10,4 +10,4 @@
  * @param mubarsq The mass scale at which the evaluation is to occur.
  * @return The evaluated numerical value.
  */
-std::complex<double> LF(std::vector<std::complex<double> > masses, int code, double mubarsq);
+std::complex<double> LF(const std::vector<std::complex<double> >& masses, int code, double mubarsq);

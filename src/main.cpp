@@ -1,7 +1,7 @@
 /**
  * @file main.cpp
  * @author Suraj Prakash
- * @date 2026-06-05
+ * @date 2026-07-23
  * @brief Example C++ program that creates an instance of the MSSM class and evaluates Wilson coefficients
  */
 
@@ -49,8 +49,8 @@ int main() {
     MSSM sb_model(param_dict, 1.0, true); 
 
     // compute and print Wilson coefficients values
-    std::cout << "cG: {Real = " << sb_model.cG().real()
-              << ", Imag = " << sb_model.cG().imag() << "}\n";
+    std::cout << "cH: {Real = " << sb_model.cH().real()
+              << ", Imag = " << sb_model.cH().imag() << "}\n";
     std::cout << "cuB: {Real = " << sb_model.cuB(2,2).real()
               << ", Imag = " << sb_model.cuB(2,2).imag() << "}\n";
 
