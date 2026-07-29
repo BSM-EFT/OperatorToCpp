@@ -108,7 +108,7 @@ GenerateMassArgList[numExps_]:=Module[{mArgList},
 
 GenerateMassRepRules[numExps_]:=Module[{mRules},
 	mRules={};
-	Do[AppendTo[mRules,"m"<>ToString[i]->"masses"<>"["<>ToString[i-1]<>"]"],{i,1,numExps-1}];
+	Do[AppendTo[mRules,"m"<>ToString[i]->"m"<>"["<>ToString[i-1]<>"]"],{i,1,numExps-1}];
 	Return[mRules];
 ]
 
@@ -137,17 +137,17 @@ CreateIfElseBlock[ExpComb_,massArgList_]:=Module[{pairs,repRules,rules,strList},
 	(* Create the first if branch *)
 	AppendTo[
 		strList,
-		StringReplace[StringJoin["if (std::abs(",ToString[pairs[[1]][[1]]],"/",ToString[pairs[[1]][[2]]],") >= 0.95 && std::abs(",ToString[pairs[[1]][[1]]],"/",ToString[pairs[[1]][[2]]],") <= 1.05){ return ", ConvertFunctionCallToString[ExpComb,rules[[1]]],"; }"  ],GenerateMassRepRules[Length[ExpComb]]]
+		StringReplace[StringJoin["if (rel_diff(",ToString[pairs[[1]][[1]]],",",ToString[pairs[[1]][[2]]],") <= 5e-3) { return ", ConvertFunctionCallToString[ExpComb,rules[[1]]],"; }"  ],GenerateMassRepRules[Length[ExpComb]]]
 	];
 
 	(* Create the else-if branches *)
 	If[
 		Length[pairs]>1,
-		Do[AppendTo[strList,StringReplace[StringJoin["else if (std::abs(",ToString[pairs[[i]][[1]]],"/",ToString[pairs[[i]][[2]]],") >= 0.95 && std::abs(",ToString[pairs[[i]][[1]]],"/",ToString[pairs[[i]][[2]]],") <= 1.05) { return ", ConvertFunctionCallToString[ExpComb,rules[[i]]],"; }"  ],GenerateMassRepRules[Length[ExpComb]]]],{i,2,Length[pairs]}]
+		Do[AppendTo[strList,StringReplace[StringJoin["else if (rel_diff(",ToString[pairs[[i]][[1]]],",",ToString[pairs[[i]][[2]]],") <= 5e-3) { return ", ConvertFunctionCallToString[ExpComb,rules[[i]]],"; }"  ],GenerateMassRepRules[Length[ExpComb]]]],{i,2,Length[pairs]}]
 	];
 
 	(* Create the non-degenerate else branch *)
-	AppendTo[strList,StringReplace[StringJoin["else { return ",ConvertFormulaToString[ExpComb], "; }"],GenerateMassRepRules[Length[ExpComb]]]];
+	AppendTo[strList,StringJoin["else { return LFh",ToString[(ExpComb/.ReplLoopFuncExpns)],"(m, mubarsq); }"]];
 	Return[strList]
 ]
 
@@ -161,7 +161,7 @@ Do[
 	massArgs=GenerateMassArgList[Length[AllExpCombs[[i]]]];
 	strList=If[
 		Length[massArgs]==1,
-		{StringJoin["return ",ConvertFormulaToString[AllExpCombs[[i]]], ";"]},
+		{StringJoin["return LFh",ToString[(AllExpCombs[[i]]/.ReplLoopFuncExpns)],"(m, mubarsq); "]},
 		CreateIfElseBlock[AllExpCombs[[i]],massArgs]
 ];
 AppendTo[dict1,ToString[i]->strList],{i,1,Length[AllExpCombs]}]
@@ -172,7 +172,7 @@ AppendTo[dict1,ToString[i]->strList],{i,1,Length[AllExpCombs]}]
 
 
 (* ::Subsubsection:: *)
-(*Header file*)
+(*Header file - LF.h*)
 
 
 declaration="std::complex<double> LF(const std::vector<std::complex<double> >& masses, int code, double mubarsq);";
@@ -201,16 +201,34 @@ CreateLFHeaderFile[]:=Module[{path,fullPath,line},
 
 
 (* ::Subsubsection:: *)
-(*Source file*)
+(*Header file - LF_helper.h*)
 
 
-declL1 = "#include \"pch.h\"";
-declL2 = "#include \"LF.h\"";
-declL3 = "#include \"complex_math.h\"";
-declL4 = "using std::vector;";
-declL5 = "using std::complex;";
+CreateLFHelperHeaderFile[]:=Module[{path,fullPath,line,str},
+	path = FileNameJoin[{ParentDirectory[NotebookDirectory[]],"include"}];
+	If[!DirectoryQ[path], CreateDirectory[path]];
+	fullPath = FileNameJoin[{path,"LF_helper.h"}];
+	line = OpenWrite[fullPath];
+	WriteLine[line, "#pragma once"];
+	WriteLine[line, "#include <vector>"];
+	WriteLine[line, "#include <complex>"];
+	WriteLine[line, ""];
+	WriteLine[line, "double rel_diff(std::complex<double> a, std::complex<double> b);"];
+	WriteLine[line, ""];
+	Do[WriteLine[line, "std::complex<double> LFh"<>ToString[i]<>"(const std::vector<std::complex<double> >& m, double mubarsq);"],{i,1,Length[AllExpCombs]}];
+	WriteLine[line, ""];
+	Close[line];
+]
+
+
+(* ::Subsubsection:: *)
+(*Source file - LF.cpp*)
+
+
+declL1 = "#include \"LF.h\"";
+declL2 = "#include \"LF_helper.h\"";
 doc = "// elaborate definitions of loop-functions in terms of masses";
-defL1 = "complex<double> LF(const vector<complex<double> >& masses, int code, double mubarsq) {";
+defL1 = "std::complex<double> LF(const std::vector<std::complex<double> >& m, int code, double mubarsq) {";
 defL2 = "    switch(code) {";
 defClosingBraceSwitch = "    }";
 defClosingBrace = "}";
@@ -223,9 +241,6 @@ CreateLFSourceFile[]:=Module[{path,fullPath,line,ifElseBranches},
 	line = OpenWrite[fullPath];
 	WriteLine[line, declL1];
 	WriteLine[line, declL2];
-	WriteLine[line, declL3];
-	WriteLine[line, declL4];
-	WriteLine[line, declL5];
 	WriteLine[line, ""];
 	WriteLine[line, doc];
 	WriteLine[line, defL1];
@@ -247,10 +262,41 @@ CreateLFSourceFile[]:=Module[{path,fullPath,line,ifElseBranches},
 ]
 
 
+(* ::Subsubsection:: *)
+(*Source file - LF_helper.cpp*)
+
+
+CreateLFHelperSourceFile[]:=Module[{path,fullPath,line,str},
+	path = FileNameJoin[{ParentDirectory[NotebookDirectory[]],"lib"}];
+	If[!DirectoryQ[path], CreateDirectory[path]];
+	fullPath = FileNameJoin[{path,"LF_helper.cpp"}];
+	line = OpenWrite[fullPath];
+	WriteLine[line, "#include \"LF_helper.h\""];
+	WriteLine[line, "#include \"complex_math.h\""];
+	WriteLine[line, "#include <vector>"];
+	WriteLine[line, "#include <complex>"];
+	WriteLine[line, "#include <algorithm>"];
+	WriteLine[line, "#include <cmath>"];
+	WriteLine[line, ""];
+	WriteLine[line, "double rel_diff(std::complex<double> a, std::complex<double> b) {"];
+	WriteLine[line, "    return std::abs(a-b) / std::min(std::abs(a),std::abs(b));"];
+	WriteLine[line, "}"];
+	WriteLine[line, ""];
+	Do[
+		WriteLine[line, "std::complex<double> LFh"<>ToString[i]<>"(const std::vector<std::complex<double> >& m, double mubarsq) {"];
+		WriteLine[line, "    return "<>ConvertFormulaToString[AllExpCombs[[i]]]<>";"];
+		WriteLine[line, "}\n"],{i,1,Length[AllExpCombs]}];
+	WriteLine[line, ""];
+	Close[line];
+]
+
+
 CreateLFHeaderFile[]
-
-
 CreateLFSourceFile[]
+
+
+CreateLFHelperHeaderFile[]
+CreateLFHelperSourceFile[]
 
 
 Remove["Matchete`*"]
