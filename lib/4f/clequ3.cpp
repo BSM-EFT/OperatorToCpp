@@ -1,7 +1,0 @@
-#include "OperatorImport.h"
-#include "complex_math.h"
-#include "MSSM.h"
-
-std::complex<double> MSSM::clequ3(int i1, int i2, int i3, int i4) {
-    return ((5*pow(g1,2)*hbar)/(32*pow(mPhi,2))*EinsSum({Ye,Yu},{{101,102},{103,104}},{i1,i2,i3,i4}) + (3*pow(g2,2)*hbar)/(32*pow(mPhi,2))*EinsSum({Ye,Yu},{{101,102},{103,104}},{i1,i2,i3,i4}) + (5*pow(g1,2)*hbar)/16*EinsSum({LoopFunc({mPhi},3,mubarsq),Ye,Yu},{{},{101,102},{103,104}},{i1,i2,i3,i4}) + (3*pow(g2,2)*hbar)/16*EinsSum({LoopFunc({mPhi},3,mubarsq),Ye,Yu},{{},{101,102},{103,104}},{i1,i2,i3,i4}) - 0.041666666666666664*(pow(g1,2)*hbar*m1*muTilde)/(cgamma*sqrt(1-pow(cgamma,2)))*EinsSum({LoopFunc({m1,met,mqt,muTilde},103,mubarsq),Ye,Yu},{{102,103},{101,102},{103,104}},{i2,i3,i1,i2,i3,i4}) - 0.16666666666666666*(pow(g1,2)*hbar*m1*muTilde)/(cgamma*sqrt(1-pow(cgamma,2)))*EinsSum({LoopFunc({m1,met,mut,muTilde},103,mubarsq),Ye,Yu},{{102,104},{101,102},{103,104}},{i2,i4,i1,i2,i3,i4}) - 0.020833333333333332*(pow(g1,2)*hbar*m1*muTilde)/(cgamma*sqrt(1-pow(cgamma,2)))*EinsSum({LoopFunc({m1,mlt,mqt,muTilde},103,mubarsq),Ye,Yu},{{101,103},{101,102},{103,104}},{i1,i3,i1,i2,i3,i4}) - 0.08333333333333333*(pow(g1,2)*hbar*m1*muTilde)/(cgamma*sqrt(1-pow(cgamma,2)))*EinsSum({LoopFunc({m1,mlt,mut,muTilde},103,mubarsq),Ye,Yu},{{101,104},{101,102},{103,104}},{i1,i4,i1,i2,i3,i4}) + (-3*pow(g2,2)*hbar*m2*muTilde)/(16*cgamma*sqrt(1-pow(cgamma,2)))*EinsSum({LoopFunc({m2,mlt,mqt,muTilde},103,mubarsq),Ye,Yu},{{101,103},{101,102},{103,104}},{i1,i3,i1,i2,i3,i4}));
-}

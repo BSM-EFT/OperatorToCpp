@@ -27,6 +27,9 @@
 *.out
 *.app
 
+# Python Interface files
+*.pyi
+
 .DS_Store
 */.DS_Store
 test*
@@ -37,3 +40,11 @@ build/
 .cache/
 *.pdf
 **/benchmark-points
+Examples/**/include
+Examples/**/lib
+Examples/**/src/pyBindings.cpp
+Examples/**/py/utils
+Examples/**/py/EFT_db
+Examples/**/py/plots
+Examples/**/meson.build
+Examples/**/compileCpp.sh

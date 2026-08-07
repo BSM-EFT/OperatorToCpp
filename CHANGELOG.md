@@ -11,7 +11,7 @@
 
 ### Updated
 
-1. The directory structure and READMEs hasve been reorganized across folders, to describe the Mathematic, C++ and Python aspects properly.
+1. The directory structure and READMEs hasve been reorganized across folders, to describe the Mathematica, C++ and Python aspects properly, while also separating the core from the examples.
 
 ### Removed
 
