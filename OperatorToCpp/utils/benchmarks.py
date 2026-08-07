@@ -1,6 +1,7 @@
 from utils.io import write_to_wcxf, write_to_yaml
 from utils.io.wcxf import wcxf_to_matchete_name
 from time import perf_counter
+from pathlib import Path
 import wcxf
 
 
@@ -11,9 +12,11 @@ def wcxf_vs_yaml_all_seq(eft_info, model, param_dict) -> None:
     """
     
     # the WCxf writer
-    f_name = "./benchmark-points/all_wcxf.yaml"
+    f_path = Path("./benchmark-points/all_wcxf.yaml")
+    f_path.parent.mkdir(parents=True, exist_ok=True)
+    
     t_i = perf_counter() 
-    write_to_wcxf(f_name,model,eft_info,opt="seq") 
+    write_to_wcxf(f_path,model,eft_info,opt="seq") 
     t_f = perf_counter()
     print(f"File written in WCxf format (using sequential process) in {t_f - t_i:.2f}s.")
 
@@ -29,10 +32,11 @@ def wcxf_vs_yaml_all_seq(eft_info, model, param_dict) -> None:
         else:
             wc_names.append(new_name + "_" + name[1])   
 
-    f_name = "./benchmark-points/all_native.yaml" 
+    f_path = Path("./benchmark-points/all_native.yaml")
+    f_path.parent.mkdir(parents=True, exist_ok=True)
     t_i = perf_counter()
     keys = [[],wc_names]
-    write_to_yaml(f_name,model,param_dict,keys,"seq") 
+    write_to_yaml(f_path,model,param_dict,keys,"seq") 
     t_f = perf_counter()
     print(f"File written in native format (using sequential process) in {t_f - t_i:.2f}s.")
 
@@ -49,19 +53,23 @@ def wcxf_vs_yaml_SMEFTd6_59_seq(model, param_dict) -> None:
     
     eft_info = {"eft": "SMEFT", "basis": "Warsaw"}
     
-    f_name = "./benchmark-points/59_wcxf.yaml"
+    f_path = Path("./benchmark-points/59_wcxf.yaml")
+    f_path.parent.mkdir(parents=True, exist_ok=True)
+
     t_i = perf_counter() 
-    write_to_wcxf(f_name,model,eft_info,wc_names_wcxf,"seq")
+    write_to_wcxf(f_path,model,eft_info,wc_names_wcxf,"seq")
     t_f = perf_counter()
     print(f"File written in WCxf format in {t_f - t_i:.2f}s.")
 
     # 59 Wilson coefficients in Matchete format
     wc_names_matchete = ["cG", "cW", "cHBox", "cH", "cHD", "cHG", "cHB", "cHW", "cHWB", "ceH_33", "cdH_33", "cuH_33", "ceB_33", "ceW_33", "cdB_33", "cdW_33", "cdG_33", "cuB_33", "cuW_33", "cuG_33", "cHe_33", "cHu_33", "cHd_33", "cHud_33","cHl1_33", "cHl3_33", "cHq1_33", "cHq3_33", "cll_3333", "cqq1_3333", "cqq3_3333", "clq1_3333", "clq3_3333", "cee_3333", "cuu_3333", "cdd_3333", "ceu_3333", "ced_3333", "cld_3333", "clu_3333", "cqe_3333", "cqu1_3333", "cqu8_3333", "cqd1_3333", "cqd8_3333", "cud1_3333", "cud8_3333", "cquqd1_3333", "cquqd8_3333", "cledq_3333", "clequ1_3333", "clequ3_3333"] 
+ 
+    f_path = Path("./benchmark-points/59_native.yaml")
+    f_path.parent.mkdir(parents=True, exist_ok=True)
 
-    f_name = "./benchmark-points/59_native.yaml" 
     t_i = perf_counter()
     keys = [[],wc_names_matchete]
-    write_to_yaml(f_name,model,param_dict,keys,"seq") 
+    write_to_yaml(f_path,model,param_dict,keys,"seq") 
     t_f = perf_counter()
     print(f"File written in native format in {t_f - t_i:.2f}s.")
 
@@ -78,19 +86,23 @@ def wcxf_vs_yaml_SMEFTd6_59_par(model, param_dict) -> None:
     
     eft_info = {"eft": "SMEFT", "basis": "Warsaw"}
     
-    f_name = "./benchmark-points/59_wcxf_par.yaml"
+    f_path = Path("./benchmark-points/59_wcxf_par.yaml")
+    f_path.parent.mkdir(parents=True, exist_ok=True)
+
     t_i = perf_counter() 
-    write_to_wcxf(f_name,model,eft_info,wc_names_wcxf)
+    write_to_wcxf(f_path,model,eft_info,wc_names_wcxf)
     t_f = perf_counter()
     print(f"File written in WCxf format in {t_f - t_i:.2f}s.")
 
     # 59 Wilson coefficients in Matchete format
     wc_names_matchete = ["cG", "cW", "cHBox", "cH", "cHD", "cHG", "cHB", "cHW", "cHWB", "ceH_33", "cdH_33", "cuH_33", "ceB_33", "ceW_33", "cdB_33", "cdW_33", "cdG_33", "cuB_33", "cuW_33", "cuG_33", "cHe_33", "cHu_33", "cHd_33", "cHud_33","cHl1_33", "cHl3_33", "cHq1_33", "cHq3_33", "cll_3333", "cqq1_3333", "cqq3_3333", "clq1_3333", "clq3_3333", "cee_3333", "cuu_3333", "cdd_3333", "ceu_3333", "ced_3333", "cld_3333", "clu_3333", "cqe_3333", "cqu1_3333", "cqu8_3333", "cqd1_3333", "cqd8_3333", "cud1_3333", "cud8_3333", "cquqd1_3333", "cquqd8_3333", "cledq_3333", "clequ1_3333", "clequ3_3333"] 
 
-    f_name = "./benchmark-points/59_native_par.yaml" 
+    f_path = Path("./benchmark-points/59_native_par.yaml")
+    f_path.parent.mkdir(parents=True, exist_ok=True)
+
     t_i = perf_counter()
     keys = [[],wc_names_matchete]
-    write_to_yaml(f_name,model,param_dict,keys,"par") 
+    write_to_yaml(f_path,model,param_dict,keys,"par") 
     t_f = perf_counter()
     print(f"File written in native format in {t_f - t_i:.2f}s.")
 
@@ -102,15 +114,18 @@ def wcxf_seq_vs_par_all(eft_info, model) -> None:
         (ii) parallel execution 
     """
     
-    f_name = "./benchmark-points/all_wcxf.yaml"
+    f_path = Path("./benchmark-points/all_wcxf.yaml")
+    f_path.parent.mkdir(parents=True, exist_ok=True)
     t_i = perf_counter() 
-    write_to_wcxf(f_name,model,eft_info,opt="seq") 
+    write_to_wcxf(f_path,model,eft_info,opt="seq") 
     t_f = perf_counter()
     print(f"File written in WCxf format (using sequential process) in {t_f - t_i:.2f}s.")
 
-    f_name = "./benchmark-points/all_wcxf_par.yaml"
+    f_path = Path("./benchmark-points/all_wcxf_par.yaml")
+    f_path.parent.mkdir(parents=True, exist_ok=True)
+
     t_i = perf_counter() 
-    write_to_wcxf(f_name,model,eft_info) 
+    write_to_wcxf(f_path,model,eft_info) 
     t_f = perf_counter()
     print(f"File written in WCxf format (using parallel process) in {t_f - t_i:.2f}s.")
 
@@ -133,16 +148,20 @@ def yaml_seq_vs_par_all(eft_info, model, param_dict) -> None:
         else:
             wc_names.append(new_name + "_" + name[1])   
 
-    f_name = "./benchmark-points/all_native.yaml" 
+    f_path = Path("./benchmark-points/all_native.yaml")
+    f_path.parent.mkdir(parents=True, exist_ok=True)
+
     t_i = perf_counter()
     keys = [[],wc_names]
-    write_to_yaml(f_name,model,param_dict,keys,"seq") 
+    write_to_yaml(f_path,model,param_dict,keys,"seq") 
     t_f = perf_counter()
     print(f"File written in native format (using sequential process) in {t_f - t_i:.2f}s.")
 
-    f_name = "./benchmark-points/all_native_par.yaml" 
+    f_path = Path("./benchmark-points/all_native_par.yaml")
+    f_path.parent.mkdir(parents=True, exist_ok=True)
+ 
     t_i = perf_counter()
     keys = [[],wc_names]
-    write_to_yaml(f_name,model,param_dict,keys,"par") 
+    write_to_yaml(f_path,model,param_dict,keys,"par") 
     t_f = perf_counter()
     print(f"File written in native format (using parallel C++ process) in {t_f - t_i:.2f}s.")
