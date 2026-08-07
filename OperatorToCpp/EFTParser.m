@@ -97,8 +97,9 @@ ReadEFTInfo[modelPath_,EFTPath_]:=Module[{WCs,WCdict},
 
 
 (* ::Input::Initialization:: *)
-ExportWCInfo[EFT_,Basis_,WCInfo_]:=Module[{path},
-path=FileNameJoin[{NotebookDirectory[],"py","EFT_db",EFT,Basis,"WCInfo.json"}];
+ExportWCInfo[EFT_,Basis_,WCInfo_]:=Module[{filename,path},
+filename=EFT<>"-"<>Basis<>".json";
+path=FileNameJoin[{NotebookDirectory[],"py","wcInfo",filename}];
 Export[path,WCInfo,"JSON","Compact"->2];
 ];
 

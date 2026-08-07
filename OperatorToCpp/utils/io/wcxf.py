@@ -113,7 +113,7 @@ def write_to_wcxf_seq(filename: str, model, eft_info: dict[str, str], wc_names: 
     eft_basis = wcxf.Basis[eft_info["eft"], eft_info["basis"]]
     wcs_wcxf = eft_basis.all_wcs
 
-    wc_info_path = "EFT_db" + "/" + eft_info["eft"] + "/" + eft_info["basis"] + "/WCInfo.json"
+    wc_info_path = "wcInfo" + "/" + eft_info["eft"] + "-" + eft_info["basis"] + ".json"
     with open(wc_info_path, "r") as f:
         wc_info = json5.load(f)
 
@@ -147,7 +147,7 @@ def write_to_wcxf_par(filename: str, model, eft_info: dict[str, str], wc_names: 
     eft_basis = wcxf.Basis[eft_info["eft"], eft_info["basis"]]
     wcs_wcxf = eft_basis.all_wcs
 
-    wc_info_path = "EFT_db" + "/" + eft_info["eft"] + "/" + eft_info["basis"] + "/WCInfo.json"
+    wc_info_path = "wcInfo" + "/" + eft_info["eft"] + "-" + eft_info["basis"] + ".json"
     with open(wc_info_path, "r") as f:
         wc_info = json5.load(f)
 

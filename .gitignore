@@ -44,7 +44,7 @@ Examples/**/include
 Examples/**/lib
 Examples/**/src/pyBindings.cpp
 Examples/**/py/utils
-Examples/**/py/EFT_db
+Examples/**/py/wcInfo
 Examples/**/py/plots
 Examples/**/meson.build
 Examples/**/compileCpp.sh
