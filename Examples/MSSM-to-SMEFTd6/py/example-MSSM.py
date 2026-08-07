@@ -2,16 +2,17 @@ from match_to_py import MSSM
 from utils.io import write_to_wcxf
 
 # define a parameter dictionary
+
 param_dict = {
     "g1": 0.37, "g3": 1.1, "cgamma": 0.01, "Yu11": 0.00001, "Yu22": 0.007, "Yu33": 0.9,
-    "met1": 1e6, "met2": 1e6, "met3": 1e6, "mlt1": 1e6, "mlt2": 1e6, "mlt3": 1e6,
-    "mqt1": 1e6, "mqt2": 1e6, "mqt3": 1e6, "mut1": 1e6, "mut2": 1e6, "mut3": 2.0,
-    "mdt1": 1e6, "mdt2": 1e6, "mdt3": 1e6, "m1": 1.2, "m2": 1e6, "m3": 1e6,
-    "mPhi": 1e6, "muTilde": 1e6
+    "met1": 1e9, "met2": 1e9, "met3": 1e9, "mlt1": 1e9, "mlt2": 1e9, "mlt3": 1e9,
+    "mqt1": 1e9, "mqt2": 1e9, "mqt3": 1e9, "mut1": 1e9, "mut2": 1e9, "mut3": 2e3,
+    "mdt1": 1e9, "mdt2": 1e9, "mdt3": 1e9, "m1": 1.2e3, "m2": 1e9, "m3": 1e9,
+    "mPhi": 1e9, "muTilde": 1e9
 }
 
 # create an instance of the MSSM class
-model1 = MSSM(param_dict, 1.0, True)
+model1 = MSSM(param_dict, 1e3, True)
 
 # evaluate Wilson coefficients as method calls
 print(model1.cG())
