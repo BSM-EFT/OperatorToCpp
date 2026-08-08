@@ -1,5 +1,8 @@
 from match_to_py import MSSM
 from utils.io import write_to_wcxf
+from utils.core import eval_wc
+from matplotlib import pyplot as plt
+import numpy as np
 
 # define a parameter dictionary
 
@@ -24,3 +27,39 @@ wcs = ["uu_1331", "G", "phiG", "phiD", "uG_33"]
 eft_info = { "eft": "SMEFT", "basis": "Warsaw" }
 write_to_wcxf("example_wcxf.yaml",model1,eft_info,wcs,opt="seq")
 write_to_wcxf("example_wcxf_all.yaml",model1,eft_info)
+
+# obtain arrays of Wilson coefficients for varying m1, keeping other parameters fixe
+
+m1_range = np.linspace(1200,2700,16)
+cqq1_vals, cuG_vals, cHq1_vals = [], [], []
+for m in m1_range:
+    d = {"m1": m}
+    model1.updateParams(d)
+    cqq1_vals.append(eval_wc(model1, "cqq1_3333"))
+    cuG_vals.append(eval_wc(model1, "cuG_33"))
+    cHq1_vals.append(eval_wc(model1, "cHq1_33"))
+
+# Set plot attributes
+plt.rcParams['axes.labelpad'] = 12
+plt.rcParams['xtick.labelsize'] = 20
+plt.rcParams['ytick.labelsize'] = 20
+plt.rcParams['axes.labelsize'] = 20
+plt.rcParams['legend.fontsize'] = 16
+plt.rcParams["text.usetex"] = True
+plt.rcParams.update({"savefig.dpi" : 300})
+plt.rcParams['text.latex.preamble'] = r'\usepackage{amssymb}'
+
+# Create the plot 
+
+plt.figure(figsize=(8,8))
+plt.plot(m1_range/1e3, np.abs(cqq1_vals)*1e12, color="red", label=r"$|C_{qq}^{(1),3333}|$")
+plt.plot(m1_range/1e3, np.abs(cuG_vals)*1e12, color="blue", label=r"$|C_{uG}^{33}|$")
+plt.plot(m1_range/1e3, np.abs(cHq1_vals)*1e12, color="green", label=r"$|C_{Hq}^{(1),33}|$")
+plt.xticks([1.2,1.5,1.8,2.1,2.4,2.7])
+plt.yticks([1,2,3,4,5,6])
+plt.xlim(1.2,2.7)
+plt.ylim(1,6)
+plt.xlabel(r"$m_1\,\,[{\rm TeV}]$")
+plt.ylabel(r"$10^{-12}\,\,[{\rm GeV}^{-2}]$")
+plt.legend()
+plt.savefig("lineplot.pdf")
