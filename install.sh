@@ -43,50 +43,8 @@ fi
 cp "OperatorToCpp/meson.build" "$TARGET_DIR/meson.build"
 cp "OperatorToCpp/compileCpp.sh" "$TARGET_DIR/compileCpp.sh"
 
-# 2. COMPILER & OPENMP CHECK
 
-# Determine compiler choice early
-if command -v clang++ >/dev/null 2>&1; then
-    DEFAULT_CXX="clang++"
-    export CXX=clang++
-    export CC=clang
-elif command -v g++ >/dev/null 2>&1; then
-    DEFAULT_CXX="g++"
-else
-    echo "Error: Neither clang++ nor g++ was found on your system."
-    exit 1
-fi
-
-if [ "$DEFAULT_CXX" == "g++" ]; then
-    echo "GCC ('g++') detected as the default compiler. (Note: We recommend using Clang for faster compilation times)."
-else
-    echo "Clang ('clang++') detected as the default compiler."
-    # Verify libomp presence for Clang
-    LIBOMP_FOUND=0
-    if [ "$(uname)" == "Darwin" ]; then
-        if [ -d "/opt/homebrew/opt/libomp" ] || [ -d "/usr/local/opt/libomp" ]; then
-            LIBOMP_FOUND=1
-        fi
-    else
-        # Linux check via fallback compilation test or dpkg/pacman if needed, 
-        # but standard Clang environments typically drop it in default search paths.
-        if echo "#include <omp.h>" | clang++ -E -x c++ - >/dev/null 2>&1; then
-            LIBOMP_FOUND=1
-        fi
-    fi
-
-    if [ $LIBOMP_FOUND -eq 0 ]; then
-        echo "====================================================================="
-        echo "   Missing Dependency: 'libomp' is needed for parallel execution of code."
-        echo "   It can be installed using Linux package managers (or 'brew' on macOS):"
-        echo ""     
-        echo "     brew install libomp"
-        echo "====================================================================="
-        exit 1
-    fi
-fi
-
-# 3. PYBIND11 WARNING (NON-FATAL)
+# 2. DEPENDENCY CHECK (PYBIND11)
 
 # Check if python can see pybind11 globally/locally
 HAS_PYBIND11=0
@@ -97,12 +55,10 @@ fi
 if [ $HAS_PYBIND11 -eq 0 ]; then
     echo "====================================================================="
     echo "   Missing dependency: 'pybind11' is required to create the Python front-end."
-    echo "   The build system can automatically download it via WrapDB during setup,"
-    echo "   otherwise it can also be installed within your Python environment via:"
+    echo "   It can also be installed system-wide using a package manager or within" 
+    echo "   your Python environment via:"
     echo ""     
     echo "     pip install pybind11"
     echo "====================================================================="
-    echo "Proceeding with automatic build system handling..."
-    mkdir -p "$TARGET_DIR/subprojects"
-    cp "OperatorToCpp/subprojects/." "$TARGET_DIR/subprojects/"
+    exit 1
 fi

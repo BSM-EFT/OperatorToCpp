@@ -19,8 +19,6 @@ if [ ! -d "$BUILD_DIR" ]; then
     meson setup "$BUILD_DIR" --prefix=$(pwd)
 fi
 
-echo "--- Raising system limits ---"
-ulimit -s 65536 || echo "Could not increase stack limit"
 
 echo "--- Compiling ---"
 if [ -f /.dockerenv ]; then

@@ -23,14 +23,10 @@ else
     omp_deps = [omp_dep]
 endif
 
-# --- 2. Pybind11: The Auto-Fallback ---
+# --- 2. Pybind11 ---
 # Check system first; if missing, trigger the .wrap download
 pybind11_dep = dependency('pybind11', required : false)
 
-if not pybind11_dep.found()
-  message('--- pybind11 not found on system. Downloading via WrapDB... ---')
-  pybind11_dep = dependency('pybind11', fallback : ['pybind11', 'pybind11_dep'])
-endif
 
 # --- 3. Python & Environment ---
 py = import('python').find_installation()
