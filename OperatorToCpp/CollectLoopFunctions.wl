@@ -273,8 +273,6 @@ CreateLFHelperSourceFile[]:=Module[{path,fullPath,line,str},
 	line = OpenWrite[fullPath];
 	WriteLine[line, "#include \"LF_helper.h\""];
 	WriteLine[line, "#include \"complex_math.h\""];
-	WriteLine[line, "#include <vector>"];
-	WriteLine[line, "#include <complex>"];
 	WriteLine[line, "#include <algorithm>"];
 	WriteLine[line, "#include <cmath>"];
 	WriteLine[line, ""];

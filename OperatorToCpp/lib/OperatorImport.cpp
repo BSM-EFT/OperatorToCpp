@@ -1,13 +1,15 @@
 /**
  * @file OperatorImport.cpp
  * @author Suraj Prakash
- * @date 2026-04-23
+ * @date 2026-08-08
  * @brief Auxiliary classes and functions to aid in the evaluation of expressions within the Wilson coefficient functions
  */
 
-#include "pch.h"
-#include "OperatorImport.h"
 #include "LF.h"
+#include "OperatorImport.h"
+#include <algorithm>
+#include <cassert>
+#include <stdexcept>
 
 #if defined(_OPENMP)
     #include <omp.h>
@@ -17,6 +19,7 @@ using std::vector;
 using std::transform;
 using std::variant;
 using std::invalid_argument;
+using std::max_element;
 using std::string;
 using std::complex;
 

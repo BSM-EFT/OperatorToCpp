@@ -35,7 +35,6 @@ endif
 # --- 3. Python & Environment ---
 py = import('python').find_installation()
 inc = include_directories('include')
-pch = 'include/pch.h'
 
 # --- 4. Building the Targets ---
 
@@ -48,8 +47,7 @@ lib_sources = run_command.stdout().strip().split('\n')
 cpp_backend = static_library('cpp_backend',
   lib_sources,
   include_directories : inc,
-  dependencies : omp_deps,
-  cpp_pch : pch
+  dependencies : omp_deps
 )
 
 # The Main C++ Executable
@@ -58,19 +56,16 @@ executable('main.out',
   link_with : cpp_backend,
   include_directories : inc,
   dependencies : omp_deps,
-  cpp_pch : pch,
   install : true,
   install_dir: '.'
 )
 
 # The Python Module (.so)
-# Meson handles the complex naming (e.g. .cpython-312-darwin.so)
 py.extension_module('match_to_py',
   'src/pyBindings.cpp',
   include_directories : inc,
   link_with : cpp_backend,
   dependencies : [pybind11_dep] + omp_deps,
-  cpp_pch : pch,
   install : true,
   install_dir: 'py'
 )

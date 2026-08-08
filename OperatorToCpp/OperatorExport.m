@@ -523,7 +523,6 @@ HeaderFileBuilder[modelName_,paramList_,ComplexPars_,WCInfo_]:=Module[{path,full
 
 
 BuildPreprocessorDirectives[modelName_,line_] := Module[{},
-	WriteLine[line, "#include \"pch.h\""];
 	WriteLine[line, "#include \""<>modelName<>".h\""];
 	WriteLine[line, "#include <omp.h>"];
 ];
