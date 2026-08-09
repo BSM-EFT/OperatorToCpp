@@ -14,5 +14,5 @@ This is the dedicated working directory for the example case of MSSM-to-SMEFT ma
 
 5. [py/benchmark-MSSM.py](./py/benchmark-MSSM.py) - a script containing a variety of tasks to record and compare the execution speeds of various functions, e.g. (i) the native yaml writer vs the wcxf writer (ii) execution times of individual Wilson coefficient methods (iii) parallel vs sequential execution of large numbers of coefficients.   
 
-6. [py/plots-MSSM.ipynb](./py/plots-MSSM.ipynb) - a jupyter notebook that reproduces the 2d and bar plots in Figures 2 and 3 of the publication [JHEP 04 (2026) 028](https://link.springer.com/article/10.1007/JHEP04(2026)028).
+6. [py/plots-MSSM.ipynb](./py/plots-MSSM.ipynb) - a jupyter notebook that reproduces the 2d and bar plots in Figures 2 and 3 of the publication [JHEP 04 (2026) 028](https://link.springer.com/article/10.1007/JHEP04(2026)028). The plotting code used in this notebook is custom made for the specific example and not intended for general use.
 
