@@ -1,8 +1,5 @@
 from match_to_py import SingletScalarExtension
 from utils.io import write_to_wcxf
-from utils.core import eval_wc
-from matplotlib import pyplot as plt
-import numpy as np
 
 # define a parameter dictionary
 
