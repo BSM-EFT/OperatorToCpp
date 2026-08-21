@@ -232,7 +232,7 @@ ReplMassVecinTF[expr_]:=Module[{rest,rel},
 	rel=Select[List@@expr,Head[#]===TF&]/.{Mass[x_,_]:>x};
 	If[Length[rel]==0,
 		Return[rest],
-		Return[rest*First[rel]]
+		Return[rest*Times@@rel]
 	]
 ];
 
@@ -323,6 +323,7 @@ EinsSumCall[expr_]:=Module[{nonWrapped,lstTF,lstTM},
 
 CreateString[expr_]:=Module[{nonTensor,Tensor,str},
 	If[Head[expr]===Symbol,Return[ToString[expr]]];
+	If[Head[expr]===EinsSum,Return[StringReplace[ToString[expr],{"["->"(","]"->")"}]]];
 	nonTensor=ToString[CForm[DeleteCases[expr,_?(Head[#]===EinsSum&)]]];
 	Tensor=Select[List@@expr,Head[#]===EinsSum&];
 	If[Length[Tensor]==0,
