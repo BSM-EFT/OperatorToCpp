@@ -13,3 +13,5 @@ This is the dedicated working directory for the simple case of the matching betw
 3. [py/example-SeesawTypeI.py](./py/example-SeesawTypeI.py) - a simple Python script that demonstrates the basic functionality of the SeesawTypeI model class and Wilson coefficients.
 
 5. [py/benchmark-SeesawTypeI.py](./py/benchmark-SeesawTypeI.py) - a script containing a variety of tasks to record and compare the execution speeds of various functions, e.g. (i) the native yaml writer vs the wcxf writer (ii) execution times of individual Wilson coefficient methods (iii) parallel vs sequential execution of large numbers of coefficients.  
+
+We also provide a Mathematica notebook [SeesawTypeI-matching.nb](./input/SeesawTypeI-matching.nb), with the Matchete code to obtain the matching relations, in the input subfolder.
