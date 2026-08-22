@@ -137,13 +137,13 @@ CreateIfElseBlock[ExpComb_,massArgList_]:=Module[{pairs,repRules,rules,strList},
 	(* Create the first if branch *)
 	AppendTo[
 		strList,
-		StringReplace[StringJoin["if (rel_diff(",ToString[pairs[[1]][[1]]],",",ToString[pairs[[1]][[2]]],") <= 5e-3) { return ", ConvertFunctionCallToString[ExpComb,rules[[1]]],"; }"  ],GenerateMassRepRules[Length[ExpComb]]]
+		StringReplace[StringJoin["if (rel_diff(",ToString[pairs[[1]][[1]]],",",ToString[pairs[[1]][[2]]],") <= TOL) { return ", ConvertFunctionCallToString[ExpComb,rules[[1]]],"; }"  ],GenerateMassRepRules[Length[ExpComb]]]
 	];
 
 	(* Create the else-if branches *)
 	If[
 		Length[pairs]>1,
-		Do[AppendTo[strList,StringReplace[StringJoin["else if (rel_diff(",ToString[pairs[[i]][[1]]],",",ToString[pairs[[i]][[2]]],") <= 5e-3) { return ", ConvertFunctionCallToString[ExpComb,rules[[i]]],"; }"  ],GenerateMassRepRules[Length[ExpComb]]]],{i,2,Length[pairs]}]
+		Do[AppendTo[strList,StringReplace[StringJoin["else if (rel_diff(",ToString[pairs[[i]][[1]]],",",ToString[pairs[[i]][[2]]],") <= TOL) { return ", ConvertFunctionCallToString[ExpComb,rules[[i]]],"; }"  ],GenerateMassRepRules[Length[ExpComb]]]],{i,2,Length[pairs]}]
 	];
 
 	(* Create the non-degenerate else branch *)
@@ -227,6 +227,7 @@ CreateLFHelperHeaderFile[]:=Module[{path,fullPath,line,str},
 
 declL1 = "#include \"LF.h\"";
 declL2 = "#include \"LF_helper.h\"";
+declL3 = "#define TOL 0.02";
 doc = "// elaborate definitions of loop-functions in terms of masses";
 defL1 = "std::complex<double> LF(const std::vector<std::complex<double> >& m, int code, double mubarsq) {";
 defL2 = "    switch(code) {";
@@ -241,6 +242,7 @@ CreateLFSourceFile[]:=Module[{path,fullPath,line,ifElseBranches},
 	line = OpenWrite[fullPath];
 	WriteLine[line, declL1];
 	WriteLine[line, declL2];
+	WriteLine[line, declL3];
 	WriteLine[line, ""];
 	WriteLine[line, doc];
 	WriteLine[line, defL1];
