@@ -1,8 +1,8 @@
 /**
  * @file main.cpp
  * @author Suraj Prakash
- * @date 2026-08-19
- * @brief Example C++ program that creates an instance of the SingletScalarExtension class and evaluates Wilson coefficients
+ * @date 2026-08-22
+ * @brief Example C++ program that creates an instance of the SeesawTypeI class and evaluates Wilson coefficients
  */
 
 #include "SeesawTypeI.h"
