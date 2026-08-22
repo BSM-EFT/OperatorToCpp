@@ -12,14 +12,14 @@ param_dict = {
     "Yu11": 7e-6, "Yu22": 3.3e-3, "Yu33": 0.86,
     "Yd11": 1.5e-5, "Yd22": 3e-4, "Yd33": 0.015,
     "Ye11": 2.9e-6, "Ye22": 6e-4, "Ye33": 0.01,
-    "M": 1.5, "kappa": 0.2, "A": 0.1, "mu": 0.65, "lmbdPhi": 0.3
+    "M": 1.5e3, "kappa": 0.2, "A": 0.1, "mu": 0.65, "lmbdPhi": 0.3
 }
 
 ###########################
 #   Model Initialization
 ###########################
 
-model1 = SingletScalarExtension(param_dict, 1.0, True)
+model1 = SingletScalarExtension(param_dict, 1e3, True)
 eft_info = {"eft": "SMEFT", "basis": "Warsaw"}
 
 

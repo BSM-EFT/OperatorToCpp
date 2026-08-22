@@ -1,7 +1,7 @@
 /**
  * @file main.cpp
  * @author Suraj Prakash
- * @date 2026-08-09
+ * @date 2026-08-22
  * @brief Example C++ program that creates an instance of the SingletScalarExtension class and evaluates Wilson coefficients
  */
 
@@ -19,7 +19,7 @@ int main() {
     param_dict.emplace("gL", 0.63);
     param_dict.emplace("lmbd", 0.085);
 
-    param_dict.emplace("M", 1.5);
+    param_dict.emplace("M", 1.5e3);
     param_dict.emplace("kappa", 0.2);
     param_dict.emplace("A", 0.1);
     param_dict.emplace("mu", 0.65);
@@ -38,7 +38,9 @@ int main() {
     param_dict.emplace("Ye22", 6e-4);
     param_dict.emplace("Ye33", 0.01);
 
-    SingletScalarExtension model1(param_dict, 1.0, true); 
+    // initialize an instance of the SingletScalarExtension model with the parameter dictionary,
+    // renormalization scale set to 1000 GeV and loop contrbutions turned on
+    SingletScalarExtension model1(param_dict, 1e3, true); 
 
     // compute and print Wilson coefficients values
     std::cout << "cH: {Real = " << model1.cH().real()

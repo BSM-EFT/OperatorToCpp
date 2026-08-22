@@ -14,7 +14,8 @@ param_dict = {
     "mPhi": 1e9, "muTilde": 1e9
 }
 
-# create an instance of the MSSM class
+# initialize an instance of the MSSM model with the parameter dictionary,
+# renormalization scale set to 1000 GeV and loop contrbutions turned on
 model1 = MSSM(param_dict, 1e3, True)
 
 # evaluate Wilson coefficients as method calls

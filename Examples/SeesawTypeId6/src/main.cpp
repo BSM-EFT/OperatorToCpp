@@ -42,6 +42,8 @@ int main() {
     param_dict.emplace("MNR2", 2e8);
     param_dict.emplace("MNR3", 3e8);
 
+    // initialize an instance of the SeesawTypeI model with the parameter dictionary,
+    // renormalization scale set to 1000 GeV and loop contrbutions turned on
     SeesawTypeI model1(param_dict, 1e3, true); 
 
     // compute and print Wilson coefficients values

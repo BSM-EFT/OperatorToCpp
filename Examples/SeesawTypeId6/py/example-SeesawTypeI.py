@@ -12,7 +12,8 @@ param_dict = {
     "MNR1": 1e8, "MNR2": 2e8, "MNR3": 3e8
 }
 
-# create an instance of the SeesawTypeI class
+# initialize an instance of the SeesawTypeI model with the parameter dictionary,
+# renormalization scale set to 1000 GeV and loop contrbutions turned on
 model1 = SeesawTypeI(param_dict, 1e3, True)
 
 # evaluate Wilson coefficients as method calls

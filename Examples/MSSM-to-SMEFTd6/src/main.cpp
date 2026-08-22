@@ -1,7 +1,7 @@
 /**
  * @file main.cpp
  * @author Suraj Prakash
- * @date 2026-07-23
+ * @date 2026-08-22
  * @brief Example C++ program that creates an instance of the MSSM class and evaluates Wilson coefficients
  */
 
@@ -19,9 +19,9 @@ int main() {
     param_dict.emplace("g3", 1.1);
     param_dict.emplace("cgamma",0.01);
 
-    // Bino mass and (right-handed) stop mass (in units of TeV)
-    param_dict.emplace("m1", 1.200);
-    param_dict.emplace("mut3", 2.000);
+    // Bino mass and (right-handed) stop mass (in units of GeV)
+    param_dict.emplace("m1", 1200);
+    param_dict.emplace("mut3", 2000);
 
     // Yukawa couplings
     param_dict.emplace("Yu11", 0.00001);
@@ -38,15 +38,13 @@ int main() {
         "mut1", "mut2"
     };
 
-    double i = 0.0;
     for(std::string mass: heavy_masses) {
-        param_dict.emplace(mass, 1'000'000.0 + i);
-        i += 1000;
+        param_dict.emplace(mass, 1e9);
     }
 
     // initialize an instance of the MSSM model with the parameter dictionary,
-    // renormalization scale set to 1 TeV and loop contrbutions turned on
-    MSSM sb_model(param_dict, 1.0, true); 
+    // renormalization scale set to 1000 GeV and loop contrbutions turned on
+    MSSM sb_model(param_dict, 1e3, true); 
 
     // compute and print Wilson coefficients values
     std::cout << "cH: {Real = " << sb_model.cH().real()
