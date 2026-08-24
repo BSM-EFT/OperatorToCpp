@@ -15,7 +15,7 @@ This directory contains the core of OperatorToC++, which is comprised of the fol
 To aid in compilation, we provide a template [meson.build](./meson.build) file. It specifies two build targets as 
 ```    
 executable(`main.out', `src/main.cpp', ...)
-py.extension\_module(`match\_to\_py', `src/pyBindings.cpp', ...)
+py.extension_module(`match_to_py', `src/pyBindings.cpp', ...)
 ```
 The specification of the C++ executable should be modified suitably if the source file is **not** named `main.cpp` or if there is more than one source file. In case there is no C++ executable to be built, then the corresponding command should be removed from [meson.build](./meson.build). 
 
