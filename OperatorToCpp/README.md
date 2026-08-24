@@ -11,3 +11,16 @@ This directory contains the core of OperatorToC++, which is comprised of the fol
 5. [complex_math.cpp](./lib/complex_math.cpp) - defines overloaded operators to enable arithmetic involving double and complex valued quantities within the method bodies. The corresponding .h file is stored in the [include](./include/) directory. 
 
 6. [utils](./utils/) - a Python module designed to provide file input-output facilities and to interface with popular formats such as csv, yaml, wcxf etc.
+
+To aid in compilation, we provide a template [meson.build](./meson.build) file. It specifies two build targets as 
+```    
+executable(`main.out', `src/main.cpp', ...)
+py.extension\_module(`match\_to\_py', `src/pyBindings.cpp', ...)
+```
+The specification of the C++ executable should be modified suitably if the source file is **not** named `main.cpp` or if there is more than one source file. In case there is no C++ executable to be built, then the corresponding command should be removed from [meson.build](./meson.build). 
+
+The commands for building and installing the targets are collected in the shell script [compileCpp.sh](./compileCpp.sh). Therefore, simply executing the command, 
+```
+./compileCpp.sh
+```
+in a terminal from the working directory (e.g. [Examples/MSSM-to-SMEFTd6](../Examples/MSSM-to-SMEFTd6) ) compiles all source files, links them and the dependencies (`libomp`, `pybind11`) and places the build artifacts in the install directories specified in [meson.build](./meson.build).
