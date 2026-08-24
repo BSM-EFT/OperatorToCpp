@@ -16,3 +16,4 @@ This is the dedicated working directory for the example case of MSSM-to-SMEFT ma
 
 6. [py/plots-MSSM.ipynb](./py/plots-MSSM.ipynb) - a jupyter notebook that reproduces the 2d and bar plots in Figures 2 and 3 of the publication [JHEP 04 (2026) 028](https://link.springer.com/article/10.1007/JHEP04(2026)028). The plotting code used in this notebook is custom made for the specific example and not intended for general use.
 
+The Mathematica notebooks outlining the detailed matching procedure between the MSSM and the SMEFT, using [Matchete](https://gitlab.com/matchete/matchete/), are available in the [MSSM-to-SMEFT](https://github.com/BSM-EFT/MSSM-to-SMEFT) repository. 
