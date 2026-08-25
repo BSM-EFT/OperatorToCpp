@@ -57,9 +57,10 @@ def eval_wc(model, wc_name: str) -> float | complex:
     -------
         float | complex
             Result of evaluating the Wilson coefficient method. Generally complex 
-            but only the real part is returned if the imaginary part is 0 (<= 1e-18). 
+            but only the real part is returned if the imaginary part is 0 (<= 1e-20). 
 
     """
+    zero_cutoff = 1e-20
     wc_tuple = split_wc_name(wc_name)
     wc = getattr(model,wc_tuple[0])
 
@@ -68,13 +69,7 @@ def eval_wc(model, wc_name: str) -> float | complex:
         kw = {**kw,**wc_tuple[1]}
     
     res = call(wc,**kw)
-    if abs(res.real) < 1e-18:
-        ret = 0.0
-    elif abs(res.imag) < 1e-18:
-        ret = res.real
-    else:
-        ret = res
-    return ret
+    return res
 
 
 def create_wc_dict(model, wc_names: list[str]) -> dict[str, float | complex]:

@@ -126,7 +126,9 @@ def write_to_wcxf_seq(filename: str, model, eft_info: dict[str, str], wc_names: 
     values = [unique_ops[wc_names[i]] * values_1_wc[i] for i in range(len(wc_names))]
     values_dict = dict(zip(wc_names, values))
     
-    output_dict["values"] = values_dict
+    zero_cutoff = 1e-20
+    new_dict = {k: v for k, v in values_dict.items() if abs(v) > zero_cutoff}    
+    output_dict["values"] = new_dict
 
     yaml.add_representer(complex, complex_representer)
     with open(filename,'w') as out_file:
@@ -164,7 +166,9 @@ def write_to_wcxf_par(filename: str, model, eft_info: dict[str, str], wc_names: 
     values = [unique_ops[keys_wc[i]] * values_1_wc[i] for i in range(len(wc_names))]
     values_dict = dict(zip(keys_wc, values))
     
-    output_dict["values"] = values_dict
+    zero_cutoff = 1e-20
+    new_dict = {k: v for k, v in values_dict.items() if abs(v) > zero_cutoff}    
+    output_dict["values"] = new_dict
 
     yaml.add_representer(complex, complex_representer)
     with open(filename,'w') as out_file:

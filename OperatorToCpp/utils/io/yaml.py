@@ -83,10 +83,13 @@ def write_to_yaml_seq(filename:str, model, param_dict: dict[str, float | complex
         output_dict[k] = param_dict[k]
 
     output_dict.update(create_wc_dict(model,wc_names))
+
+    zero_cutoff = 1e-20
+    new_dict = {k: v for k, v in output_dict.items() if abs(v) > zero_cutoff}    
     
     yaml.add_representer(complex, complex_representer)
     with open(filename, 'w') as out_file:
-        yaml.dump(output_dict,out_file,sort_keys=False)
+        yaml.dump(new_dict,out_file,sort_keys=False)
 
 
 def write_to_yaml_omp(filename:str, model, param_dict: dict[str, float | complex], keys: list[list[str], list[str]]) -> None:
@@ -105,10 +108,13 @@ def write_to_yaml_omp(filename:str, model, param_dict: dict[str, float | complex
 
     tasks = create_tasks(model, wc_names)
     output_dict.update(model.batch_eval(tasks))
+
+    zero_cutoff = 1e-20
+    new_dict = {k: v for k, v in output_dict.items() if abs(v) > zero_cutoff}    
     
     yaml.add_representer(complex, complex_representer)
     with open(filename, 'w') as out_file:
-        yaml.dump(output_dict,out_file,sort_keys=False)
+        yaml.dump(new_dict,out_file,sort_keys=False)
 
 
 def float_representer(dumper, value: float):
@@ -121,20 +127,10 @@ def float_representer(dumper, value: float):
 def complex_representer(dumper, value: complex):
     """Format specifier for complex output when written to a .yaml file"""
     
-    # Case 1: Real part is effectively zero -> output 0.0 as a scalar
-    if abs(value.real) < 1e-18:
-        return dumper.represent_scalar('tag:yaml.org,2002:float', '0.0')
-    
-    # Case 2: Imaginary part is effectively zero -> output only the real part as a scalar
-    elif abs(value.imag) < 1e-18:
-        return dumper.represent_scalar('tag:yaml.org,2002:float', str(value.real))
-    
-    # Case 3: Both parts are significant -> output the standard Re/Im mapping
-    else:
-        return dumper.represent_mapping(
-            'tag:yaml.org,2002:map',
-            {
-                'Re': value.real,
-                'Im': value.imag
-            }
-        )
+    return dumper.represent_mapping(
+        'tag:yaml.org,2002:map',
+        {                
+            'Re': value.real,
+            'Im': value.imag
+        }
+    )
