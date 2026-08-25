@@ -111,7 +111,7 @@ SimplifyOutput[output_,WCInfo_]:=Module[{dict,newDict},
 	dict = createMatchingDict[output,WCInfo];
 	dict = dict /. {Index[i1,Flavor]->i1,Index[i2,Flavor]->i2,Index[i3,Flavor]->i3,Index[i4,Flavor]->i4 };
 	dict = dict /. {Index[x_,__]:>ToExpression[StringJoin["r",StringPart[ToString[x],4;;-1]]]};
-	dict = dict /. Bar[Coupling[x_,{y___},z_]] :> Coupling[ToExpression[ToString[x]<>"c"],{y},z];
+	dict = dict /. Bar[Coupling[x_,{y___},z_]] :> Coupling[ToString[x]<>"_c",{y},z];
 	dict = dict /. {Coupling[x_,{},__]:>x} /.{Coupling[x_,{a_},__]:>Mass[x,a]}/.{Coupling[x_,{p_,q_},__]:>TwoDim[x,p,q]};
 	dict = dict /. {FlavorSum[x_]:>1};
 		
@@ -134,7 +134,7 @@ ReplaceCCVars[list_] := Module[{rules},
 	If[
 		Length[list]==0,
 		Return[rules],
-		Do[AppendTo[rules,ToExpression[ToString[list[[i]]]<>"c"]->list[[i]]],{i,1,Length[list]}];
+		Do[AppendTo[rules,ToString[list[[i]]]<>"_c"->list[[i]]],{i,1,Length[list]}];
 		Return[rules]
 	]
 ]
@@ -426,7 +426,7 @@ HeaderModelClass[className_,paramList_,ComplexPars_,WCInfo_,line_] := Module[{},
 			WriteLine[line, "        "<>"std::complex<double> "<>ToString[paramList[[1]][[i]]]<>" = 0.0;"];
 			If[
 				MemberQ[ComplexPars,paramList[[1]][[i]]],
-				WriteLine[line, "        "<>"std::complex<double> "<>ToString[paramList[[1]][[i]]]<>"c = 0.0;"];
+				WriteLine[line, "        "<>"std::complex<double> "<>ToString[paramList[[1]][[i]]]<>"_c = 0.0;"];
 			], {i,1,Length[paramList[[1]]]}
 		];
 	];
@@ -438,7 +438,7 @@ HeaderModelClass[className_,paramList_,ComplexPars_,WCInfo_,line_] := Module[{},
 			WriteLine[line, "        "<>"std::vector<std::complex<double> > "<>ToString[paramList[[2]][[i]]]<>" = {0.0, 0.0, 0.0};"];
 			If[
 				MemberQ[ComplexPars,paramList[[2]][[i]]],
-				WriteLine[line, "        "<>"std::vector<std::complex<double> > "<>ToString[paramList[[2]][[i]]]<>"c = {0.0, 0.0, 0.0};"];
+				WriteLine[line, "        "<>"std::vector<std::complex<double> > "<>ToString[paramList[[2]][[i]]]<>"_c = {0.0, 0.0, 0.0};"];
 			], {i,1,Length[paramList[[2]]]}
 		];
 	];
@@ -450,7 +450,7 @@ HeaderModelClass[className_,paramList_,ComplexPars_,WCInfo_,line_] := Module[{},
 			WriteLine[line, "        "<>"std::vector<std::vector<std::complex<double> > > "<>ToString[paramList[[3]][[i]]]<>" = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};"];
 			If[
 				MemberQ[ComplexPars,paramList[[3]][[i]]],
-				WriteLine[line, "        "<>"std::vector<std::vector<std::complex<double> > > "<>ToString[paramList[[3]][[i]]]<>"c = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};"];
+				WriteLine[line, "        "<>"std::vector<std::vector<std::complex<double> > > "<>ToString[paramList[[3]][[i]]]<>"_c = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};"];
 			],{i,1,Length[paramList[[3]]]}
 		];
 	];
@@ -545,7 +545,7 @@ BuildConstructor[className_, paramList_, ComplexPars_, line_]:=Module[{},
 			WriteLine[line, "        this->"<>ToString[paramList[[1]][[i]]]<>" = params[\""<>ToString[paramList[[1]][[i]]]<>"\"];"];
 			If[
 				MemberQ[ComplexPars,paramList[[1]][[i]]],
-				WriteLine[line, "        this->"<>ToString[paramList[[1]][[i]]]<>"c = std::conj(params[\""<>ToString[paramList[[1]][[i]]]<>"\"]);"];];
+				WriteLine[line, "        this->"<>ToString[paramList[[1]][[i]]]<>"_c = std::conj(params[\""<>ToString[paramList[[1]][[i]]]<>"\"]);"];];
 			WriteLine[line, "    }"], {i,1,Length[paramList[[1]]]}]	
 	];
 	
@@ -555,7 +555,7 @@ BuildConstructor[className_, paramList_, ComplexPars_, line_]:=Module[{},
 				WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>ToString[j]<>"\") != params.end()) {"];
 				WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"["<>ToString[j-1]<>"] = params[\""<>ToString[paramList[[2]][[i]]]<>ToString[j]<>"\"];"];
 				If[MemberQ[ComplexPars,paramList[[2]][[i]]],
-					WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"c["<>ToString[j-1]<>"] = std::conj(params[\""<>ToString[paramList[[2]][[i]]]<>ToString[j]<>"\"]);"];
+					WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"_c["<>ToString[j-1]<>"] = std::conj(params[\""<>ToString[paramList[[2]][[i]]]<>ToString[j]<>"\"]);"];
 				];
 				WriteLine[line, "    }"];,
 			{j,1,3}], 
@@ -568,7 +568,7 @@ BuildConstructor[className_, paramList_, ComplexPars_, line_]:=Module[{},
 				WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>ToString[j]<>ToString[k]<>"\") != params.end()) {"];
 				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"["<>ToString[j-1]<>"]["<>ToString[k-1]<>"] = params[\""<>ToString[paramList[[3]][[i]]]<>ToString[j]<>ToString[k]<>"\"];"];
 				If[MemberQ[ComplexPars,paramList[[3]][[i]]],
-					WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c["<>ToString[k-1]<>"]["<>ToString[j-1]<>"] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>ToString[j]<>ToString[k]<>"\"]);"];
+					WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"_c["<>ToString[k-1]<>"]["<>ToString[j-1]<>"] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>ToString[j]<>ToString[k]<>"\"]);"];
 				];
 				WriteLine[line, "    }"];,
 			{j,1,3},{k,1,3}],
@@ -588,7 +588,7 @@ BuildUpdater[className_, paramList_, ComplexPars_, line_]:=Module[{},
 			WriteLine[line, "        this->"<>ToString[paramList[[1]][[i]]]<>" = params[\""<>ToString[paramList[[1]][[i]]]<>"\"];"];
 			If[
 				MemberQ[ComplexPars,paramList[[1]][[i]]],
-				WriteLine[line, "        this->"<>ToString[paramList[[1]][[i]]]<>"c = std::conj(params[\""<>ToString[paramList[[1]][[i]]]<>"\"]);"];];
+				WriteLine[line, "        this->"<>ToString[paramList[[1]][[i]]]<>"_c = std::conj(params[\""<>ToString[paramList[[1]][[i]]]<>"\"]);"];];
 			WriteLine[line, "    }"], {i,1,Length[paramList[[1]]]}]	
 	];
 	
@@ -598,7 +598,7 @@ BuildUpdater[className_, paramList_, ComplexPars_, line_]:=Module[{},
 				WriteLine[line, "    if (params.find(\""<>ToString[paramList[[2]][[i]]]<>ToString[j]<>"\") != params.end()) {"];
 				WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"["<>ToString[j-1]<>"] = params[\""<>ToString[paramList[[2]][[i]]]<>ToString[j]<>"\"];"];
 				If[MemberQ[ComplexPars,paramList[[2]][[i]]],
-					WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"c["<>ToString[j-1]<>"] = std::conj(params[\""<>ToString[paramList[[2]][[i]]]<>ToString[j]<>"\"]);"];
+					WriteLine[line, "        this->"<>ToString[paramList[[2]][[i]]]<>"_c["<>ToString[j-1]<>"] = std::conj(params[\""<>ToString[paramList[[2]][[i]]]<>ToString[j]<>"\"]);"];
 				];
 				WriteLine[line, "    }"];,
 			{j,1,3}], 
@@ -611,7 +611,7 @@ BuildUpdater[className_, paramList_, ComplexPars_, line_]:=Module[{},
 				WriteLine[line, "    if (params.find(\""<>ToString[paramList[[3]][[i]]]<>ToString[j]<>ToString[k]<>"\") != params.end()) {"];
 				WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"["<>ToString[j-1]<>"]["<>ToString[k-1]<>"] = params[\""<>ToString[paramList[[3]][[i]]]<>ToString[j]<>ToString[k]<>"\"];"];
 				If[MemberQ[ComplexPars,paramList[[3]][[i]]],
-					WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"c["<>ToString[k-1]<>"]["<>ToString[j-1]<>"] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>ToString[j]<>ToString[k]<>"\"]);"];
+					WriteLine[line, "        this->"<>ToString[paramList[[3]][[i]]]<>"_c["<>ToString[k-1]<>"]["<>ToString[j-1]<>"] = std::conj(params[\""<>ToString[paramList[[3]][[i]]]<>ToString[j]<>ToString[k]<>"\"]);"];
 				];
 				WriteLine[line, "    }"];,
 			{j,1,3},{k,1,3}],
