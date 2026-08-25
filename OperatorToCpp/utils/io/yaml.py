@@ -127,10 +127,20 @@ def float_representer(dumper, value: float):
 def complex_representer(dumper, value: complex):
     """Format specifier for complex output when written to a .yaml file"""
     
-    return dumper.represent_mapping(
-        'tag:yaml.org,2002:map',
-        {                
-            'Re': value.real,
-            'Im': value.imag
-        }
-    )
+    # Case 1: Real part is effectively zero -> output 0.0 as a scalar
+    if abs(value.real) < 1e-20:
+        return dumper.represent_scalar('tag:yaml.org,2002:float', '0.0')
+    
+    # Case 2: Imaginary part is effectively zero -> output only the real part as a scalar
+    elif abs(value.imag) < 1e-20:
+        return dumper.represent_scalar('tag:yaml.org,2002:float', str(value.real))
+    
+    # Case 3: Both parts are significant -> output the standard Re/Im mapping
+    else:
+        return dumper.represent_mapping(
+            'tag:yaml.org,2002:map',
+            {
+                'Re': value.real,
+                'Im': value.imag
+            }
+        )

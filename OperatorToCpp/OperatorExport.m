@@ -419,7 +419,7 @@ HeaderModelClass[className_,paramList_,ComplexPars_,WCInfo_,line_] := Module[{},
 	
 	(* define and initialize the scale and loop-order *)
 	WriteLine[line, "        double hbar = 1/(16 * pow(pi,2));"];
-	WriteLine[line, "        double mubarsq = 1.0;"];
+	WriteLine[line, "        double mubarsq = 1000.0;"];
 	(* define and initialize 0-dimensional parameters *)
 	If[Length[paramList[[1]]]!=0,
 		Do[

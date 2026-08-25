@@ -42,7 +42,7 @@ def split_wc_name(full_name: str) -> tuple[str,dict[str, int]]:
         return (full_name,)
 
 
-def eval_wc(model, wc_name: str) -> float | complex:
+def eval_wc(model, wc_name: str) -> complex:
     """
     Evaluates the specified Wilson coeffcient method for a given model
     
@@ -55,12 +55,10 @@ def eval_wc(model, wc_name: str) -> float | complex:
 
     Returns
     -------
-        float | complex
-            Result of evaluating the Wilson coefficient method. Generally complex 
-            but only the real part is returned if the imaginary part is 0 (<= 1e-20). 
+        complex
+            Result of evaluating the Wilson coefficient method. 
 
     """
-    zero_cutoff = 1e-20
     wc_tuple = split_wc_name(wc_name)
     wc = getattr(model,wc_tuple[0])
 
