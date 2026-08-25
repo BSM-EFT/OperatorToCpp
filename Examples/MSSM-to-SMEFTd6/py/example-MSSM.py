@@ -45,7 +45,7 @@ plt.rcParams['axes.labelpad'] = 12
 plt.rcParams['xtick.labelsize'] = 20
 plt.rcParams['ytick.labelsize'] = 20
 plt.rcParams['axes.labelsize'] = 20
-plt.rcParams['legend.fontsize'] = 16
+plt.rcParams['legend.fontsize'] = 22
 plt.rcParams["text.usetex"] = True
 plt.rcParams.update({"savefig.dpi" : 300})
 plt.rcParams['text.latex.preamble'] = r'\usepackage{amssymb}'
