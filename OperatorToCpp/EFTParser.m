@@ -59,11 +59,12 @@ LoadCoeffs[modelPath_,EFTPath_]:=Module[{couplingsRen,couplingsAll,WilsonCoeffs}
 
 (* Combine all index permutations *)
 CollectPermutations[wc_]:=Module[{perms},
-	perms=If[
+	(*perms=If[
 		ListQ[wc[Matchete`SelfConjugate]],
 		Join[{wc[Matchete`SelfConjugate]},Keys[wc[Matchete`Symmetries]]],
 		Replace[Keys[wc[Matchete`Symmetries]],{ {{}}:>{} }]
-	];
+	];*)
+	perms=Replace[Keys[wc[Matchete`Symmetries]],{ {{}}:>{} }];
 	Return[perms]
 ]
 
