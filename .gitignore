@@ -35,6 +35,7 @@
 test*
 .clangd
 .vscode/
+.zed/
 **/__pycache__
 build/
 .cache/
