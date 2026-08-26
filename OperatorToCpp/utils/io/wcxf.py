@@ -132,7 +132,7 @@ def write_to_wcxf_seq(filename: str, model, eft_info: dict[str, str], wc_names: 
 
     yaml.add_representer(complex, complex_representer)
     with open(filename,'w') as out_file:
-        yaml.dump(output_dict, out_file, sort_keys=False)
+        yaml.dump(output_dict, out_file, sort_keys=True)
 
 
 def write_to_wcxf_par(filename: str, model, eft_info: dict[str, str], wc_names: list[str] | None = None) -> None:
@@ -172,7 +172,7 @@ def write_to_wcxf_par(filename: str, model, eft_info: dict[str, str], wc_names: 
 
     yaml.add_representer(complex, complex_representer)
     with open(filename,'w') as out_file:
-        yaml.dump(output_dict, out_file, sort_keys=False)
+        yaml.dump(output_dict, out_file, sort_keys=True)
 
 
 blv_ops = {

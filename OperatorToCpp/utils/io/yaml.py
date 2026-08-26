@@ -89,7 +89,7 @@ def write_to_yaml_seq(filename:str, model, param_dict: dict[str, float | complex
     
     yaml.add_representer(complex, complex_representer)
     with open(filename, 'w') as out_file:
-        yaml.dump(new_dict,out_file,sort_keys=False)
+        yaml.dump(new_dict,out_file,sort_keys=True)
 
 
 def write_to_yaml_omp(filename:str, model, param_dict: dict[str, float | complex], keys: list[list[str], list[str]]) -> None:
@@ -114,7 +114,7 @@ def write_to_yaml_omp(filename:str, model, param_dict: dict[str, float | complex
     
     yaml.add_representer(complex, complex_representer)
     with open(filename, 'w') as out_file:
-        yaml.dump(new_dict,out_file,sort_keys=False)
+        yaml.dump(new_dict,out_file,sort_keys=True)
 
 
 def float_representer(dumper, value: float):
