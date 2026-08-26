@@ -8,10 +8,11 @@
 4. Automated extraction of loop-functions and their degeneracy limits using the [CollectLoopFunctions.wl](./mathematica/CollectLoopFunctions.wl) script.
 5. The facility to deal with complex quantities, previously all variables and parameters were assumed to be real.
 6. Build system based on `meson` and `ninja`.
+7. Matching conditions for simpler UV models ([Singlet Scalar Extension of the SM](./Examples/SSE-to-SMEFTd6/) and [Type I Seesaw model](./Examples/SeesawTypeId6/)) added as examples, in addition to the [MSSM-to-SMEFT](./Examples/MSSM-to-SMEFTd6) matching.
 
 ### Updated
 
-1. The directory structure and READMEs hasve been reorganized across folders, to describe the Mathematica, C++ and Python aspects properly, while also separating the core from the examples.
+1. The directory structure and READMEs have been reorganized, to describe the Mathematica, C++ and Python aspects properly, while also separating the core from the examples.
 
 ### Removed
 
