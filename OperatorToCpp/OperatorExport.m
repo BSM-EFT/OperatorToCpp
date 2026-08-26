@@ -407,6 +407,7 @@ HeaderPreprocessorDirectives[line_] := Module[{},
 ];
 
 HeaderTaskStruct[line_] := Module[{},
+	WriteLine[line, "/// A helper struct to associate function names with specific methods."];
 	WriteLine[line, "struct Task {"];
 	WriteLine[line, "    std::string name;"];
 	WriteLine[line, "    std::function<std::complex<double>()> work;"];
@@ -414,6 +415,7 @@ HeaderTaskStruct[line_] := Module[{},
 ]
 
 HeaderModelClass[className_,paramList_,ComplexPars_,WCInfo_,line_] := Module[{},
+	WriteLine[line, "/// A UV model class with "<>className<>" couplings as member variables and SMEFT Wilson coefficients as its methods."];
 	WriteLine[line, "class "<>className<>" {"];
 	WriteLine[line, "    private:"];
 	
@@ -458,38 +460,74 @@ HeaderModelClass[className_,paramList_,ComplexPars_,WCInfo_,line_] := Module[{},
 		
 	WriteLine[line, "    public:"];
 	(* declaration for the default constructor*)
+	WriteLine[line, "        /// Initialize an instance of the "<>className<>" class, with the default parameter values and settings."];
 	WriteLine[line, "        "<>className<>"() = default;"];
 	WriteLine[line, ""];
 	
 	(* declaration for the overloaded constructor*)
+	WriteLine[line, "        /**"];
+	WriteLine[line, "        * Initialize an instance of the "<>className<>" class, with the specified parameter values and settings."];
+	WriteLine[line, "        *"];
+	WriteLine[line, "        @param params A dictionary containing name, value pairs for the UV parameters."];
+	WriteLine[line, "        @param scale The renormalization scale."];
+	WriteLine[line, "        @param loop Boolean specifying the inclusion or exclusion of loop-contributions."];
+	WriteLine[line, "        */"];
 	WriteLine[line, StringJoin["        ", className, "(std::unordered_map<std::string, std::complex<double> > params, double scale, bool loop);"]];
 	WriteLine[line, ""];
 
 	(* declaration for the updater method *)
+	WriteLine[line, "        /**"];
+	WriteLine[line, "        * Update the parameters of a model instance."];
+	WriteLine[line, "        *"];
+	WriteLine[line, "        @param params A dictionary containing name, value pairs of parameters to be updated."];
+	WriteLine[line, "        */"];
 	WriteLine[line, StringJoin["        void updateParams", "(std::unordered_map<std::string, std::complex<double> > params);"]];
 	WriteLine[line, ""];
 	
 	(* declaration for the scale getter method *)
+	WriteLine[line, "        /// Check the currently set value of the renormalization scale for the model instance."];
 	WriteLine[line, StringJoin["        double getScale", "();"]];
 	WriteLine[line, ""];
 	
 	(* declaration for the scale updater method *)
+	WriteLine[line, "        /**"];
+	WriteLine[line, "        * Update the value of the renormalization scale for the model instance."];
+	WriteLine[line, "        *"];
+	WriteLine[line, "        @param scale The new renormalization scale."];
+	WriteLine[line, "        */"];
 	WriteLine[line, StringJoin["        void setScale", "(double scale);"]];
 	WriteLine[line, ""];
 	
 	(* declaration for the loop-order updater method *)
+	WriteLine[line, "        /**"];
+	WriteLine[line, "        * Toggle on or off the contributions from loop-level matching."];
+	WriteLine[line, "        *"];
+	WriteLine[line, "        @param loop Boolean specifying inclusion (if true) or exclusion (if false) of loop contributions."];
+	WriteLine[line, "        */"];
 	WriteLine[line, StringJoin["        void loopContributions", "(bool loop);"]];
 	WriteLine[line, ""];
 	
 	(* declaration for a getter method for model parameters *)
+	WriteLine[line, "        /**"];
+	WriteLine[line, "        * Check the currently set values of the model parameters."];
+	WriteLine[line, "        *"];
+	WriteLine[line, "        @return A dictionary containing name, value pairs corresponding to each parameter."];
+	WriteLine[line, "        */"];
 	WriteLine[line, StringJoin["        std::unordered_map<std::string, std::complex<double> > getParams", "();"]];
 	WriteLine[line, ""];
 		
 	(* declarations for WC methods (Warsaw) *)
-	Do[WriteLine[line,"        std::complex<double> "<>CppFnDeclaration[Keys[WCInfo][[i]],WCInfo]<>";"],{i,1,Length[Keys[WCInfo]]}];	
+	WriteLine[line, "        // SMEFT Wilson coefficient method declarations."];
+	Do[WriteLine[line, "        std::complex<double> "<>CppFnDeclaration[Keys[WCInfo][[i]],WCInfo]<>";"],{i,1,Length[Keys[WCInfo]]}];	
 	WriteLine[line, ""];
 	
 	(* declaration for the batch evaluator *)
+	WriteLine[line, "        /**"];
+	WriteLine[line, "        * Batch evaluate a set of Wilson coefficients specified by their names."];
+	WriteLine[line, "        *"];
+	WriteLine[line, "        @param tasks A vector of task objects describing the coefficients to be evaluated."];
+	WriteLine[line, "        @return A dictionary containing name, value pairs corresponding to Wilson coefficients."];
+	WriteLine[line, "        */"];
 	WriteLine[line, "        std::map<std::string, std::complex<double> > batch_eval(const std::vector<Task>& tasks);"];
 	WriteLine[line, "};"];
 	WriteLine[line, ""];
@@ -851,18 +889,66 @@ WriteLine[line1, ""];
 WriteLine[line1, "namespace py = pybind11;"];
 WriteLine[line1, ""];
 WriteLine[line1, "PYBIND11_MODULE(match_to_py, m, py::mod_gil_not_used()) {"];
-WriteLine[line1, "    auto task = py::class_<Task>(m, \"Task\");"];
+WriteLine[line1, "    auto task = py::class_<Task>(m, \"Task\", \"A helper class to associate function names with specific methods.\");"];
 WriteLine[line1, ""];
-WriteLine[line1, "    py::class_<"<>modelName<>">(m, \""<>modelName<>"\")"];
-WriteLine[line1, "        .def(py::init<std::unordered_map<std::string, std::complex<double> >, double, bool>())"];
-WriteLine[line1, "        .def(\"updateParams\", &"<>modelName<>"::updateParams, py::arg(\"param_dict\"))"];
-WriteLine[line1, "        .def(\"getScale\", &"<>modelName<>"::getScale)"];
-WriteLine[line1, "        .def(\"setScale\", &"<>modelName<>"::setScale, py::arg(\"scale\"))"];
-WriteLine[line1, "        .def(\"loopContributions\", &"<>modelName<>"::loopContributions, py::arg(\"loop\"))"];
-WriteLine[line1, "        .def(\"getParams\", &"<>modelName<>"::getParams)"];
+WriteLine[line1, "    py::class_<"<>modelName<>">(m, \""<>modelName<>"\", \"A UV model class with SeesawTypeI couplings as member variables and SMEFT Wilson coefficients as its methods.\")"];
+WriteLine[line1, ""];
+WriteLine[line1, "        .def(py::init<std::unordered_map<std::string, std::complex<double> >, double, bool>(), R\"doc("];
+WriteLine[line1, "            Initializes an instance of the "<>modelName<>" class, with the specified parameter values and settings."];
+WriteLine[line1, "            "];
+    WriteLine[line1, "            Parameters"];
+    WriteLine[line1, "            ----------"];
+    WriteLine[line1, "                params : dict[str, complex]"];
+    WriteLine[line1, "                    A dictionary containing name, value pairs for the UV parameters."];
+    WriteLine[line1, "                scale : float"];
+    WriteLine[line1, "                    The renormalization scale."];
+    WriteLine[line1, "                loop : bool"];
+    WriteLine[line1, "                    A flag used to specify the inclusion or exclusion of loop-contributions."];
+WriteLine[line1, "        )doc\")"];
+WriteLine[line1, ""];
+WriteLine[line1, "        .def(\"updateParams\", &"<>modelName<>"::updateParams, py::arg(\"param_dict\"), R\"doc("];
+WriteLine[line1, "            Updates the parameters of a model instance."];
+WriteLine[line1, "            "];
+    WriteLine[line1, "            Parameters"];
+    WriteLine[line1, "            ----------"];
+    WriteLine[line1, "                params : dict[str, complex]"];
+    WriteLine[line1, "                    A dictionary containing name, value pairs of parameters to be updated."];
+WriteLine[line1, "        )doc\")"];
+WriteLine[line1, ""];
+WriteLine[line1, "        .def(\"getScale\", &"<>modelName<>"::getScale, \"Returns the currently set value of the renormalization scale for the model instance.\")"];
+WriteLine[line1, ""];
+WriteLine[line1, "        .def(\"setScale\", &"<>modelName<>"::setScale, py::arg(\"scale\"), R\"doc("];
+WriteLine[line1, "            Updates the value of the renormalization scale for the model instance."];WriteLine[line1, "            "];
+    WriteLine[line1, "            Parameters"];
+    WriteLine[line1, "            ----------"];
+    WriteLine[line1, "                scale : float"];
+    WriteLine[line1, "                    The new renormalization scale."];
+WriteLine[line1, "        )doc\")"];
+WriteLine[line1, ""];
+WriteLine[line1, "        .def(\"loopContributions\", &"<>modelName<>"::loopContributions, py::arg(\"loop\"), R\"doc("];
+WriteLine[line1, "            Toggles on or off the contributions from loop-level matching."];WriteLine[line1, "            "];
+    WriteLine[line1, "            Parameters"];
+    WriteLine[line1, "            ----------"];
+    WriteLine[line1, "                loop : bool"];
+    WriteLine[line1, "                    A flag specifying the inclusion (if true) or exclusion (if false) of loop contributions."];
+WriteLine[line1, "        )doc\")"];
+WriteLine[line1, ""];
+WriteLine[line1, "        .def(\"getParams\", &"<>modelName<>"::getParams, \"Returns a dictionary containing name, value pairs of all model parameters.\")"];
 WriteLine[line1, ""];
 WriteLine[line1, "        // batch evaluator"];
-WriteLine[line1, "        .def(\"batch_eval\", &"<>modelName<>"::batch_eval, py::arg(\"tasks\"), py::call_guard<py::gil_scoped_release>())"];
+WriteLine[line1, "        .def(\"batch_eval\", &"<>modelName<>"::batch_eval, py::arg(\"tasks\"), py::call_guard<py::gil_scoped_release>(), R\"doc("];
+WriteLine[line1, "            Batch evaluates a set of Wilson coefficients specified by their names."];
+WriteLine[line1, "            "];
+    WriteLine[line1, "            Parameters"];
+    WriteLine[line1, "            ----------"];
+    WriteLine[line1, "                tasks : list[Task]"];
+    WriteLine[line1, "                    A list of task objects describing the coefficients to be evaluated."];
+    WriteLine[line1, "            "];
+    WriteLine[line1, "            Returns"];
+    WriteLine[line1, "            -------"];
+    WriteLine[line1, "                dict[str, complex]"];
+    WriteLine[line1, "                    A dictionary containing name, value pairs corresponding to Wilson coefficients."];
+WriteLine[line1, "        )doc\")"];
 WriteLine[line1, ""];
 AddWrapperLambdas[modelName,WCInfo,line1];
 AddWCMethods[modelName,WCInfo,line1];
@@ -891,19 +977,90 @@ GeneratePythonDeclarations[modelName_,WCInfo_]:= Module[{path,fullPath,line},
 	If[!DirectoryQ[path], CreateDirectory[path]];
 	fullPath = FileNameJoin[{path,"match_to_py.pyi"}];
 	line = OpenWrite[fullPath];
-	WriteLine[line, "class Task: ..."];
+	WriteLine[line, "class Task:"];
+    WriteLine[line, "    \"\"\"A helper class to associate function names with specific methods.\"\"\""];
+    WriteLine[line, "    ..."];
     WriteLine[line, ""];
     WriteLine[line, "class "<>modelName<>":"];
-	WriteLine[line, "    def __init__(self, param_dict: dict[str, complex], scale: float, loop: bool) -> None: ..."];
-    WriteLine[line, "    def updateParams(self, param_dict: dict[str, complex]) -> None: ..."];
-    WriteLine[line, "    def getScale(self) -> float: ..."];
-    WriteLine[line, "    def setScale(self, scale: float) -> None: ..."];
-    WriteLine[line, "    def loopContributions(self, loop: bool) -> None: ..."];
-    WriteLine[line, "    def getParams(self) -> dict[str, complex]: ..."];
-    WriteLine[line, "    def batch_eval(self, tasks: list[Task]) -> dict[str, complex]: ..."];
+    WriteLine[line, "    \"\"\"A UV model class with "<>modelName<>" couplings as member variables and SMEFT Wilson coefficients as its methods.\"\"\""];
+    WriteLine[line, "    "];
+	WriteLine[line, "    def __init__(self, param_dict: dict[str, complex], scale: float, loop: bool) -> None:"];
+	WriteLine[line, "        \"\"\""];
+    WriteLine[line, "        Initializes an instance of the "<>modelName<>" class, with the specified parameter values and settings."];
+	WriteLine[line, "        "];
+    WriteLine[line, "        Parameters"];
+    WriteLine[line, "        ----------"];
+    WriteLine[line, "            params : dict[str, complex]"];
+    WriteLine[line, "                A dictionary containing name, value pairs for the UV parameters."];
+    WriteLine[line, "            scale : float"];
+    WriteLine[line, "                The renormalization scale."];
+    WriteLine[line, "            loop : bool"];
+    WriteLine[line, "                A flag used to specify the inclusion or exclusion of loop-contributions."];
+    WriteLine[line, "        \"\"\""];
+	WriteLine[line, "        ..."];
+	WriteLine[line, ""];
+    WriteLine[line, "    def updateParams(self, param_dict: dict[str, complex]) -> None:"];
+    WriteLine[line, "        \"\"\""];
+    WriteLine[line, "        Updates the parameters of a model instance."];
+	WriteLine[line, "        "];
+    WriteLine[line, "        Parameters"];
+    WriteLine[line, "        ----------"];
+    WriteLine[line, "            params : dict[str, complex]"];
+    WriteLine[line, "                A dictionary containing name, value pairs of parameters to be updated."];
+    WriteLine[line, "        \"\"\""];
+	WriteLine[line, "        ..."];
+	WriteLine[line, ""];
+    WriteLine[line, "    def getScale(self) -> float:"];
+    WriteLine[line, "        \"\"\"Returns the currently set value of the renormalization scale for the model instance.\"\"\""];
+	WriteLine[line, "        ..."];
+	WriteLine[line, ""];
+    WriteLine[line, "    def setScale(self, scale: float) -> None:"];
+    WriteLine[line, "        \"\"\""];
+    WriteLine[line, "        Updates the value of the renormalization scale for the model instance."];
+	WriteLine[line, "        "];
+    WriteLine[line, "        Parameters"];
+    WriteLine[line, "        ----------"];
+    WriteLine[line, "            scale : float"];
+    WriteLine[line, "                The new renormalization scale."];
+    WriteLine[line, "        \"\"\""];
+	WriteLine[line, "        ..."];
+	WriteLine[line, ""];
+    WriteLine[line, "    def loopContributions(self, loop: bool) -> None:"];
+    WriteLine[line, "        \"\"\""];
+    WriteLine[line, "        Toggles on or off the contributions from loop-level matching."];
+	WriteLine[line, "        "];
+    WriteLine[line, "        Parameters"];
+    WriteLine[line, "        ----------"];
+    WriteLine[line, "            loop : bool"];
+    WriteLine[line, "                A flag specifying the inclusion (if true) or exclusion (if false) of loop contributions."];
+    WriteLine[line, "        \"\"\""];
+	WriteLine[line, "        ..."];
+	WriteLine[line, ""];
+    WriteLine[line, "    def getParams(self) -> dict[str, complex]:"];
+    WriteLine[line, "        \"\"\"Returns a dictionary containing name, value pairs of all model parameters.\"\"\""];
+	WriteLine[line, "        ..."];
+	WriteLine[line, ""];
+    WriteLine[line, "    def batch_eval(self, tasks: list[Task]) -> dict[str, complex]:"];
+    WriteLine[line, "        \"\"\""];
+    WriteLine[line, "        Batch evaluates a set of Wilson coefficients specified by their names."];
+	WriteLine[line, "        "];
+    WriteLine[line, "        Parameters"];
+    WriteLine[line, "        ----------"];
+    WriteLine[line, "            tasks : list[Task]"];
+    WriteLine[line, "                A list of task objects describing the coefficients to be evaluated."];
+    WriteLine[line, "        "];
+    WriteLine[line, "        Returns"];
+    WriteLine[line, "        -------"];
+    WriteLine[line, "            dict[str, complex]"];
+    WriteLine[line, "                A dictionary containing name, value pairs corresponding to Wilson coefficients."];
+    WriteLine[line, "        \"\"\""];
+	WriteLine[line, "        ..."];
+	WriteLine[line, ""];
     WriteLine[line, "    def wrap_0f(self, name: str, method_name: str) -> Task: ..."];
     WriteLine[line, "    def wrap_2f(self, name: str, method_name: str, i1: int, i2: int) -> Task: ..."];
     WriteLine[line, "    def wrap_4f(self, name: str, method_name: str, i1: int, i2: int, i3: int, i4: int) -> Task: ..."];
+    WriteLine[line, ""];
+    WriteLine[line, "    # Wilson coefficient methods."];
 	Do[WriteLine[line, "    "<>PyFnDeclaration[Keys[WCInfo][[i]],WCInfo]],{i,1,Length[WCInfo]}];
 	Close[line];
 ]
