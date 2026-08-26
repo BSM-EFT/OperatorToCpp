@@ -43,7 +43,7 @@ Print[
  Style[
   Column[{
     Row[{
-      "OperatorExport  v1.0.0\[Beta] \[LongDash] by ",
+      "OperatorExport  v1.0.0 \[LongDash] by ",
       "Suraj Prakash",
       " (", 
       Style["suraj.prakash@ific.uv.es", "Hyperlink", FontColor -> Blue],
