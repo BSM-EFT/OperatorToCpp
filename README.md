@@ -1,6 +1,7 @@
 # OperatorToC++
 
 [![DOI](https://zenodo.org/badge/948956654.svg)](https://doi.org/10.5281/zenodo.15599937)
+[![arXiv](https://img.shields.io/badge/arXiv-2608.26254-00aa00.svg)](https://arxiv.org/abs/2608.26254)
 
 OperatorToC++ is an extensible, hybrid Mathematica and C++ based tool that facilitates next steps beyond the matching of parameters between a UV model and an Effective Field Theory. It efficiently remedies the complexities within the analytical matched expressions such as those due to loop-functions and lengthy sums and products involving tensor objects. It then translates and bundles the results into C++ classes and methods which provide a convenient platform for further numerical analyses. 
 
